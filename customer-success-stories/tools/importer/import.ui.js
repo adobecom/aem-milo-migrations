@@ -289,6 +289,10 @@ const attachListeners = () => {
         let fetchUrl = '';
         if (locale === 'en_us') {
           fetchUrl = `https://www-author.corp.adobe.com/content/dx/us/en/customer-success-stories/${customerName}/jcr:content.6.json`;
+        } else if (locale === 'jp') {
+          fetchUrl = `https://www-author.corp.adobe.com/content/dx/jp/ja/customer-success-stories/${customerName}/jcr:content.6.json`;
+        } else if (locale === 'de') {
+          fetchUrl = `https://www-author.corp.adobe.com/content/dx/${locale}/${locale}/customer-success-stories/${customerName}/jcr:content.6.json`;
         } else {
           fetchUrl = `https://www-author.corp.adobe.com/content/dx/${locale}/${lang}/customer-success-stories/${customerName}/jcr:content.6.json`;
         }

@@ -1,28 +1,3 @@
-/*
- * Copyright 2022 Adobe. All rights reserved.
- * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License. You may obtain a copy
- * of the License at http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under
- * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- * OF ANY KIND, either express or implied. See the License for the specific language
- * governing permissions and limitations under the License.
- * 
- * Script for Customer Stories - Tier 2 theme 3.
- * 
- * Example URL: https://business.adobe.com/customer-success-stories/stanley-black-decker-workfront-case-study.html
- * 
- */
-
-/* eslint-disable no-console, class-methods-use-this */
-// import getJSON from './getJSON';
-
-// console.log(document.getElementById('import-url').value);
-// console.log(document.getElementById('import-urls').value);
-// console.log('is there config?');
-// console.log(document);
-
 
 const DEFAULT_COLSPAN = 2;
 
@@ -31,14 +6,6 @@ let row = document.createElement('tr');
 let th = document.createElement('th');
 let td = document.createElement('td');
 let tableHTML = table.outerHTML;
-
-console.log('aye brad, this is the remote URL you want');
-console.log(window.remoteURL);
-
-
-// 
-
-
 
 function findKeyValue(obj, keyName) {
     for (var key in obj) {
@@ -53,39 +20,7 @@ function findKeyValue(obj, keyName) {
         }
     }
     return null;
-}    
-
-// const getJSON = async (url) => {
-//     const response = await fetch(url, {
-//         headers: {
-//             'Authorization': 'Basic ' + btoa('milo-dev:HQR2aUaKYmNNWfKzMjx8')
-//         }
-//     });
-//     const data = await response.json();
-//     return data;
-// }
-
-// let data = await getJSON('https://www-author.corp.adobe.com/content/dx/us/en/customer-success-stories/abb-case-study/jcr:content.6.json');
-// //             const pageUrl = window[variable].split('/')[4].split('.')[0];
-
-// console.log(data); 
-
-// listen for variable to change
-// const  = async (variable) => {
-//     const interval = await setInterval(() => {
-//         console.log('im running');
-//         if (window[variable] !== undefined) {
-//             clearInterval(interval);
-//             const pageUrl = window[variable].split('/')[4].split('.')[0];
-//             const fetchUrl = `https://www-author.corp.adobe.com/content/dx/us/en/customer-success-stories/${pageUrl}/jcr:content.6.json`;
-//             data = getJSON(fetchUrl);
-//             console.log('IS THIS DIFFERENT?')
-//             console.log(findKeyValue(data, 'fileReferenceMobile'));
-//         }
-//     }, 3000);
-// }
-// ('remoteURL');
-
+}
 
 const extractBackgroundImage = (document) => {
     let test = document.querySelector('#root_position');
@@ -93,110 +28,45 @@ const extractBackgroundImage = (document) => {
         test = document.querySelector('#root_content_flex');
     }
     const theBg = String(test.style['_values']['background-image']);
-    const rawBg = theBg.replace(/^url\(["']?/, '').replace(/["']?\)$/, ''); 
+    const rawBg = theBg.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
     const theImage = document.createElement('img');
     theImage.setAttribute('src', rawBg);
 
     return rawBg;
 };
-
-// var getJSON = function(url, callback) {
-//     var xhr = new XMLHttpRequest();
-//     xhr.open('GET', url, true);
-//     xhr.responseType = 'json'; 
-//     xhr.onload = function() {
-//       var status = xhr.status;
-//       if (status === 200) {
-//         callback(null, xhr.response);
-//         console.log('200' + xhr.response)
-//       } else {
-//         console.log('Not 200' + xhr.response)
-//         callback(status, xhr.response);
-//       }
-//     };
-//     xhr.send(); 
-// };
-
-// const createMarquee = (document, main, modal, mobile, tablet, desktop) => {
-    const createMarquee = (document, main, modal) => {
-
-        console.log('aye, does this change each time?');
-        console.log(window.data);
+const t2t3createMarquee = (document, main, modal) => {
 
 
-        // console.log('Mobile');
-        // console.log(findKeyValue(window.data, 'fileReferenceMobile'));
-        let mobile = findKeyValue(window.data, 'fileReferenceMobile');
-        // console.log('Tablet');
-        let tablet = findKeyValue(window.data, 'fileReferenceTablet');
-        // console.log(findKeyValue(window.data, 'fileReferenceTablet'));
-        // console.log('Desktop'); 
-        let desktop = findKeyValue(window.data, 'fileReference');
-        // console.log(desktop);
-        // console.log(typeof desktop);
 
-        if (mobile.includes('logo')) {
-            mobile = null;
-        };
-        if (tablet.includes('logo')) {
-            tablet = null;
-        };
-        if (desktop.includes('logo')) {
-            desktop = null;
-        };
+    let mobile = findKeyValue(window.data, 'fileReferenceMobile');
+    let tablet = findKeyValue(window.data, 'fileReferenceTablet');
+    let desktop = findKeyValue(window.data, 'fileReference');
 
-        console.log('A MARQUEE');
-    
-    
-        const fullMobile = `https://business.adobe.com${mobile}`;
-        const fullTablet = `https://business.adobe.com${tablet}`;
-        const fullDesktop = `https://business.adobe.com${desktop}`;
+    if (mobile.includes('logo')) {
+        mobile = null;
+    };
+    if (tablet.includes('logo')) {
+        tablet = null;
+    };
+    if (desktop.includes('logo')) {
+        desktop = null;
+    };
 
-        console.log('THE MOBILE TABLET DESKTOP BITS');
-        console.log(`${fullMobile} ${fullTablet} ${fullDesktop}`);
+
+
+    const fullMobile = `https://business.adobe.com${mobile}`;
+    const fullTablet = `https://business.adobe.com${tablet}`;
+    const fullDesktop = `https://business.adobe.com${desktop}`;
+
 
     const styleTag = document.querySelector('.title.NoMargin.heading-XL h1.cmp-title__text').closest('.flex').parentNode.parentNode.parentNode.querySelector('style');
     let marquee = document.querySelector('.title.NoMargin.heading-XL h1.cmp-title__text').closest('.flex').parentNode.parentNode;
-    // console.log('styleTag');
-    // console.log(styleTag.innerHTML);
-
-
-
-        // extract background urls from the css
-        const extractBackgroundUrls = (css) => {
-            const regex = /url\((.*?)\)/g;
-            const matches = css.match(regex);
-            // return matches;
-            return matches.map(match => match.replace(/url\((.*?)\)/g, '$1'));
-        }
-
-        // console.log('extractBackgroundUrls(styleTag.innerHTML)');
-        // console.log(extractBackgroundUrls(styleTag.innerHTML));
-
-    // const backgroundUrls = extractBackgroundUrls(styleTag.innerHTML);
-    // console.log('url fixed? ');
-       
-
-
-    // console.log('the basics222...?????? '); 
-
-    
-    // let testy = backgroundUrls[0];
-    // testy = encodeURI(testy);
-    // testy = testy.replace(/%5C2f/g, '/').replace(/%5C26/g, '&').replace(/%20/g, '');
-    // console.log('DID I GET IT?');
-    // console.log(testy);
-
-
-    // const mobileURL = encodeURI(backgroundUrls[0]).replace(/%5C2f/g, '/').replace(/%5C26/g, '&').replace(/%20/g, '');
-    // const tabletURL = encodeURI(backgroundUrls[1]).replace(/%5C2f/g, '/').replace(/%5C26/g, '&').replace(/%20/g, '');
-    // const desktopURL = encodeURI(backgroundUrls[2]).replace(/%5C2f/g, '/').replace(/%5C26/g, '&').replace(/%20/g, '');
-
-    // console.log('urlsTHE NEW');
-    // console.log(mobileURL);
-    // console.log(tabletURL);
-    // console.log(desktopURL);
-
+    const extractBackgroundUrls = (css) => {
+        const regex = /url\((.*?)\)/g;
+        const matches = css.match(regex);
+        // return matches;
+        return matches.map(match => match.replace(/url\((.*?)\)/g, '$1'));
+    }
 
     const mobileImg = document.createElement('img');
     mobileImg.setAttribute('src', fullMobile);
@@ -206,142 +76,96 @@ const extractBackgroundImage = (document) => {
 
     const desktopImg = document.createElement('img');
     desktopImg.setAttribute('src', fullDesktop);
-    
-    // console.log(marquee.parentNode.outerHTML);
-    // if (document.getElementById('root_content_flex')) {
-    //     marquees = document.querySelectorAll('#root_content_flex');
-    // }
-    
-    // marquees?.forEach((marquee) => {
-    // if (document.getElementById('root_content_flex')) {
-    //     marquee.querySelector('img').remove();
-    // }
-        // const bg = extractBackgroundImage(marquee);
-        const heading = marquee.querySelector('h1');
-        const bodyText = marquee.querySelector('.cmp-text ');
-        const image = marquee.querySelector('img');
-        const cta = marquee.querySelector('.dexter-Cta a');
 
-        const table = document.createElement('table');
-        let row = document.createElement('tr');
-        table.append(row);
-        const th = document.createElement('th');
-        row.append(th) 
-        
-        if (styleTag.innerHTML.indexOf('color: #FFFFFF') > -1) {
-            th.innerHTML = 'Marquee';
-        } else {
-            th.innerHTML = 'Marquee (light)';
-        }
-        th.setAttribute('colspan', 3);
+    const heading = marquee.querySelector('h1');
+    const bodyText = marquee.querySelector('.cmp-text ');
+    const image = marquee.querySelector('img');
+    const cta = marquee.querySelector('.dexter-Cta a');
 
-        row = document.createElement('tr');
-        table.append(row);
+    const table = document.createElement('table');
+    let row = document.createElement('tr');
+    table.append(row);
+    const th = document.createElement('th');
+    row.append(th)
 
-        // Background image.
-        // const backgroundURL = extractBackgroundImage(document);
+    if (styleTag.innerHTML.indexOf('color: #FFFFFF') > -1) {
+        th.innerHTML = 'Marquee';
+    } else {
+        th.innerHTML = 'Marquee (light)';
+    }
+    th.setAttribute('colspan', 3);
 
-        // const theBg = String(marquee.style['background-image']);
-        // const rawBg = theBg.replace(/^url\(["']?/, '').replace(/["']?\)$/, ''); 
-        // const theImage = document.createElement('img');
-        // theImage.setAttribute('src', rawBg);
-        
-        // console.log('THE OLD WAY BELOW');
-        // console.log(marquee.style);
-        // console.log(rawBg);
-        // console.log(theImage);
+    row = document.createElement('tr');
+    table.append(row);
 
-
-        // const marqueeImage = document.createElement('img');
-        // marqueeImage.setAttribute('src', backgroundURL);
-
-
-        // const mobileImg = document.createElement('img');
-        // mobileImg.setAttribute('src', fullMobile);
-
-        // const tabletImg = document.createElement('img');
-        // tabletImg.setAttribute('src', fullTablet);
-
-        // const desktopImg = document.createElement('img');
-        // desktopImg.setAttribute('src', fullDesktop);
-
-        if (mobile !== null) {
-            let td = document.createElement('td');
-            td.innerHTML = mobileImg.outerHTML;
-            row.append(td);
-        }
-
-        if (tablet !== null) {
-            td = document.createElement('td');
-            td.innerHTML = tabletImg.outerHTML;
-            row.append(td);
-        }
-
-        if (desktop !== null) {
-            td = document.createElement('td');
-            td.innerHTML = desktopImg.outerHTML;
-            row.append(td);
-        }
-
-
-
-        // td = document.createElement('td');
-        // td.setAttribute('colspan', DEFAULT_COLSPAN);
-        
-        // row.append(td);
-        row = document.createElement('tr');
-        table.append(row);
-
-
-        td = document.createElement('td');
-        td.setAttribute('colspan', 3);
+    if (mobile !== null) {
+        let td = document.createElement('td');
+        td.innerHTML = mobileImg.outerHTML;
         row.append(td);
+    }
 
-        if (image) {
-            td.append(image);
-        }
+    if (tablet !== null) {
+        td = document.createElement('td');
+        td.innerHTML = tabletImg.outerHTML;
+        row.append(td);
+    }
 
-        if (heading) {
-            td.append(heading);
-        }
-        if (bodyText) {
-            td.append(bodyText);
-        }        
-        if (cta) {
-            if (modal) {
-                const newCta = document.createElement('a');
-                let modalName;
-                if (document.querySelector('#featured-video-modalTitle')) {
-                    modalName = document.querySelector('#featured-video-modalTitle').innerHTML;
-                  }
-                newCta.setAttribute('href', `https://main--bacom--adobecom.hlx.page/fragments/customer-success-stories/modals/${modalName.toLowerCase().replace(/\s+/g, '-')}#watch-now`);
-                newCta.append('Watch Now');
-                const em = document.createElement('em');
-                const strong = document.createElement('strong');
-                em.append(strong);
-                strong.append(newCta);
-                td.append(em);                 
-            } else {
-                td.append(cta);                 
+    if (desktop !== null) {
+        td = document.createElement('td');
+        td.innerHTML = desktopImg.outerHTML;
+        row.append(td);
+    }
+
+    row = document.createElement('tr');
+    table.append(row);
+
+
+    td = document.createElement('td');
+    td.setAttribute('colspan', 3);
+    row.append(td);
+
+    if (image) {
+        td.append(image);
+    }
+
+    if (heading) {
+        td.append(heading);
+    }
+    if (bodyText) {
+        td.append(bodyText);
+    }
+    if (cta) {
+        if (modal) {
+            const newCta = document.createElement('a');
+            let modalName;
+            if (document.querySelector('#featured-video-modalTitle')) {
+                modalName = document.querySelector('#featured-video-modalTitle').innerHTML;
             }
+            newCta.setAttribute('href', `https://main--bacom--adobecom.hlx.page/fragments/customer-success-stories/modals/${modalName.toLowerCase().replace(/\s+/g, '-')}#watch-now`);
+            newCta.append('Watch Now');
+            const em = document.createElement('em');
+            const strong = document.createElement('strong');
+            em.append(strong);
+            strong.append(newCta);
+            td.append(em);
+        } else {
+            td.append(cta);
         }
-        const seperator = '--- <br />';
-        marquee.insertAdjacentHTML('afterend', seperator) 
-    
-        // Insert after current marquee, remove marquee.
-        const tableHTML = table.outerHTML;
-        marquee.insertAdjacentHTML('afterend', tableHTML)
+    }
+    const seperator = '--- <br />';
+    marquee.insertAdjacentHTML('afterend', seperator)
 
-        marquee.remove();
+    const tableHTML = table.outerHTML;
+    marquee.insertAdjacentHTML('afterend', tableHTML)
 
-    // });
+    marquee.remove();
 };
 
 
 const createIconBlock = (document, main) => {
     const icons = document.querySelectorAll('.aem-GridColumn:nth-child(3) .dexter-FlexContainer-Items > div > div:first-child img');
     if (!icons) {
-        return; // actually I think I'll handle that below. 
+        return;
     }
     const table = document.createElement('table');
     let row = document.createElement('tr');
@@ -373,8 +197,8 @@ let ConvertStringToHTML = function (str) {
     let parser = new DOMParser();
     let doc = parser.parseFromString(str, 'text/html');
     return doc.body;
- };
-const establishedStats = (document) => {
+};
+const t2t3EstablishedStats = (document) => {
     const columnItems = document.querySelectorAll('.flex:nth-child(3) .dexter-FlexContainer-Items > div > div > div');
     const mainContainer = document.querySelector('.flex:nth-child(3)');
 
@@ -389,7 +213,7 @@ const establishedStats = (document) => {
     row = document.createElement('tr');
     table.append(row);
 
-    
+
     let td = document.createElement('td');
     const icon = document.querySelector('.dexter-Image.dexter-Image-center img');
     td.innerHTML = icon.outerHTML;
@@ -398,60 +222,41 @@ const establishedStats = (document) => {
     icon.remove();
 
     row = document.createElement('tr');
-    table.append(row);       
+    table.append(row);
 
     let count = 0;
     columnItems?.forEach((columnItem) => {
-            const brs = columnItem.querySelectorAll('br');
-            const stringyCol = String(columnItem.innerHTML);
+        const brs = columnItem.querySelectorAll('br');
+        const stringyCol = String(columnItem.innerHTML);
 
 
-            brs.forEach((br) => {
-                br.insertAdjacentHTML('afterend', '<h3>&nbsp;</h3>');
+        brs.forEach((br) => {
+            br.insertAdjacentHTML('afterend', '<h3>&nbsp;</h3>');
 
-            });
+        });
 
-            td = document.createElement('td');
-            td.innerHTML = columnItem.innerHTML;
-            row.append(td);
-            if (count < 2) {
-                row = document.createElement('tr');
-                table.append(row);        
-            }
+        td = document.createElement('td');
+        td.innerHTML = columnItem.innerHTML;
+        row.append(td);
+        if (count < 2) {
+            row = document.createElement('tr');
+            table.append(row);
+        }
         count++;
     });
 
     const seperator = '---';
-    mainContainer.insertAdjacentHTML('afterend', seperator) 
+    mainContainer.insertAdjacentHTML('afterend', seperator)
 
     const tableHTML = table.outerHTML;
     mainContainer.insertAdjacentHTML('afterend', tableHTML)
     mainContainer.remove();
-}   
-
-const createStatsBlock = (document) => {
-
-    const table = document.createElement('table');
-    let row = document.createElement('tr');
-    table.append(row);
-    const th = document.createElement('th');
-    row.append(th);
-    th.innerHTML = 'Stats';
-    th.setAttribute('colspan', DEFAULT_COLSPAN);    
-
-    row = document.createElement('tr');
-    table.append(row);
-
-    let td = document.createElement('td');
-    row.append(td);
-
 }
 
-const objectivesResultsBlock = (document, main) => {
-    // .dexter-FlexContainer-Items.container.dexter-FlexContainer--mobileJustifyCenter.dexter-FlexContainer--mobileAlignAlignmentStretch.dexter-FlexContainer--mobileAlignContentCenter.dexter-FlexContainer--mobileAlignItemContentCenter
+const t2t3ObjectivesResultsBlock = (document, main) => {
     const mainContainer = document.querySelector('.flex:nth-child(4) > div');
     const theBg = mainContainer.style['background-image'];
-    const rawBg = theBg.replace(/^url\(["']?/, '').replace(/["']?\)$/, ''); 
+    const rawBg = theBg.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
     const theImage = document.createElement('img');
     theImage.setAttribute('src', rawBg);
 
@@ -461,7 +266,7 @@ const objectivesResultsBlock = (document, main) => {
     th = document.createElement('th');
     row.append(th);
     th.innerHTML = 'Section Metadata';
-    th.setAttribute('colspan', DEFAULT_COLSPAN);    
+    th.setAttribute('colspan', DEFAULT_COLSPAN);
 
     row = document.createElement('tr');
     table.append(row);
@@ -486,20 +291,18 @@ const objectivesResultsBlock = (document, main) => {
     row.append(td);
 
     const seperator = '---';
-    mainContainer.insertAdjacentHTML('afterend', seperator) 
+    mainContainer.insertAdjacentHTML('afterend', seperator)
 
     tableHTML = table.outerHTML;
     mainContainer.insertAdjacentHTML('afterend', tableHTML)
 
-   
-    // Create columns
     table = document.createElement('table');
     row = document.createElement('tr');
     table.append(row);
     th = document.createElement('th');
     row.append(th);
     th.innerHTML = 'Columns (contained)';
-    th.setAttribute('colspan', DEFAULT_COLSPAN);    
+    th.setAttribute('colspan', DEFAULT_COLSPAN);
 
     row = document.createElement('tr');
     table.append(row);
@@ -510,29 +313,28 @@ const objectivesResultsBlock = (document, main) => {
         if (count < 2) {
             td = document.createElement('td');
             td.innerHTML = columnItem.innerHTML;
-            row.append(td);        
+            row.append(td);
         }
         count++;
     });
 
     tableHTML = table.outerHTML;
-    mainContainer.insertAdjacentHTML('afterend', tableHTML) 
-    mainContainer.remove();    
+    mainContainer.insertAdjacentHTML('afterend', tableHTML)
+    mainContainer.remove();
 
 }
 
-const createQuoteBlocks = (document, main) => {
+const t2t3CreateQuoteBlocks = (document, main) => {
     const h3s = document.querySelectorAll('h3');
     h3s.forEach((h3) => {
-        if ((h3.innerHTML.indexOf('“') > -1) && (h3.closest('.dexter-FlexContainer-Items')?.querySelector('.horizontalRule'))) { 
-            // console.log(h3.closest('.dexter-FlexContainer-Items').querySelector('.horizontalRule'));
+        if ((h3.innerHTML.indexOf('“') > -1) && (h3.closest('.dexter-FlexContainer-Items')?.querySelector('.horizontalRule'))) {
             let theQuote = h3.closest('div');
             let theQuoteContainer = h3.parentNode.parentNode;
 
             let quoteImage = theQuoteContainer.parentNode.querySelector('img');
-             
+
             table = document.createElement('table');
-            row = document.createElement('tr'); 
+            row = document.createElement('tr');
             table.append(row);
             th = document.createElement('th');
             row.append(th);
@@ -544,9 +346,9 @@ const createQuoteBlocks = (document, main) => {
                 table.append(row);
                 td = document.createElement('td');
                 td.innerHTML = quoteImage.outerHTML;
-                row.append(td);        
+                row.append(td);
                 quoteImage.remove();
-            } 
+            }
 
             row = document.createElement('tr');
             table.append(row);
@@ -556,20 +358,20 @@ const createQuoteBlocks = (document, main) => {
             row.append(td);
 
             tableHTML = table.outerHTML;
-            theQuoteContainer.insertAdjacentHTML('afterend', tableHTML) 
-            theQuote.remove();  
+            theQuoteContainer.insertAdjacentHTML('afterend', tableHTML)
+            theQuote.remove();
         }
     });
 }
 
-const reccomendedBlock = (document, main, cardCollectionId) => {
+const t2t3ReccomendedBlock = (document, main, cardCollectionId) => {
 
     if (document.querySelector('.cardcollection')) {
         const reccomededBlocks = document.querySelector('.cardcollection');
 
         const h3s = document.querySelectorAll('h3');
         h3s.forEach((h3) => {
-            if (h3.innerHTML.indexOf('Recommended for you') > -1) { 
+            if (h3.innerHTML.indexOf('Recommended for you') > -1) {
                 const seperator = '---';
                 h3.insertAdjacentHTML('beforebegin', seperator);
             }
@@ -582,8 +384,6 @@ const reccomendedBlock = (document, main, cardCollectionId) => {
                 seeAllCustomerStory.remove();
             }
         });
-
-
         // create link
         const link = document.createElement('a');
         link.setAttribute('href', 'https://business.adobe.com/customer-success-stories/index');
@@ -595,49 +395,46 @@ const reccomendedBlock = (document, main, cardCollectionId) => {
         th = document.createElement('th');
         row.append(th);
         th.innerHTML = 'Section Metadata';
-        th.setAttribute('colspan', DEFAULT_COLSPAN);    
-    
+        th.setAttribute('colspan', DEFAULT_COLSPAN);
+
         row = document.createElement('tr');
         table.append(row);
-    
+
         td = document.createElement('td');
         td.innerHTML = 'style';
         row.append(td);
-    
+
         td = document.createElement('td');
         td.innerHTML = 'XXL Spacing, data-hidden, center';
         row.append(td);
-    
+
         row = document.createElement('tr');
         table.append(row);
-    
+
         td = document.createElement('td');
         td.innerHTML = 'background';
         row.append(td);
-    
+
         td = document.createElement('td');
         td.innerHTML = '#F8F8F8';
-        row.append(td);    
+        row.append(td);
 
         const seperator = '--- <br />';
-        reccomededBlocks.insertAdjacentHTML('afterend', seperator) 
-    
+        reccomededBlocks.insertAdjacentHTML('afterend', seperator)
+
         tableHTML = table.outerHTML;
-        reccomededBlocks.insertAdjacentHTML('afterend', tableHTML) 
-        
+        reccomededBlocks.insertAdjacentHTML('afterend', tableHTML)
+
         reccomededBlocks.insertAdjacentHTML('afterend', link.outerHTML);
 
         const caasValues = document.createElement('ul');
         caasValues.classList.add('raw-caas-values');
         const dataAttribs = document.querySelector('northstar-card-collection').dataset;
-        for( var d in dataAttribs) {
+        for (var d in dataAttribs) {
             const caasValuesItem = document.createElement('li');
             caasValuesItem.append(`${d}: ${dataAttribs[d]}`);
             caasValues.append(caasValuesItem);
         }
-        // reccomededBlocks.insertAdjacentHTML('afterend', caasValues.outerHTML) 
-
-
         const fragmentLink = document.createElement('a');
         fragmentLink.href = `https://main--bacom--adobecom.hlx.page/fragments/customer-success-stories/cards/${cardCollectionId}`;
         fragmentLink.append(`https://main--bacom--adobecom.hlx.page/fragments/customer-success-stories/cards/${cardCollectionId}`);
@@ -646,31 +443,30 @@ const reccomendedBlock = (document, main, cardCollectionId) => {
         reccomededBlocks.insertAdjacentHTML('afterend', `${fragmentLink.outerHTML} <br /> <br />`);
 
         reccomededBlocks.remove();
-        
+
     }
 
 };
 
-const processModal = (document, main, modal, modalName) => {
+const t2t3ProcessModal = (document, main, modal, modalName) => {
     if (modal) {
-        // Extract youtube link and drop off in doc, remove all else? Yes. 
         const youtubeSrc = modal.querySelector('iframe').getAttribute('data-video-src');
         const videoDescription = modal.querySelector('#featured-video-modalDescription').innerHTML;
         const youtubeLink = document.createElement('a');
         youtubeLink.setAttribute('src', youtubeSrc);
         youtubeLink.append(`${videoDescription} ${youtubeSrc}`);
         modal.insertAdjacentHTML('afterend', youtubeLink.outerHTML);
-        modal.remove(); 
+        modal.remove();
 
         return youtubeLink;
 
     }
 };
 
-const createContactReference = (document, main) => {
+const t2g3CreateContactReference = (document, main) => {
     const contactXf = document.querySelector('.xfreference:last-of-type');
     let contactLink = document.createElement('a');
-    
+
     if (contactXf.querySelector('svg')) {
         contactLink.href = 'https://main--bacom--adobecom.hlx.page/fragments/customer-success-stories/contact-footer-number';
         contactLink.append('https://main--bacom--adobecom.hlx.page/fragments/customer-success-stories/contact-footer-number');
@@ -678,30 +474,8 @@ const createContactReference = (document, main) => {
         contactLink.href = 'https://main--bacom--adobecom.hlx.page/fragments/customer-success-stories/contact-footer';
         contactLink.append('https://main--bacom--adobecom.hlx.page/fragments/customer-success-stories/contact-footer');
     }
-    // table = document.createElement('table');
-    // row = document.createElement('tr');
-    // table.append(row);
-    // th = document.createElement('th');
-    // row.append(th);
-    // th.innerHTML = 'Section Metadata';
-    // th.setAttribute('colspan', DEFAULT_COLSPAN);    
-
-    // row = document.createElement('tr');
-    // table.append(row);
-
-    // td = document.createElement('td');
-    // td.innerHTML = 'style';
-    // row.append(td);
-
-
-    // const seperator = '--- <br />';
-    // contactXf.insertAdjacentHTML('afterend', seperator) 
-
-
-    // contactXf.insertAdjacentHTML('afterend', table.outerHTML);
-
     contactXf.insertAdjacentHTML('afterend', contactLink.outerHTML);
-    contactXf.remove(); 
+    contactXf.remove();
 };
 
 
@@ -713,17 +487,17 @@ const createQuoteBlocks2 = (document, main) => {
 
     function getEveryNth(arr, nth) {
         const result = [];
-      
-        for (let i = 0; i < arr.length; i += nth) {
-          result.push(arr[i]);
-        }
-      
-        return result;
-      }
-      
-      const hrIdentifiers = getEveryNth(hrs, 2);
 
-      hrIdentifiers?.forEach((hrIdentifier) => {
+        for (let i = 0; i < arr.length; i += nth) {
+            result.push(arr[i]);
+        }
+
+        return result;
+    }
+
+    const hrIdentifiers = getEveryNth(hrs, 2);
+
+    hrIdentifiers?.forEach((hrIdentifier) => {
         let theQuoteContainer;
         let theQuote;
         let rawQuote;
@@ -743,7 +517,7 @@ const createQuoteBlocks2 = (document, main) => {
             theQuote = theQuoteContainer;
             quoteName = theQuote.querySelector('p b');
             quoteName.remove();
-            quoteJobTitle = theQuote.querySelector('p');   
+            quoteJobTitle = theQuote.querySelector('p');
             quoteJobTitle.remove();
             rawQuote = theQuote.querySelector('.cmp-text')
         }
@@ -755,32 +529,32 @@ const createQuoteBlocks2 = (document, main) => {
         th = document.createElement('th');
         row.append(th);
         th.innerHTML = 'Blockquote (center)';
-    
+
         row = document.createElement('tr');
         table.append(row);
-    
+
         td = document.createElement('td');
         td.innerHTML = '';
-        row.append(td);        
-    
+        row.append(td);
+
         row = document.createElement('tr');
         table.append(row);
-    
+
         td = document.createElement('td');
         td.innerHTML = `${rawQuote.outerHTML} <br /> ${quoteName.outerHTML} <br /> ${quoteJobTitle.outerHTML}`;
         row.append(td);
 
         tableHTML = table.outerHTML;
-        theQuoteContainer.insertAdjacentHTML('afterend', tableHTML) 
-        theQuote.remove();            
+        theQuoteContainer.insertAdjacentHTML('afterend', tableHTML)
+        theQuote.remove();
 
-      });
-      
-        
-      
+    });
+
+
+
 }
 
-const createMetadata = (document, main) => {
+const t2t3CreateMetadata = (document, main) => {
     const robots = document.querySelector('meta[name="robots"]')?.content;
     const desc = document.querySelector('meta[name="description"]')?.content;
     const keywords = document.querySelector('meta[name="keywords"]')?.content;
@@ -809,76 +583,76 @@ const createMetadata = (document, main) => {
     if (robots) {
         td = document.createElement('td');
         td.innerHTML = 'robots';
-        row.append(td);        
-    
+        row.append(td);
+
         td = document.createElement('td');
         td.innerHTML = robots;
-        row.append(td);    
+        row.append(td);
     }
 
     if (desc) {
         row = document.createElement('tr');
         table.append(row);
-    
+
         td = document.createElement('td');
         td.innerHTML = 'description';
-        row.append(td);        
-    
+        row.append(td);
+
         td = document.createElement('td');
         td.innerHTML = desc;
-        row.append(td);           
+        row.append(td);
     }
 
     if (keywords) {
         row = document.createElement('tr');
         table.append(row);
-    
+
         td = document.createElement('td');
         td.innerHTML = 'keywords';
-        row.append(td);        
-    
+        row.append(td);
+
         td = document.createElement('td');
         td.innerHTML = keywords;
-        row.append(td);            
+        row.append(td);
     }
 
     if (serpContentCase) {
         row = document.createElement('tr');
         table.append(row);
-    
+
         td = document.createElement('td');
         td.innerHTML = 'serp-content-type';
-        row.append(td);        
-    
+        row.append(td);
+
         td = document.createElement('td');
         td.innerHTML = serpContentCase;
-        row.append(td);    
+        row.append(td);
     }
 
     if (pageCreatedAt) {
         row = document.createElement('tr');
         table.append(row);
-    
+
         td = document.createElement('td');
         td.innerHTML = 'pageCreatedAt';
-        row.append(td);        
-    
+        row.append(td);
+
         td = document.createElement('td');
         td.innerHTML = pageCreatedAt;
-        row.append(td);    
+        row.append(td);
     }
 
     if (translated) {
         row = document.createElement('tr');
         table.append(row);
-    
+
         td = document.createElement('td');
         td.innerHTML = 'translated';
-        row.append(td);        
-    
+        row.append(td);
+
         td = document.createElement('td');
         td.innerHTML = translated;
-        row.append(td);           
+        row.append(td);
     }
 
     if (publishDate) {
@@ -889,40 +663,40 @@ const createMetadata = (document, main) => {
 
         row = document.createElement('tr');
         table.append(row);
-    
+
         td = document.createElement('td');
         td.innerHTML = 'publishDate';
-        row.append(td);        
-    
+        row.append(td);
+
         td = document.createElement('td');
         td.innerHTML = date;
-        row.append(td);    
+        row.append(td);
     }
 
     if (productJcrID) {
         row = document.createElement('tr');
         table.append(row);
-    
+
         td = document.createElement('td');
         td.innerHTML = 'productJcrID';
-        row.append(td);        
-    
+        row.append(td);
+
         td = document.createElement('td');
         td.innerHTML = productJcrID;
-        row.append(td);            
+        row.append(td);
     }
 
     if (primaryProductName) {
         row = document.createElement('tr');
         table.append(row);
-    
+
         td = document.createElement('td');
         td.innerHTML = 'primaryProductName';
-        row.append(td);        
-    
+        row.append(td);
+
         td = document.createElement('td');
         td.innerHTML = primaryProductName;
-        row.append(td);            
+        row.append(td);
     }
     if (ogImage) {
         // create image from ogImage
@@ -931,27 +705,27 @@ const createMetadata = (document, main) => {
 
         row = document.createElement('tr');
         table.append(row);
-    
+
         td = document.createElement('td');
         td.innerHTML = 'image';
-        row.append(td);        
-    
+        row.append(td);
+
         td = document.createElement('td');
         td.innerHTML = image.outerHTML;
-        row.append(td);  
+        row.append(td);
     }
 
     if (pageTitle) {
         row = document.createElement('tr');
         table.append(row);
-    
+
         td = document.createElement('td');
         td.innerHTML = 'title';
-        row.append(td);        
-    
+        row.append(td);
+
         td = document.createElement('td');
         td.innerHTML = pageTitle;
-        row.append(td); 
+        row.append(td);
 
 
     }
@@ -962,16 +736,16 @@ const createMetadata = (document, main) => {
 
     td = document.createElement('td');
     td.innerHTML = 'caas:content-type';
-    row.append(td);        
+    row.append(td);
 
     td = document.createElement('td');
     td.innerHTML = 'customer-story';
-    row.append(td);      
+    row.append(td);
 
     main.append(table);
 }
 
-const makeLinksAbsolute = (document, main) => {
+const t2g3MakeLinksAbsolute = (document, main) => {
     const links = document.querySelectorAll('a');
     if (links.length > 0) {
         links.forEach(link => {
@@ -987,7 +761,7 @@ const makeLinksAbsolute = (document, main) => {
     }
 }
 
-const createCaasMetadata = (document, main) => {
+const t2g3CreateCaasMetadata = (document, main) => {
 
     const cardTitle = findKeyValue(window.data, 'cardTitle');
     const cardDate = findKeyValue(window.data, 'cardDate');
@@ -1010,16 +784,16 @@ const createCaasMetadata = (document, main) => {
         row.append(th);
         th.innerHTML = 'card metadata';
         th.setAttribute('colspan', 2);
-    
-    
+
+
         if (cardTitle) {
             row = document.createElement('tr');
             table.append(row);
-        
+
             td = document.createElement('td');
             td.innerHTML = 'cardTitle';
             row.append(td);
-        
+
             td = document.createElement('td');
             td.innerHTML = cardTitle;
             row.append(td);
@@ -1028,24 +802,24 @@ const createCaasMetadata = (document, main) => {
         if (cardDate) {
             row = document.createElement('tr');
             table.append(row);
-        
+
             td = document.createElement('td');
             td.innerHTML = 'cardDate';
             row.append(td);
-        
+
             td = document.createElement('td');
             td.innerHTML = cardDate;
             row.append(td);
         }
-    
+
         if (altCardImageText) {
             row = document.createElement('tr');
             table.append(row);
-        
+
             td = document.createElement('td');
             td.innerHTML = 'altCardImageText';
             row.append(td);
-        
+
             td = document.createElement('td');
             td.innerHTML = altCardImageText;
             row.append(td);
@@ -1058,11 +832,11 @@ const createCaasMetadata = (document, main) => {
 
             row = document.createElement('tr');
             table.append(row);
-        
+
             td = document.createElement('td');
             td.innerHTML = 'cardImagePath';
             row.append(td);
-        
+
             td = document.createElement('td');
             td.innerHTML = cardImage.outerHTML;
             row.append(td);
@@ -1075,17 +849,17 @@ const createCaasMetadata = (document, main) => {
 
             row = document.createElement('tr');
             table.append(row);
-        
+
             td = document.createElement('td');
             td.innerHTML = 'badgeImage';
             row.append(td);
-        
+
             td = document.createElement('td');
             td.innerHTML = image.outerHTML;
             row.append(td);
         }
-                    
-    
+
+
         if (caasTags?.length > 0) {
             row = document.createElement('tr');
             table.append(row);
@@ -1102,7 +876,7 @@ const createCaasMetadata = (document, main) => {
             td = document.createElement('td');
             td.innerHTML = 'Tags';
             row.append(td);
-        
+
             td = document.createElement('td');
             td.innerHTML = tags;
             row.append(td);
@@ -1110,71 +884,55 @@ const createCaasMetadata = (document, main) => {
         if (entity_id) {
             row = document.createElement('tr');
             table.append(row);
-        
+
             td = document.createElement('td');
             td.innerHTML = 'original_entity_id';
-            row.append(td);        
-        
+            row.append(td);
+
             td = document.createElement('td');
             td.innerHTML = entity_id;
-            row.append(td); 
-        }        
+            row.append(td);
+        }
         main.append(table);
     }
 
 }
 
-const createBreadCrumbs = (document, main) => {
-    console.log('aye ARE THE BREADCRUMBS RUNNING????????????????????');
-    // grab outerHTML from .feds-breadcrumbs-items and insert in table
+const t2g3CreateBreadCrumbs = (document, main) => {
     const breadcrumbs = document.querySelector('.feds-breadcrumbs-items');
     if (breadcrumbs) {
-    console.log('CAN HAS BREAD?');
-
         table = document.createElement('table');
         row = document.createElement('tr');
         table.append(row);
         th = document.createElement('th');
-        
+
         row.append(th);
         th.innerHTML = 'breadcrumbs';
         th.setAttribute('colspan', 1);
-    
+
         row = document.createElement('tr');
         table.append(row);
-    
+
         td = document.createElement('td');
         td.innerHTML = breadcrumbs.outerHTML;
         row.append(td);
-    
+
         main.prepend(table);
     }
 }
 
 const extractImgFromPictures = (document, main) => {
-    // replace picture elements with one img element
     const pictures = document.querySelectorAll('picture');
     if (pictures.length > 0) {
         pictures.forEach(picture => {
             const img = picture.querySelector('img');
-            console.log('hello????')
-            console.log(picture.outerHTML);
             if (img) {
                 const imgElement = document.createElement('img');
                 imgElement.src = img.src;
-                console.log('img.src');
-                console.log(img.src);
                 imgElement.alt = 'alt';
                 imgElement.title = img.title;
                 imgElement.className = img.className;
                 picture.parentNode.replaceChild(imgElement, picture);
-
-                // picture.parentNode.insertAdjacentHTML('afterend', imgElement.outerHTML);
-                // picture.remove(); 
-                console.log('imgElement.outerHTML');
-                console.log(imgElement.outerHTML);
-                console.log(imgElement.innerHTML);
-                console.log(imgElement);
 
             }
         });
@@ -1182,7 +940,7 @@ const extractImgFromPictures = (document, main) => {
 }
 
 
-const createImgElementsFromImgEls = (document, main) => {
+const t2g3CreateImgElementsFromImgEls = (document, main) => {
     const imgEls = document.querySelectorAll('img');
     if (imgEls.length > 0) {
         imgEls.forEach(imgEl => {
@@ -1193,28 +951,21 @@ const createImgElementsFromImgEls = (document, main) => {
                 const urlSplit = url.split('?');
                 if (urlSplit[1].includes('$png$')) {
                     imgElement.src = urlSplit[0] + '.png';
-                    console.log('its a PNG!!!');
-                    console.log( imgElement.src = urlSplit[0] + '.png');
                 }
                 if (urlSplit[1].includes('$pjpeg')) {
                     imgElement.src = urlSplit[0] + '.jpg';
-                    console.log('its a JPT!!!');
-                    console.log(imgElement.src = urlSplit[0] + '.jpg');
                 }
                 imgElement.alt = imgEl.alt;
                 imgElement.title = imgEl.title;
                 imgElement.className = imgEl.className;
-                imgEl.parentNode.replaceChild(imgElement, imgEl);                
+                imgEl.parentNode.replaceChild(imgElement, imgEl);
             }
         }
         );
     }
 }
 
-
-
-
-const createCardCollectionId = (cardCollectionId, cardCollectionContainer, document, main) => {
+const t2t3CreateCardCollectionId = (cardCollectionId, cardCollectionContainer, document, main) => {
     if (cardCollectionContainer) {
         cardCollectionContainer.innerHTML = cardCollectionId;
         return cardCollectionContainer;
@@ -1222,11 +973,10 @@ const createCardCollectionId = (cardCollectionId, cardCollectionContainer, docum
     }
 }
 
-const createMp4AndGifConsoleLog = (document, main) => {
+const t2t3CreateMp4AndGifConsoleLog = (document, main) => {
     const mp4Tags = document.querySelectorAll('video');
     let mp4TagsString = '';
     if (mp4Tags.length > 0) {
-        console.log('MP4 TAGS FOUND:');
         mp4Tags.forEach(tag => {
             const source = tag.querySelector('source');
             if (source.src.includes('.mp4')) {
@@ -1239,7 +989,6 @@ const createMp4AndGifConsoleLog = (document, main) => {
     const gifTags = document.querySelectorAll('img');
     let gifTagsString = '';
     if (gifTags.length > 0) {
-        console.log('GIFS FOUND:');
         gifTags.forEach(tag => {
             if (tag.src.includes('.gif')) {
                 gifTagsString += `https://business.adobe.com${tag.src}, `;
@@ -1250,146 +999,23 @@ const createMp4AndGifConsoleLog = (document, main) => {
     }
 }
 
-export default {
-    transform: ({ document, params }) => {
-      
-      createImgElementsFromImgEls(document);
-      const main = document.querySelector('.page');
-      createBreadCrumbs(document, main);
-
-      const modal = document.querySelector('#featured-video');
-      let modalName;
-      if (document.querySelector('#featured-video-modalTitle')) {
-        modalName = document.querySelector('#featured-video-modalTitle').innerHTML;
-      }
-
-      const cardCollectionContainer = document.querySelector('northstar-card-collection');
-      const cardCollectionId = document.querySelector('northstar-card-collection')?.id?.split('-')[1];
-      const cardCollection = createCardCollectionId(cardCollectionId, cardCollectionContainer, document, main);
-      
-      const u = new URL(params.originalURL);
-    //   extractImgFromPictures(document, main);
-      createMetadata(document, main);
-      createMp4AndGifConsoleLog(document, main);
-
-      WebImporter.DOMUtils.remove(document, [
-        'header, footer'
-       ]);
-
-    // const marqueeStyleTag = document.querySelector('.title.NoMargin.heading-XL h1.cmp-title__text').closest('.flex').parentNode.parentNode.parentNode.querySelector('style').innerHTML;
-
-    createMarquee(document, main, modal);
-    // });
-    const style = document.querySelectorAll('style');
-    style.forEach((tag) => {
-        tag.remove();
-      });
-
-
-
-    // console.log('data made it.', data);
-
-
-    // const postJSON = fetchJson('https://www-author.corp.adobe.com/content/dx/us/en/customer-success-stories/abb-case-study/jcr:content.6.json').then((data) => {
-    
-
-        // console.log(findKeyValue(data, 'fileReference'));
-
-        // createMarquee(document, main, mobile, tablet, desktop);
-
-        // const style = document.querySelectorAll('style');
-        // style.forEach((tag) => {
-        //   tag.remove();
-        // });
-  
-        WebImporter.DOMUtils.remove(document, [
-            '.modalContainer, .globalnavheader'
-           ]);
-    
-    // });      
-       
-    // console.log('the show goes on without youee');
-
-
-    // var myHeaders = new Headers();
-    // myHeaders.append("Authorization", "Basic bWlsby1kZXY6SFFSMmFVYUtZbU5OV2ZLek1qeDg=");
-    // myHeaders.append("Cookie", "cq-authoring-mode=TOUCH; srvname=uw2010250063185_author_4502");
-    
-    // var requestOptions = {
-    //   method: 'GET',
-    //   headers: myHeaders,
-    //   redirect: 'follow'
-    // };
-    
-    // fetch("https://www-author.corp.adobe.com/content/dx/us/en/customer-success-stories/abb-case-study/jcr:content.4.json", requestOptions)
-    //   .then(response => response.text())
-    //   .then(result => console.log(result))
-    //   .catch(error => console.log('error', error));    
-
-
-      establishedStats(document); 
-
-      reccomendedBlock(document, main, cardCollectionId);
-
-      objectivesResultsBlock(document, main);
-
-    //   createMarquee(document, main, modal);
-      const modalContainer = processModal(document, main, modal, modalName);
-      createQuoteBlocks(document, main);
-      
-      
-      createContactReference(document, main);
-      makeLinksAbsolute(document, main);
-
-      createCaasMetadata(document, main);
-
-        //    console.log('this is the way'); 
-        //    console.log(u.pathname); 
-      if (modalName && cardCollection) {
-        return [{
-            element: main,
-            path: u.pathname.replace('.html', ''),
-        }, {
-            element: modalContainer,
-            path: `fragments/modals/${modalName.toLowerCase().replace(/\s+/g, '-')}`,
-        }, {
-            element: cardCollection,
-            path: `fragments/cards/${cardCollectionId.toLowerCase()}`,
-        }];
-      } else if (modalName && !cardCollection) {
-        return [{
-            element: main,
-            path: u.pathname.replace('.html', ''),
-        }, {
-            element: modalContainer,
-            path: `fragments/modals/${modalName.toLowerCase().replace(/\s+/g, '-')}`,
-        }];
-      } else if (!modalName && cardCollection) {
-        return [{
-            element: main,
-            path: u.pathname.replace('.html', ''),
-        }, {
-            element: cardCollection,
-            path: `fragments/cards/${cardCollectionId.toLowerCase()}`,
-        }];
-      } else if (!modalName && !cardCollection) {
-        return [{
-            element: main,
-            path: u.pathname.replace('.html', ''),
-        }];
-      }
-    },
-
-    /**
-     * Return a path that describes the document being transformed (file name, nesting...).
-     * The path is then used to create the corresponding Word document.
-     * @param {String} url The url of the document being transformed.
-     * @param {HTMLDocument} document The document
-     */
-    generateDocumentPath: async ({ document, url }) => {
-        console.log(url);
-        console.log(document);
-      return new URL(url).pathname.replace(/\/$/, '');
-    },
-    
-  }
+export {
+    extractBackgroundImage,
+    t2t3createMarquee,
+    createIconBlock,
+    ConvertStringToHTML,
+    t2t3EstablishedStats,
+    t2t3ObjectivesResultsBlock,
+    t2t3CreateQuoteBlocks,
+    t2t3ReccomendedBlock,
+    t2t3ProcessModal,
+    t2g3CreateContactReference,
+    t2t3CreateMetadata,
+    t2g3MakeLinksAbsolute,
+    t2g3CreateCaasMetadata,
+    t2g3CreateBreadCrumbs,
+    extractImgFromPictures,
+    t2g3CreateImgElementsFromImgEls,
+    t2t3CreateCardCollectionId,
+    t2t3CreateMp4AndGifConsoleLog,
+};
