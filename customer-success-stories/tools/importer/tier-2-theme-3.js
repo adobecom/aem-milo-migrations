@@ -1,3 +1,4 @@
+import convertTags from './convertTags.js';
 
 const DEFAULT_COLSPAN = 2;
 
@@ -6,6 +7,16 @@ let row = document.createElement('tr');
 let th = document.createElement('th');
 let td = document.createElement('td');
 let tableHTML = table.outerHTML;
+
+let fragmentBaseUrl = '';
+
+const t2t3SetFragmentBaseUrl = () => {
+    if (window.data.locale !== 'en_us') {
+        fragmentBaseUrl = `https://main--bacom--adobecom.hlx.page/${window.data.locale}/fragments/customer-success-stories/`;
+    } else {
+        fragmentBaseUrl = 'https://main--bacom--adobecom.hlx.page/fragments/customer-success-stories/';
+    }
+}
 
 function findKeyValue(obj, keyName) {
     for (var key in obj) {
@@ -36,8 +47,6 @@ const extractBackgroundImage = (document) => {
 };
 const t2t3createMarquee = (document, main, modal) => {
 
-
-
     let mobile = findKeyValue(window.data, 'fileReferenceMobile');
     let tablet = findKeyValue(window.data, 'fileReferenceTablet');
     let desktop = findKeyValue(window.data, 'fileReference');
@@ -52,8 +61,6 @@ const t2t3createMarquee = (document, main, modal) => {
         desktop = null;
     };
 
-
-
     const fullMobile = `https://business.adobe.com${mobile}`;
     const fullTablet = `https://business.adobe.com${tablet}`;
     const fullDesktop = `https://business.adobe.com${desktop}`;
@@ -64,7 +71,6 @@ const t2t3createMarquee = (document, main, modal) => {
     const extractBackgroundUrls = (css) => {
         const regex = /url\((.*?)\)/g;
         const matches = css.match(regex);
-        // return matches;
         return matches.map(match => match.replace(/url\((.*?)\)/g, '$1'));
     }
 
@@ -132,17 +138,23 @@ const t2t3createMarquee = (document, main, modal) => {
         td.append(heading);
     }
     if (bodyText) {
-        td.append(bodyText);
+        const bodyTextP = document.createElement('p');
+        bodyTextP.innerHTML = bodyText.innerHTML;
+        td.append(bodyTextP);
     }
     if (cta) {
         if (modal) {
+            let icon = '';
+            if (cta.querySelector('svg')) {
+                icon = cta.querySelector('svg').getAttribute('class');
+            }
             const newCta = document.createElement('a');
             let modalName;
             if (document.querySelector('#featured-video-modalTitle')) {
                 modalName = document.querySelector('#featured-video-modalTitle').innerHTML;
             }
-            newCta.setAttribute('href', `https://main--bacom--adobecom.hlx.page/fragments/customer-success-stories/modals/${modalName.toLowerCase().replace(/\s+/g, '-')}#watch-now`);
-            newCta.append('Watch Now');
+            newCta.setAttribute('href', `${fragmentBaseUrl}modals/${modalName.toLowerCase().replace(/\s+/g, '-')}#watch-now`);
+            newCta.append(cta.textContent);
             const em = document.createElement('em');
             const strong = document.createElement('strong');
             em.append(strong);
@@ -153,11 +165,10 @@ const t2t3createMarquee = (document, main, modal) => {
         }
     }
     const seperator = '--- <br />';
-    marquee.insertAdjacentHTML('afterend', seperator)
-
     const tableHTML = table.outerHTML;
-    marquee.insertAdjacentHTML('afterend', tableHTML)
 
+    marquee.insertAdjacentHTML('afterend', seperator)
+    marquee.insertAdjacentHTML('afterend', tableHTML)
     marquee.remove();
 };
 
@@ -216,24 +227,23 @@ const t2t3EstablishedStats = (document) => {
 
     let td = document.createElement('td');
     const icon = document.querySelector('.dexter-Image.dexter-Image-center img');
-    td.innerHTML = icon.outerHTML;
+    td.innerHTML = icon?.outerHTML;
     row.append(td);
 
-    icon.remove();
+    icon?.remove();
 
     row = document.createElement('tr');
     table.append(row);
 
     let count = 0;
     columnItems?.forEach((columnItem) => {
-        const brs = columnItem.querySelectorAll('br');
-        const stringyCol = String(columnItem.innerHTML);
-
-
-        brs.forEach((br) => {
-            br.insertAdjacentHTML('afterend', '<h3>&nbsp;</h3>');
-
-        });
+        const h1 = columnItem.querySelector('h1');
+        if (h1) {
+            const h2 = document.createElement('h2');
+            h2.append(h1.textContent);
+            h1.insertAdjacentHTML('afterend', h2.outerHTML);
+            h1.remove();
+        }
 
         td = document.createElement('td');
         td.innerHTML = columnItem.innerHTML;
@@ -255,10 +265,12 @@ const t2t3EstablishedStats = (document) => {
 
 const t2t3ObjectivesResultsBlock = (document, main) => {
     const mainContainer = document.querySelector('.flex:nth-child(4) > div');
-    const theBg = mainContainer.style['background-image'];
-    const rawBg = theBg.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
+    const theBg = mainContainer?.style['background-image'];
+    const rawBg = theBg?.replace(/^url\(["']?/, '').replace(/["']?\)$/, '');
     const theImage = document.createElement('img');
-    theImage.setAttribute('src', rawBg);
+    if (rawBg) {
+        theImage.setAttribute('src', rawBg);
+    }
 
     table = document.createElement('table');
     row = document.createElement('tr');
@@ -291,10 +303,10 @@ const t2t3ObjectivesResultsBlock = (document, main) => {
     row.append(td);
 
     const seperator = '---';
-    mainContainer.insertAdjacentHTML('afterend', seperator)
+    mainContainer?.insertAdjacentHTML('afterend', seperator)
 
     tableHTML = table.outerHTML;
-    mainContainer.insertAdjacentHTML('afterend', tableHTML)
+    mainContainer?.insertAdjacentHTML('afterend', tableHTML)
 
     table = document.createElement('table');
     row = document.createElement('tr');
@@ -319,8 +331,8 @@ const t2t3ObjectivesResultsBlock = (document, main) => {
     });
 
     tableHTML = table.outerHTML;
-    mainContainer.insertAdjacentHTML('afterend', tableHTML)
-    mainContainer.remove();
+    mainContainer?.insertAdjacentHTML('afterend', tableHTML)
+    mainContainer?.remove();
 
 }
 
@@ -329,6 +341,17 @@ const t2t3CreateQuoteBlocks = (document, main) => {
     h3s.forEach((h3) => {
         if ((h3.innerHTML.indexOf('“') > -1) && (h3.closest('.dexter-FlexContainer-Items')?.querySelector('.horizontalRule'))) {
             let theQuote = h3.closest('div');
+
+            const b = theQuote.querySelector('b');
+            const p = document.createElement('p');
+            p.append(b.textContent);
+            const b2 = document.createElement('b');
+            b2.append(p.textContent);
+            p.innerHTML = b2.outerHTML;
+
+            b.insertAdjacentHTML('afterend', p.outerHTML);
+            b.remove();
+
             let theQuoteContainer = h3.parentNode.parentNode;
 
             let quoteImage = theQuoteContainer.parentNode.querySelector('img');
@@ -371,23 +394,49 @@ const t2t3ReccomendedBlock = (document, main, cardCollectionId) => {
 
         const h3s = document.querySelectorAll('h3');
         h3s.forEach((h3) => {
-            if (h3.innerHTML.indexOf('Recommended for you') > -1) {
+            if (h3.innerHTML.indexOf('Recommended for you') > -1 ||
+            h3.innerHTML.indexOf('Weitere Kundenreferenzen.') > -1 ||
+            h3.innerHTML.indexOf('関連トピックス') > -1 ||
+            h3.innerHTML.indexOf('関連するユーザー事例') > -1) {
                 const seperator = '---';
                 h3.insertAdjacentHTML('beforebegin', seperator);
             }
         });
 
+        const h2s = document.querySelectorAll('h2');
+        h2s.forEach((h2) => {
+            if (h2.innerHTML.indexOf('Recommended for you') > -1 ||
+            h2.innerHTML.indexOf('Weitere Kundenreferenzen.') > -1 ||
+            h2.innerHTML.indexOf('関連トピックス') > -1 ||
+            h2.innerHTML.indexOf('関連するユーザー事例') > -1) {
+                const seperator = '---';
+                h2.insertAdjacentHTML('beforebegin', seperator);
+            }
+        });
 
         const seeAllCustomerStories = document.querySelectorAll('a');
         seeAllCustomerStories.forEach((seeAllCustomerStory) => {
-            if (seeAllCustomerStory.innerHTML.indexOf('See all customer stories') > -1 || seeAllCustomerStory.innerHTML.indexOf('View all customer stories') > -1) {
+            if (seeAllCustomerStory.innerHTML.indexOf('See all customer stories') > -1 ||
+                seeAllCustomerStory.innerHTML.indexOf('View all customer stories') > -1 ||
+                seeAllCustomerStory.innerHTML.indexOf('その他の関連トピックスを見る') > -1 ||
+                seeAllCustomerStory.innerHTML.indexOf('Alle Kundenreferenzen anzeigen') > -1) {
                 seeAllCustomerStory.remove();
             }
         });
         // create link
         const link = document.createElement('a');
         link.setAttribute('href', 'https://business.adobe.com/customer-success-stories/index');
-        link.innerHTML = 'See all customer stories';
+
+        if (window.data.locale === 'jp') {
+            link.innerHTML = 'その他の関連トピックスを見る';
+            link.setAttribute('href', 'https://business.adobe.com/jp/customer-success-stories/index');
+        } else if (window.data.locale === 'de') {
+            link.innerHTML = 'Alle Kundenreferenzen anzeigen';
+            link.setAttribute('href', 'https://business.adobe.com/de/customer-success-stories/index');
+        } else {
+            link.innerHTML = 'See all customer stories';
+            link.setAttribute('href', 'https://business.adobe.com/customer-success-stories/index');
+        }
 
         table = document.createElement('table');
         row = document.createElement('tr');
@@ -435,13 +484,12 @@ const t2t3ReccomendedBlock = (document, main, cardCollectionId) => {
             caasValuesItem.append(`${d}: ${dataAttribs[d]}`);
             caasValues.append(caasValuesItem);
         }
-        const fragmentLink = document.createElement('a');
-        fragmentLink.href = `https://main--bacom--adobecom.hlx.page/fragments/customer-success-stories/cards/${cardCollectionId}`;
-        fragmentLink.append(`https://main--bacom--adobecom.hlx.page/fragments/customer-success-stories/cards/${cardCollectionId}`);
 
+        const fragmentLink = document.createElement('a');
+        fragmentLink.href = `${fragmentBaseUrl}cards/${cardCollectionId}`;
+        fragmentLink.append(`${fragmentBaseUrl}cards/${cardCollectionId}`);
         reccomededBlocks.closest('.xf').classList.remove('.xf');
         reccomededBlocks.insertAdjacentHTML('afterend', `${fragmentLink.outerHTML} <br /> <br />`);
-
         reccomededBlocks.remove();
 
     }
@@ -450,15 +498,14 @@ const t2t3ReccomendedBlock = (document, main, cardCollectionId) => {
 
 const t2t3ProcessModal = (document, main, modal, modalName) => {
     if (modal) {
-        const youtubeSrc = modal.querySelector('iframe').getAttribute('data-video-src');
-        const videoDescription = modal.querySelector('#featured-video-modalDescription').innerHTML;
-        const youtubeLink = document.createElement('a');
-        youtubeLink.setAttribute('src', youtubeSrc);
-        youtubeLink.append(`${videoDescription} ${youtubeSrc}`);
-        modal.insertAdjacentHTML('afterend', youtubeLink.outerHTML);
+        const videoSrc = modal.querySelector('iframe').getAttribute('data-video-src');
+        const videoLink = document.createElement('a');
+        videoLink.setAttribute('src', videoSrc);
+        videoLink.append(`${videoSrc}`);
+        modal.insertAdjacentHTML('afterend', videoLink.outerHTML);
         modal.remove();
 
-        return youtubeLink;
+        return videoLink;
 
     }
 };
@@ -467,92 +514,17 @@ const t2g3CreateContactReference = (document, main) => {
     const contactXf = document.querySelector('.xfreference:last-of-type');
     let contactLink = document.createElement('a');
 
-    if (contactXf.querySelector('svg')) {
-        contactLink.href = 'https://main--bacom--adobecom.hlx.page/fragments/customer-success-stories/contact-footer-number';
-        contactLink.append('https://main--bacom--adobecom.hlx.page/fragments/customer-success-stories/contact-footer-number');
+    if (contactXf?.querySelector('svg')) {
+        contactLink.href = `${fragmentBaseUrl}contact-footer-number`;
+        contactLink.append(`${fragmentBaseUrl}contact-footer-number`);
     } else {
-        contactLink.href = 'https://main--bacom--adobecom.hlx.page/fragments/customer-success-stories/contact-footer';
-        contactLink.append('https://main--bacom--adobecom.hlx.page/fragments/customer-success-stories/contact-footer');
+        contactLink.href = `${fragmentBaseUrl}contact-footer`;
+        contactLink.append(`${fragmentBaseUrl}contact-footer`);
     }
-    contactXf.insertAdjacentHTML('afterend', contactLink.outerHTML);
-    contactXf.remove();
+
+    contactXf?.insertAdjacentHTML('afterend', contactLink.outerHTML);
+    contactXf?.remove();
 };
-
-
-
-const createQuoteBlocks2 = (document, main) => {
-
-    const mainContainer = document.querySelector('.responsivegrid:nth-child(1) > .aem-Grid'); // this holds all content under the clouds. 
-    const hrs = mainContainer.querySelectorAll('.horizontalRule');
-
-    function getEveryNth(arr, nth) {
-        const result = [];
-
-        for (let i = 0; i < arr.length; i += nth) {
-            result.push(arr[i]);
-        }
-
-        return result;
-    }
-
-    const hrIdentifiers = getEveryNth(hrs, 2);
-
-    hrIdentifiers?.forEach((hrIdentifier) => {
-        let theQuoteContainer;
-        let theQuote;
-        let rawQuote;
-        let quoteName;
-        let quoteJobTitle;
-
-        if (hrIdentifier.nextElementSibling == null) {
-            theQuoteContainer = hrIdentifier.closest('.position');
-            theQuote = hrIdentifier.closest('.position').nextElementSibling;
-            quoteName = theQuote.querySelector('p b');
-            quoteName.remove();
-            quoteJobTitle = theQuote.querySelector('p');
-            quoteJobTitle.remove();
-            rawQuote = theQuote.querySelector('.cmp-text')
-        } else {
-            theQuoteContainer = hrIdentifier.nextElementSibling;
-            theQuote = theQuoteContainer;
-            quoteName = theQuote.querySelector('p b');
-            quoteName.remove();
-            quoteJobTitle = theQuote.querySelector('p');
-            quoteJobTitle.remove();
-            rawQuote = theQuote.querySelector('.cmp-text')
-        }
-
-
-        table = document.createElement('table');
-        row = document.createElement('tr');
-        table.append(row);
-        th = document.createElement('th');
-        row.append(th);
-        th.innerHTML = 'Blockquote (center)';
-
-        row = document.createElement('tr');
-        table.append(row);
-
-        td = document.createElement('td');
-        td.innerHTML = '';
-        row.append(td);
-
-        row = document.createElement('tr');
-        table.append(row);
-
-        td = document.createElement('td');
-        td.innerHTML = `${rawQuote.outerHTML} <br /> ${quoteName.outerHTML} <br /> ${quoteJobTitle.outerHTML}`;
-        row.append(td);
-
-        tableHTML = table.outerHTML;
-        theQuoteContainer.insertAdjacentHTML('afterend', tableHTML)
-        theQuote.remove();
-
-    });
-
-
-
-}
 
 const t2t3CreateMetadata = (document, main) => {
     const robots = document.querySelector('meta[name="robots"]')?.content;
@@ -565,8 +537,7 @@ const t2t3CreateMetadata = (document, main) => {
     const productJcrID = document.querySelector('meta[name="productJcrID"]')?.content;
     const primaryProductName = document.querySelector('meta[name="primaryProductName"]')?.content;
     const ogImage = document.querySelector('meta[property="og:image"]')?.content;
-    // use cardImagePath for ogImage 
-    const pageTitle = document.querySelector('title').innerHTML;
+    const pageTitle = document.querySelector('meta[property="og:title"]')?.content;
 
     table = null;
     table = document.createElement('table');
@@ -658,7 +629,7 @@ const t2t3CreateMetadata = (document, main) => {
     if (publishDate) {
 
         let date = publishDate.split('T');
-        date = date[0].split('-'); // yyyy-MM-dd
+        date = date[0].split('-'); 
         date = `${date[1]}-${date[2]}-${date[0]}`;
 
         row = document.createElement('tr');
@@ -699,7 +670,6 @@ const t2t3CreateMetadata = (document, main) => {
         row.append(td);
     }
     if (ogImage) {
-        // create image from ogImage
         let image = document.createElement('img');
         image.setAttribute('src', ogImage);
 
@@ -726,10 +696,7 @@ const t2t3CreateMetadata = (document, main) => {
         td = document.createElement('td');
         td.innerHTML = pageTitle;
         row.append(td);
-
-
-    }
-
+    }    
 
     row = document.createElement('tr');
     table.append(row);
@@ -771,10 +738,8 @@ const t2g3CreateCaasMetadata = (document, main) => {
 
     const cqTags = findKeyValue(window.data, 'cq:tags');
     const logoImage = findKeyValue(window.data, 'logoImage');
-
-    // create array of values from cqTags that contain 'caas:content-type'
+    const newTags = convertTags(JSON.stringify(cqTags).replace('[', '').replace(']', '').replace(/"/g, '')).split(',');
     const caasTags = cqTags?.filter(tag => tag.includes('caas:'));
-    const adobeEnterprise = cqTags?.filter(tag => tag.includes('adobe-com-enterprise:'));
 
     if (caasTags || cardTitle || cardDate || altCardImageText || cardImagePath) {
         table = document.createElement('table');
@@ -791,7 +756,7 @@ const t2g3CreateCaasMetadata = (document, main) => {
             table.append(row);
 
             td = document.createElement('td');
-            td.innerHTML = 'cardTitle';
+            td.innerHTML = 'title';
             row.append(td);
 
             td = document.createElement('td');
@@ -804,7 +769,7 @@ const t2g3CreateCaasMetadata = (document, main) => {
             table.append(row);
 
             td = document.createElement('td');
-            td.innerHTML = 'cardDate';
+            td.innerHTML = 'created';
             row.append(td);
 
             td = document.createElement('td');
@@ -817,7 +782,7 @@ const t2g3CreateCaasMetadata = (document, main) => {
             table.append(row);
 
             td = document.createElement('td');
-            td.innerHTML = 'altCardImageText';
+            td.innerHTML = 'cardImageAltText';
             row.append(td);
 
             td = document.createElement('td');
@@ -826,7 +791,6 @@ const t2g3CreateCaasMetadata = (document, main) => {
         }
 
         if (cardImagePath) {
-            // create image from cardImagePath
             const cardImage = document.createElement('img');
             cardImage.src = cardImagePath;
 
@@ -834,7 +798,7 @@ const t2g3CreateCaasMetadata = (document, main) => {
             table.append(row);
 
             td = document.createElement('td');
-            td.innerHTML = 'cardImagePath';
+            td.innerHTML = 'cardImage';
             row.append(td);
 
             td = document.createElement('td');
@@ -843,7 +807,6 @@ const t2g3CreateCaasMetadata = (document, main) => {
         }
 
         if (logoImage) {
-            // create image from logoImage
             const image = document.createElement('img');
             image.setAttribute('src', logoImage);
 
@@ -859,19 +822,15 @@ const t2g3CreateCaasMetadata = (document, main) => {
             row.append(td);
         }
 
-
-        if (caasTags?.length > 0) {
+        if (newTags?.length > 0) {
             row = document.createElement('tr');
             table.append(row);
 
             let tags = '';
-            caasTags.forEach(tag => {
-                if (tags.length > 0) {
-                    tags += tag + ', ';
-                } else {
-                    tags += tag + '';
-                }
+            newTags.forEach(tag => {
+                tags += tag + ', ';
             });
+            tags = tags.slice(0, -2);
 
             td = document.createElement('td');
             td.innerHTML = 'Tags';
@@ -881,26 +840,40 @@ const t2g3CreateCaasMetadata = (document, main) => {
             td.innerHTML = tags;
             row.append(td);
         }
-        if (entity_id) {
-            row = document.createElement('tr');
-            table.append(row);
 
-            td = document.createElement('td');
-            td.innerHTML = 'original_entity_id';
-            row.append(td);
+        row = document.createElement('tr');
+        table.append(row);
 
-            td = document.createElement('td');
-            td.innerHTML = entity_id;
-            row.append(td);
-        }
+        td = document.createElement('td');
+        td.innerHTML = 'primaryTag';
+        row.append(td);
+
+        td = document.createElement('td');
+        td.innerHTML = 'caas:content-type/customer-story';
+        row.append(td);
+
         main.append(table);
     }
-
 }
 
 const t2g3CreateBreadCrumbs = (document, main) => {
     const breadcrumbs = document.querySelector('.feds-breadcrumbs-items');
+    let fullBreadcrumbs = false;
     if (breadcrumbs) {
+        const breadcrumbsItems = breadcrumbs.querySelectorAll('li');
+        if (breadcrumbsItems.length > 0) {
+            breadcrumbsItems.forEach(breadcrumbItem => {
+                if (breadcrumbItem.innerText === 'Customer Success Stories') {
+                    fullBreadcrumbs = true;
+                }
+            });
+        }
+        if (breadcrumbsItems.length === 3) {
+            fullBreadcrumbs = true;
+        }        
+    }
+
+    if (breadcrumbs && fullBreadcrumbs) {
         table = document.createElement('table');
         row = document.createElement('tr');
         table.append(row);
@@ -915,6 +888,54 @@ const t2g3CreateBreadCrumbs = (document, main) => {
 
         td = document.createElement('td');
         td.innerHTML = breadcrumbs.outerHTML;
+        row.append(td);
+
+        main.prepend(table);
+    } else {
+        let breadcrumbsHTML = '';
+        const pageTitle = findKeyValue(window.data, 'jcr:title');
+
+        if (window.data.locale !== 'en_us') {
+            breadcrumbsHTML = `
+            <ul>
+                <li>
+                    <a href="https://www.adobe.com/${window.data.locale}/">Home</a>
+                </li>
+                <li>
+                    <a href="https://business.adobe.com/${window.data.locale}/customer-success-stories">Customer Success Stories</a>
+                </li>
+                <li>
+                    <span>${pageTitle}</span>
+                </li>
+            </ul>`;
+        } else {
+            breadcrumbsHTML = `
+            <ul>
+                <li>
+                    <a href="https://www.adobe.com/jp/">Home</a>
+                </li>
+                <li>
+                    <a href="https://business.adobe.com/jp/customer-success-stories">Customer Success Stories</a>
+                </li>
+                <li>
+                    <span>${pageTitle}</span>
+                </li>
+            </ul>`;
+        }
+        table = document.createElement('table');
+        row = document.createElement('tr');
+        table.append(row);
+        th = document.createElement('th');
+
+        row.append(th);
+        th.innerHTML = 'breadcrumbs';
+        th.setAttribute('colspan', 1);
+
+        row = document.createElement('tr');
+        table.append(row);
+
+        td = document.createElement('td');
+        td.innerHTML = breadcrumbsHTML;
         row.append(td);
 
         main.prepend(table);
@@ -1018,4 +1039,5 @@ export {
     t2g3CreateImgElementsFromImgEls,
     t2t3CreateCardCollectionId,
     t2t3CreateMp4AndGifConsoleLog,
+    t2t3SetFragmentBaseUrl,
 };

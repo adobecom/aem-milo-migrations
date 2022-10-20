@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-/* global CodeMirror, showdown, html_beautify, ExcelJS, WebImporter */
+/* global CodeMirror, html_beautify, ExcelJS, WebImporter */
 import { initOptionFields, attachOptionFieldsListeners } from '../shared/fields.js';
 import { getDirectoryHandle, saveFile } from '../shared/filesystem.js';
 import { asyncForEach } from '../shared/utils.js';
@@ -68,16 +68,15 @@ const setupUI = () => {
   });
   ui.markdownEditor.setSize('100%', '100%');
 
-  ui.showdownConverter = new showdown.Converter();
   ui.markdownPreview = MD_PREVIEW_PANEL;
-  ui.markdownPreview.innerHTML = ui.showdownConverter.makeHtml('Run an import to see some markdown.');
+  ui.markdownPreview.innerHTML = WebImporter.md2html('Run an import to see some markdown.');
 };
 
 const loadResult = ({ md, html: outputHTML }) => {
   ui.transformedEditor.setValue(html_beautify(outputHTML));
   ui.markdownEditor.setValue(md || '');
 
-  const mdPreview = ui.showdownConverter.makeHtml(md);
+  const mdPreview = WebImporter.md2html(md);
   ui.markdownPreview.innerHTML = mdPreview;
 
   // remove existing classes and styles
@@ -100,8 +99,6 @@ const updateImporterUI = (results, originalURL) => {
 
     results.forEach((result, index) => {
       const { path } = result;
-
-      // add result to picker list
       const item = document.createElement('sp-menu-item');
       item.innerHTML = path;
       if (index === 0) {
@@ -128,6 +125,8 @@ const updateImporterUI = (results, originalURL) => {
     link.setAttribute('href', originalURL);
     link.innerHTML = originalURL;
     li.append(link);
+
+    console.log(`hey brad heres the originalURL: ${originalURL}`);
 
     BULK_URLS_LIST.append(li);
     BULK_URLS_HEADING.innerText = `Imported URLs (${importStatus.imported} / ${importStatus.total}):`;
@@ -177,8 +176,11 @@ const postImportProcess = async (results, originalURL) => {
       status: 'Success',
       url: originalURL,
       path,
+      pageCreatedAt: window.data.pageCreatedAt,
+      translated: window.data.translated,
+      template: window.data.template,
     };
-
+    
     const includeDocx = !!docx;
     if (includeDocx) {
       await saveFile(dirHandle, filename, docx);
@@ -211,10 +213,15 @@ const attachListeners = () => {
     alert.success(`Import of page ${originalURL} completed.`);
   });
 
-  config.importer.addErrorListener(({ url, error: err }) => {
+  config.importer.addErrorListener(({ url, error: err, params }) => {
     // eslint-disable-next-line no-console
     console.error(`Error importing ${url}: ${err.message}`, err);
     alert.error(`Error importing ${url}: ${err.message}`);
+
+    importStatus.rows.push({
+      url: params.originalURL,
+      status: `Error: ${err.message}`,
+    });
   });
 
   IMPORT_BUTTON.addEventListener('click', (async () => {
@@ -257,11 +264,12 @@ const attachListeners = () => {
         const { remote, proxy } = getProxyURLSetup(url, config.origin);
         const src = proxy.url;
 
+        console.log(`hey brad here is the original SRC URL: ${src}`);
 
         const getJSON = async (url) => {
           const response = await fetch(url, {
               headers: {
-                  'Authorization': 'Basic ' + btoa('')
+                  'Authorization': 'Basic ' + btoa('milo-dev:HQR2aUaKYmNNWfKzMjx8')
               }
           });
           const data = await response.json();
@@ -272,38 +280,286 @@ const attachListeners = () => {
         let customerName = '';
         let locale = remote.url.split('/')[3];
         let lang = '';
+        console.log(`THE ACTUAL RAW locale: ${locale}`);
 
         if (locale === 'customer-success-stories') {
           locale = 'en_us';
           customerName = remote.url.split('/')[4].split('.')[0];
         } else {
           customerName = remote.url.split('/')[5].split('.')[0];
-          locale = remote.url.split('/')[3].split('_')[0];
-          lang = remote.url.split('/')[3].split('_')[1];
-          console.log(`THE lang: ${lang}`);
-          console.log(`THE locale: ${locale}`);
+          // locale = remote.url.split('/')[3].split('_')[0];
+          // lang = remote.url.split('/')[3].split('_')[1];
+          // console.log(`THE lang: ${lang}`);
+          // console.log(`THE locale: ${locale}`);
         }
-
         console.log(`remote.url: ${remote.url}`);
         console.log(`customerName: ${customerName}`);
         let fetchUrl = '';
-        if (locale === 'en_us') {
-          fetchUrl = `https://www-author.corp.adobe.com/content/dx/us/en/customer-success-stories/${customerName}/jcr:content.6.json`;
-        } else if (locale === 'jp') {
-          fetchUrl = `https://www-author.corp.adobe.com/content/dx/jp/ja/customer-success-stories/${customerName}/jcr:content.6.json`;
-        } else if (locale === 'de') {
-          fetchUrl = `https://www-author.corp.adobe.com/content/dx/${locale}/${locale}/customer-success-stories/${customerName}/jcr:content.6.json`;
-        } else {
-          fetchUrl = `https://www-author.corp.adobe.com/content/dx/${locale}/${lang}/customer-success-stories/${customerName}/jcr:content.6.json`;
+
+        const baseFetchUrl = 'https://www-author.corp.adobe.com/content/dx';
+        const subPath = 'customer-success-stories';
+
+        switch (locale) {
+          case 'ae_ar':
+            fetchUrl = `${baseFetchUrl}/ae/ar/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'ae_en':
+            fetchUrl = `${baseFetchUrl}/ae/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'africa':
+            fetchUrl = `${baseFetchUrl}/africa/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'ar':
+            fetchUrl = `${baseFetchUrl}/ar/es/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'at':
+            fetchUrl = `${baseFetchUrl}/at/de/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'au':
+            fetchUrl = `${baseFetchUrl}/au/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'be_en':
+            fetchUrl = `${baseFetchUrl}/be/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'be_fr':
+            fetchUrl = `${baseFetchUrl}/be/fr/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'be_nl':
+            fetchUrl = `${baseFetchUrl}/be/nl/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'bg':
+            fetchUrl = `${baseFetchUrl}/bg/bg/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'br':
+            fetchUrl = `${baseFetchUrl}/br/pt/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'ca':
+            fetchUrl = `${baseFetchUrl}/ca/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'ca_fr':
+            fetchUrl = `${baseFetchUrl}/ca/fr/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'ch_de':
+            fetchUrl = `${baseFetchUrl}/ch/de/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'ch_fr':
+            fetchUrl = `${baseFetchUrl}/ch/fr/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'ch_it':
+            fetchUrl = `${baseFetchUrl}/ch/it/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'cl':
+            fetchUrl = `${baseFetchUrl}/cl/es/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'cn':
+            fetchUrl = `${baseFetchUrl}/cn/zh-Hans/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'co':
+            fetchUrl = `${baseFetchUrl}/co/es/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'cy_en':
+            fetchUrl = `${baseFetchUrl}/cy/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'cz':
+            fetchUrl = `${baseFetchUrl}/cz/cs/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'de':
+            fetchUrl = `${baseFetchUrl}/de/de/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'dk':
+            fetchUrl = `${baseFetchUrl}/dk/da/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'ee':
+            fetchUrl = `${baseFetchUrl}/ee/et/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'es':
+            fetchUrl = `${baseFetchUrl}/es/es/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'fi':
+            fetchUrl = `${baseFetchUrl}/fi/fi/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'fr':
+            fetchUrl = `${baseFetchUrl}/fr/fr/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'gr_en':
+            fetchUrl = `${baseFetchUrl}/gr/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'hk_en':
+            fetchUrl = `${baseFetchUrl}/hk/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'hk_zh':
+            fetchUrl = `${baseFetchUrl}/hk/zh-Hant/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'hu':
+            fetchUrl = `${baseFetchUrl}/hu/hu/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'id_en':
+            fetchUrl = `${baseFetchUrl}/id/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'id_id':
+            fetchUrl = `${baseFetchUrl}/id/id/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'ie':
+            fetchUrl = `${baseFetchUrl}/ie/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'il_en':
+            fetchUrl = `${baseFetchUrl}/il/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'il_he':
+            fetchUrl = `${baseFetchUrl}/il/he/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'in':
+            fetchUrl = `${baseFetchUrl}/in/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'in_hi':
+            fetchUrl = `${baseFetchUrl}/in/hi/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'it':
+            fetchUrl = `${baseFetchUrl}/it/it/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'jp':
+            fetchUrl = `${baseFetchUrl}/jp/ja/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'kr':
+            fetchUrl = `${baseFetchUrl}/kr/ko/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'la':
+            fetchUrl = `${baseFetchUrl}/la/es/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'lt':
+            fetchUrl = `${baseFetchUrl}/lt/lt/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'lu_de':
+            fetchUrl = `${baseFetchUrl}/lu/de/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'lu_en':
+            fetchUrl = `${baseFetchUrl}/lu/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'lu_fr':
+            fetchUrl = `${baseFetchUrl}/lu/fr/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'lv':
+            fetchUrl = `${baseFetchUrl}/lv/lv/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'mena_ar':
+            fetchUrl = `${baseFetchUrl}/mena/ar/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'mena_en':
+            fetchUrl = `${baseFetchUrl}/mena/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'mt':
+            fetchUrl = `${baseFetchUrl}/mt/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'mx':
+            fetchUrl = `${baseFetchUrl}/mx/es/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'my_en':
+            fetchUrl = `${baseFetchUrl}/my/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'my_ms':
+            fetchUrl = `${baseFetchUrl}/my/ms/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'nl':
+            fetchUrl = `${baseFetchUrl}/nl/nl/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'no':
+            fetchUrl = `${baseFetchUrl}/no/no/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'nz':
+            fetchUrl = `${baseFetchUrl}/nz/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'pe':
+            fetchUrl = `${baseFetchUrl}/pe/es/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'ph_en':
+            fetchUrl = `${baseFetchUrl}/ph/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'ph_fil':
+            fetchUrl = `${baseFetchUrl}/ph/fil/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'pl':
+            fetchUrl = `${baseFetchUrl}/pl/pl/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'pt':
+            fetchUrl = `${baseFetchUrl}/pt/pt/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'ro':
+            fetchUrl = `${baseFetchUrl}/ro/ro/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'ru':
+            fetchUrl = `${baseFetchUrl}/ru/ru/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'sa_ar':
+            fetchUrl = `${baseFetchUrl}/sa/ar/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'sa_en':
+            fetchUrl = `${baseFetchUrl}/sa/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'se':
+            fetchUrl = `${baseFetchUrl}/se/sv/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'sea':
+            fetchUrl = `${baseFetchUrl}/sea/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'sg':
+            fetchUrl = `${baseFetchUrl}/sg/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'si':
+            fetchUrl = `${baseFetchUrl}/si/sl//${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'sk':
+            fetchUrl = `${baseFetchUrl}/sk/sk/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'th_en':
+            fetchUrl = `${baseFetchUrl}/th/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'th_th':
+            fetchUrl = `${baseFetchUrl}/th/th/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'tr':
+            fetchUrl = `${baseFetchUrl}/tr/tr/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'tw':
+            fetchUrl = `${baseFetchUrl}/tw/zh-Hant/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'ua':
+            fetchUrl = `${baseFetchUrl}/ua/uk/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'uk':
+            fetchUrl = `${baseFetchUrl}/uk/uk/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'vn_en':
+            fetchUrl = `${baseFetchUrl}/vn/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          case 'vn_vi': 
+            fetchUrl = `${baseFetchUrl}/vn/vi/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
+          default:
+            fetchUrl = `${baseFetchUrl}/us/en/${subPath}/${customerName}/jcr:content.6.json`;
+            break;
         }
+            
+
+        // if (locale === 'en_us') {
+        //   fetchUrl = `https://www-author.corp.adobe.com/content/dx/us/en/${subPath}/${customerName}/jcr:content.6.json`;
+        // } else if (locale === 'jp') {
+        //   fetchUrl = `https://www-author.corp.adobe.com/content/dx/jp/ja/customer-success-stories/${customerName}/jcr:content.6.json`;
+        // } else if (locale === 'de') {
+        //   fetchUrl = `https://www-author.corp.adobe.com/content/dx/${locale}/${locale}/customer-success-stories/${customerName}/jcr:content.6.json`;
+        // } else {
+        //   fetchUrl = `https://www-author.corp.adobe.com/content/dx/${locale}/${lang}/customer-success-stories/${customerName}/jcr:content.6.json`;
+        // }
+        // if (locale === 'jp') {
+        //   fetchUrl = `http://localhost:3001/tools/importer/local-json/jp/${customerName}.json`;
+        // } else if (locale === 'de') {
+        //   fetchUrl = `http://localhost:3001/tools/importer/local-json/de/${customerName}.json`;
+        // }        
         console.log(`fetchUrl: ${fetchUrl}`);
         window.data = await getJSON(fetchUrl);
         window.currentImportItem = remote.url.split('/')[4].split('.')[0];
-        // console.log(`the fetch url is ${fetchUrl}`);
-
         console.log('window.data');
-        // console.log(window.data);
 
+        window.data.locale = locale;
 
 
         importStatus.imported += 1;
@@ -341,26 +597,24 @@ const attachListeners = () => {
               const onLoad = async () => {
                 const includeDocx = !!dirHandle;
 
+                if (config.fields['import-scroll-to-bottom']) {
+                  frame.contentWindow.window.scrollTo({ left: 0, top: frame.contentDocument.body.scrollHeight, behavior: 'smooth' });
+                }
+
                 window.setTimeout(async () => {
                   const { originalURL, replacedURL } = frame.dataset;
+                  console.log(`hey brad here is frame.dataset: ${JSON.stringify(frame.dataset)}`);
+                  // const replacedURL = replacedURL.split('?')[0];
                   if (frame.contentDocument) {
-                    try {
-                      config.importer.setTransformationInput({
-                        url: replacedURL,
-                        document: frame.contentDocument,
-                        includeDocx,
-                        params: { originalURL },
-                      });
-                      await config.importer.transform();
-                    } catch (e) {
-                      // eslint-disable-next-line no-console
-                      console.error(`Cannot transform ${originalURL} - transformation error ?`, e);
-                      // fallback, probably transformation error
-                      importStatus.rows.push({
-                        url: originalURL,
-                        status: `Error: ${e.message}`,
-                      });
-                    }
+                    config.importer.setTransformationInput({
+                      url: replacedURL,
+                      document: frame.contentDocument,
+                      includeDocx,
+                      params: { originalURL },
+                    });
+                    console.log(`hey brad heres the originalURL: ${originalURL}`);
+                    console.log(`hey brad heres the replacedURL: ${replacedURL}`);
+                    await config.importer.transform();
                   }
 
                   const event = new Event('transformation-complete');
@@ -370,7 +624,8 @@ const attachListeners = () => {
 
               frame.addEventListener('load', onLoad);
               frame.addEventListener('transformation-complete', processNext);
-
+                  
+              // const src = src.split('?')[0];
               frame.dataset.originalURL = url;
               frame.dataset.replacedURL = src;
               frame.src = src;
@@ -392,6 +647,8 @@ const attachListeners = () => {
                 status: 'Success',
                 path,
               });
+              console.log(`LATEST - hey brad this is the url: ${url}`);
+              console.log(`hey brad this is the path: ${path}`);
               updateImporterUI(null, url);
               processNext();
             }
@@ -405,7 +662,7 @@ const attachListeners = () => {
           });
           processNext();
         }
-        // ui.markdownPreview.innerHTML = ui.showdownConverter.makeHtml('Import in progress...');
+        // ui.markdownPreview.innerHTML = md2html('Import in progress...');
         // ui.transformedEditor.setValue('');
         // ui.markdownEditor.setValue('');
       } else {
@@ -432,16 +689,18 @@ const attachListeners = () => {
       from: 'A1',
       to: 'E1',
     };
-
     worksheet.addRows([
-      ['URL', 'path', 'docx', 'status', 'redirect'],
+      ['URL', 'path', 'docx', 'status', 'redirect', 'pageCreatedAt', 'translated', 'template'],
     ].concat(importStatus.rows.map(({
       url,
       path,
       docx,
       status,
       redirect,
-    }) => [url, path, docx || '', status, redirect || ''])));
+      pageCreatedAt,
+      translated,
+      template,
+    }) => [url, path, docx || '', status, redirect || '', pageCreatedAt, translated, template])));
     const buffer = await workbook.xlsx.writeBuffer();
     const a = document.createElement('a');
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
