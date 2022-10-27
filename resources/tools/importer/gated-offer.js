@@ -11,7 +11,7 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-// import { getJcrData } from './utils.js';
+import { getJSONValues } from './utils.js';
 
 const createMarquee = (main, document) => {
   const marqueeDoc = document.querySelector('.dexter-FlexContainer')
@@ -78,19 +78,6 @@ const createMetadata = (main, document) => {
   return meta;
 };
 
-const getValues = (obj, key) => {
-  var objects = [];
-  for (var i in obj) {
-      if (!obj.hasOwnProperty(i)) continue;
-      if (typeof obj[i] == 'object') {
-          objects = objects.concat(getValues(obj[i], key));
-      } else if (i == key) {
-          objects.push(obj[i]);
-      }
-  }
-  return objects;
-};
-
 const getFormLink = async (document, faasTitleSelector) => {
   const jcrContent = JSON.stringify(window.data);
   const formContainer = document.querySelector('.marketoForm');
@@ -98,9 +85,9 @@ const getFormLink = async (document, faasTitleSelector) => {
   if (formContainer) {
     formLink.href = 'https://main--milo--adobecom.hlx.page/drafts/bmarshal/authoring/fragments/marketo-form-fragment';
     formLink.innerHTML = `Marketo From data:<br>
-    Form ID - ${getValues(window.data, 'formId')[0]}<br>
-    munchkin ID - ${getValues(window.data, 'munchkinId')[0]}<br>
-    baseURL - ${getValues(window.data, 'baseURL')[0]}`;
+    Form ID - ${getJSONValues(window.data, 'formId')[0]}<br>
+    munchkin ID - ${getJSONValues(window.data, 'munchkinId')[0]}<br>
+    baseURL - ${getJSONValues(window.data, 'baseURL')[0]}`;
     formContainer.remove();
   } else {
     let faasConfig = document.querySelector('.faas-form-settings')?.innerHTML;

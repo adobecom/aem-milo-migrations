@@ -88,3 +88,19 @@ export const getJSON = async (url) => {
   const data = await response.json();
   return data;
 }
+
+/* Search key from complicated JSON
+* @return array values
+*/
+export const getJSONValues = (obj, key) => {
+  var objects = [];
+  for (var i in obj) {
+      if (!obj.hasOwnProperty(i)) continue;
+      if (typeof obj[i] == 'object') {
+          objects = objects.concat(getJSONValues(obj[i], key));
+      } else if (i == key) {
+          objects.push(obj[i]);
+      }
+  }
+  return objects;
+};
