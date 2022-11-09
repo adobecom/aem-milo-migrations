@@ -79,8 +79,7 @@ const createMetadata = (main, document) => {
   return block;
 };
 
-const createCardMetadata = (main, document) => {
-  const title = document.querySelector('title');
+const createCardMetadata = (main, document) => {  
   const cells = [
     ['Card Metadata'],
     ['cardTitle', getMetadataValue(document, 'cardTitle')],
@@ -173,7 +172,11 @@ export default {
     main.append(table);
     main.append('---');
     main.append(createMetadata(main, document));
-    main.append(createCardMetadata(main, document));
+    
+    // if robots doesn't have noindex include Card Metadata;
+    if (!getMetadataValue(document, 'robots').toLowerCase().includes('noindex')) {
+      main.append(createCardMetadata(main, document));
+    }
     
     return main;
   },
