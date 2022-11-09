@@ -11,7 +11,7 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { getJSONValues } from './utils.js';
+import { getJSONValues, getMetadataValue } from './utils.js';
 
 const createMarquee = (main, document) => {
   const marqueeDoc = document.querySelector('.dexter-FlexContainer')
@@ -23,21 +23,28 @@ const createMarquee = (main, document) => {
     [`<h6>${eyebrow}</h6><h6>${title}</h6>`, marqueeDoc.querySelector('img') || ''],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
-  main.prepend(table);
+  document.querySelector('h1')?.remove();
   marqueeDoc.remove();
+  return table;
 };
 
 const createColumns = (main, document, formLink) => {
   const firstBodyImage = document.querySelector('img');
+  const contentBody = document.querySelectorAll('.flex')[1];
   if (document.querySelector('img')?.parentElement.nodeName === 'DIV') {
     firstBodyImage.remove();
   }
-  const cells = [
-    ['Columns (contained)'],
-    [document.querySelector('.content'), formLink || ''],
-  ];
-  const table = WebImporter.DOMUtils.createTable(cells, document);
-  main.append(table);
+  if (formLink.nodeName === 'A') {
+    const cells = [
+      ['Columns (contained)'],
+      [contentBody, formLink || ''],
+    ];
+    const table = WebImporter.DOMUtils.createTable(cells, document);
+    return [table];
+  } else {
+    return [contentBody, formLink || ''];
+  }
+  
 };
 
 const createSectionMetadata = (main, document) => {
@@ -46,7 +53,7 @@ const createSectionMetadata = (main, document) => {
     ['style', 'container, xxl spacing, divider'],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
-  main.append(table);
+  return table;
 }
 
 const createMetadata = (main, document) => {
@@ -56,56 +63,80 @@ const createMetadata = (main, document) => {
   if (title) {
     meta.Title = title.innerHTML.replace(/[\n\t]/gm, '');
   }
-
-  const desc = document.querySelector('[property="og:description"]');
-  if (desc) {
-    meta.Description = desc.content;
-  }
-
-  // meta.Category = document.querySelector('.text.NoMargin').textContent.toLowerCase();
-  meta.Author = 'DX Adobe';
-
-  const date = document.querySelector('meta[name="publishDate"]');
-  if (date) {
-    meta['Publication Date'] = date.content.substring(0, date.content.indexOf('T'));
-  }
-
-  meta.Tags = `${window.data['cq:tags']}`;
+  meta.robots = getMetadataValue(document, 'robots');
+  meta.Description = getMetadataValue(document, 'og:description');
+  meta.keywords = getMetadataValue(document, 'keywords');
+  meta['serp-content-type'] = getMetadataValue(document, 'serp-content-type');
+  meta.pageCreatedAt = getMetadataValue(document, 'pageCreatedAt');
+  meta.translated = getMetadataValue(document, 'translated');
+  meta.publishDate = getMetadataValue(document, 'publishDate');
+  meta.productJcrID = getMetadataValue(document, 'productJcrID');
+  meta.primaryProductName = getMetadataValue(document, 'primaryProductName');
+  meta.image = `https://business.adobe.com${getMetadataValue(document, 'og:image')}`;
+  meta['caas:content-type'] = getMetadataValue(document, 'caas:content-type');
 
   const block = WebImporter.Blocks.getMetadataBlock(document, meta);
-  main.append(block);
+  return block;
+};
 
-  return meta;
+const createCardMetadata = (main, document) => {
+  const title = document.querySelector('title');
+  const cells = [
+    ['Card Metadata'],
+    ['cardTitle', getMetadataValue(document, 'cardTitle')],
+    ['cardImagePath', `https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`],
+    ['CardDescription', getMetadataValue(document, 'cardDescription')],
+    ['primaryTag', `caas:content-type/${getMetadataValue(document, 'caas:content-type')}`],
+  ];
+  const table = WebImporter.DOMUtils.createTable(cells, document);
+  return table;
 };
 
 const getFormLink = async (document, faasTitleSelector) => {
-  const jcrContent = JSON.stringify(window.data);
   const formContainer = document.querySelector('.marketoForm');
-  const formLink = document.createElement('a');
   if (formContainer) {
-    formLink.href = 'https://main--milo--adobecom.hlx.page/drafts/bmarshal/authoring/fragments/marketo-form-fragment';
-    formLink.innerHTML = `Marketo From data:<br>
-    Form ID - ${getJSONValues(window.data, 'formId')[0]}<br>
-    munchkin ID - ${getJSONValues(window.data, 'munchkinId')[0]}<br>
-    baseURL - ${getJSONValues(window.data, 'baseURL')[0]}`;
+    const mktoCells = [
+      ['marketo'],
+      ['title', formContainer.querySelector('p')?.textContent || ''],
+      ['Form ID', getJSONValues(window.data, 'formId')[0]],
+      ['Base URL', getJSONValues(window.data, 'baseURL')[0]],
+      ['Munchkin ID', getJSONValues(window.data, 'munchkinId')[0]],
+      ['Destination URL', window.importUrl.pathname.replace('.html', '/thank-you')],
+    ];
+    const mktoTable = WebImporter.DOMUtils.createTable(mktoCells, document);
     formContainer.remove();
-  } else {
-    let faasConfig = document.querySelector('.faas-form-settings')?.innerHTML;
-    const { utf8ToB64 } = await import('https://milo.adobe.com/libs/utils/utils.js');
-    faasConfig = JSON.parse(faasConfig);
-    faasConfig.complete = true;
-    faasConfig.title = document.querySelector(faasTitleSelector)?.textContent.trim();
-    if (jcrContent?.includes('theme-2cols')) {
-      faasConfig.style_layout = 'column2';
-    }
-    console.log(faasConfig);
-    const formLinkURL = `https://milo.adobe.com/tools/faas#${utf8ToB64(JSON.stringify(faasConfig))}`;
-    formLink.href = formLinkURL;
-    formLink.innerHTML = 'FaaS Link';
+    return mktoTable;
   }
+
+  const jcrContent = JSON.stringify(window.data);
+  const formLink = document.createElement('a');
+  let faasConfig = document.querySelector('.faas-form-settings')?.innerHTML;
+  const { utf8ToB64 } = await import('https://milo.adobe.com/libs/utils/utils.js');
+  faasConfig = JSON.parse(faasConfig);
+  faasConfig.complete = true;
+  faasConfig.title = document.querySelector(faasTitleSelector)?.textContent.trim();
+  if (jcrContent?.includes('theme-2cols')) {
+    faasConfig.style_layout = 'column2';
+  }
+  faasConfig.cleabitStyle = '';
+  if (getJSONValues(window.data, 'clearbit')[0] && getJSONValues(window.data, 'formSubType')[0] === '2847') {
+    faasConfig.title_size = 'p';
+    faasConfig.title_align = 'left';
+    faasConfig.cleabitStyle = 'Cleabit Style'
+  }
+  console.log(faasConfig);
+  const formLinkURL = `https://milo.adobe.com/tools/faas#${utf8ToB64(JSON.stringify(faasConfig))}`;
+  formLink.href = formLinkURL;
+  formLink.innerHTML = `FaaS Link - FormID: ${faasConfig.id} ${faasConfig.cleabitStyle}`;
   
   return formLink;
 };
+
+const appendBackward = (elements, main) => {
+  for (let i=elements.length-1; i>=0; i--) {
+    main.prepend(elements[i]);
+  }
+}
 
 export default {
   /**
@@ -117,30 +148,33 @@ export default {
   transformDOM: async ({ document, html}) => {
     const faasTitleSelector = '.cmp-text.mobile-padding-top-48.mobile-padding-right-48.mobile-padding-left-48';
     const formLink = await getFormLink(document, faasTitleSelector);
-    const otherContent = document.querySelector('.horizontalRule:not(.aem-GridColumn)')?.parentElement;
-    otherContent?.querySelectorAll('style').forEach(s => s.remove());
     WebImporter.DOMUtils.remove(document, [
       `header, footer, .faas-form-settings, ${faasTitleSelector}, .xf`,
     ]);
-
     const main = document.querySelector('main');
-    createMarquee(main, document);
-    main.append('---');
-    createColumns(main, document, formLink);
-    createSectionMetadata(main, document);
-    main.append('---');
-    if (otherContent?.textContent.trim()) {
-      main.append(otherContent);
-    } else {
-      const cells = [
-        ['Section Metadata'],
-        ['style', 'm spacing'],
-      ];
-      const table = WebImporter.DOMUtils.createTable(cells, document);
-      main.append(table);
-    }
-    createMetadata(main, document);
 
+    // Top area
+    const elementsToGo = [];
+    elementsToGo.push(createMarquee(main, document));
+    elementsToGo.push('---');
+    createColumns(main, document, formLink).forEach((c) => {elementsToGo.push(c)});
+    elementsToGo.push(createSectionMetadata(main, document));
+    elementsToGo.push('---');
+    appendBackward(elementsToGo, main);
+
+    // All other content from page should be automatically added here //
+
+    // Bottom area
+    const cells = [
+      ['Section Metadata'],
+      ['style', 'm spacing'],
+    ];
+    const table = WebImporter.DOMUtils.createTable(cells, document);
+    main.append(table);
+    main.append('---');
+    main.append(createMetadata(main, document));
+    main.append(createCardMetadata(main, document));
+    
     return main;
   },
 

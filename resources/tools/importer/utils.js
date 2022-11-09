@@ -93,6 +93,12 @@ export const getJSON = async (url) => {
 * @return array values
 */
 export const getJSONValues = (obj, key) => {
+  if (!obj) {
+    return false;
+  }
+  if (obj[key]) {
+    return obj[key];
+  }
   var objects = [];
   for (var i in obj) {
       if (!obj.hasOwnProperty(i)) continue;
@@ -104,3 +110,22 @@ export const getJSONValues = (obj, key) => {
   }
   return objects;
 };
+
+export const getMetadataValue = (document, key) => {
+  const cqTags = getJSONValues(window.data, 'cq:tags');
+  let cqTagMetaValue = '';
+  cqTags.forEach((tag) => {
+    if(tag.startsWith(key)) {
+      cqTagMetaValue = tag.split('/')[1];
+      console.log(tag.split('/'));
+      return;
+    }
+  });
+
+  return cqTagMetaValue ||
+    document.head.querySelector(`meta[property="${key}"`)?.content ||
+    document.head.querySelector(`meta[name="${key}"`)?.content ||
+    getJSONValues(window.data, key) || '';
+}
+
+export const isRelative = url => !url.startsWith('http');
