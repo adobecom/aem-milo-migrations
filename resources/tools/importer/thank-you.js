@@ -87,7 +87,7 @@ export default {
       ['style', 'container'],
     ], document));
     main.append('---');
-    main.append(document.querySelector('h2, h3'));
+    main.append(document.querySelector('h2, h3, .aem-Grid > .title .cmp-title__text'));
     main.append(await getRecommendedArticles(main, document));
     main.append(WebImporter.DOMUtils.createTable([
       ['Section Metadata'],
