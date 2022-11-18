@@ -94,7 +94,8 @@ export const getJSON = async (url) => {
 */
 export const getJSONValues = (obj, key) => {
   if (!obj) {
-    return false;
+    console.log(`Failed to load obj for ${key}`);
+    return [];
   }
   if (obj[key]) {
     return obj[key];
@@ -111,21 +112,68 @@ export const getJSONValues = (obj, key) => {
   return objects;
 };
 
-export const getMetadataValue = (document, key) => {
-  const cqTags = getJSONValues(window.data, 'cq:tags');
+/**
+ * searches deep into an object recursively...
+ * @param {Object} obj object to be searched
+ * @param {any} searchValue the value/key to search for
+ * @param {boolean} [searchKeys] whether to search object keys as well as values. Defaults to `true` if `serchValue` is a string, `false` otherwise.
+ * @returns {string[]} Paths on the object to the matching results
+ */
+ export const findPaths = (
+  obj,
+  searchValue,
+  searchKeys = typeof searchValue === "string"
+) => {
+  const paths = []
+  const visited = new Set()
+  const notObject = typeof searchValue !== "object"
+  const gvpio = (obj, prefix) => {
+    for (const [curr, currElem] of Object.entries(obj)) {
+      if (searchKeys && curr.includes(searchValue)) {
+        const path = prefix + curr;
+        paths.push([path, curr]);
+      }
+
+      if (typeof currElem === "object") {
+        if (visited.has(currElem)) continue
+        visited.add(currElem)
+        gvpio(currElem, prefix + curr + "/")
+        if (notObject) continue
+      }
+      if (typeof currElem === 'string' && currElem.includes(searchValue)) {
+        const path = prefix + curr;
+        paths.push([path, currElem]);
+      }
+    }
+  }
+  gvpio(obj, "")
+  return paths
+}
+
+const getMetadataValueFromCqTags = (obj, key) => {
+  const cqTags = getJSONValues(obj, 'cq:tags');
   let cqTagMetaValue = '';
   cqTags.forEach((tag) => {
     if(tag.startsWith(key)) {
       cqTagMetaValue = tag.split('/')[1];
-      console.log(tag.split('/'));
       return;
     }
   });
+};
 
-  return cqTagMetaValue ||
-    document.head.querySelector(`meta[property="${key}"`)?.content ||
+export const getMetadataValue = (document, key) => {
+  return document.head.querySelector(`meta[property="${key}"`)?.content ||
     document.head.querySelector(`meta[name="${key}"`)?.content ||
-    getJSONValues(window.data, key) || '';
+    getJSONValues(window.data, key) || 
+    getMetadataValueFromCqTags(obj, key) ||'';
 }
+
+export const createElementFromHTML = (htmlString) => {
+  var div = document.createElement('div');
+  div.innerHTML = htmlString.trim();
+
+  // Change this to div.childNodes to support multiple top-level nodes.
+  return div;
+};
 
 export const isRelative = url => !url.startsWith('http');

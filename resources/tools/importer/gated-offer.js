@@ -34,27 +34,18 @@ const createColumns = (main, document, formLink) => {
   if (document.querySelector('img')?.parentElement.nodeName === 'DIV') {
     firstBodyImage.remove();
   }
-  if (formLink.nodeName === 'A') {
+  if (formLink[0].nodeName === 'A') {
     const cells = [
       ['Columns (contained)'],
-      [contentBody, formLink || ''],
+      [contentBody, formLink[0] || ''],
     ];
     const table = WebImporter.DOMUtils.createTable(cells, document);
-    return [table];
+    return [table, formLink[1]];
   } else {
-    return [contentBody, formLink || ''];
+    return [contentBody, ...formLink || ''];
   }
   
 };
-
-const createSectionMetadata = (main, document) => {
-  const cells = [
-    ['Section Metadata'],
-    ['style', 'container, xxl spacing, divider'],
-  ];
-  const table = WebImporter.DOMUtils.createTable(cells, document);
-  return table;
-}
 
 const createMetadata = (main, document) => {
   const meta = {};
@@ -94,17 +85,22 @@ const createCardMetadata = (main, document) => {
 const getFormLink = async (document, faasTitleSelector) => {
   const formContainer = document.querySelector('.marketoForm');
   if (formContainer) {
+    const marketoForm = document.querySelector('.marketo-form');
     const mktoCells = [
-      ['marketo'],
-      ['title', formContainer.querySelector('p')?.textContent || ''],
-      ['Form ID', getJSONValues(window.data, 'formId')[0]],
-      ['Base URL', getJSONValues(window.data, 'baseURL')[0]],
-      ['Munchkin ID', getJSONValues(window.data, 'munchkinId')[0]],
+      ['Marketo'],
+      ['Title', formContainer.querySelector('p')?.textContent || ''],
+      ['Form ID', getJSONValues(window.data, 'formId')[0] || marketoForm.getAttribute('data-marketo-form-id')],
+      ['Base URL', getJSONValues(window.data, 'baseURL')[0] || marketoForm.getAttribute('data-marketo-baseurl')],
+      ['Munchkin ID', getJSONValues(window.data, 'munchkinId')[0] || marketoForm.getAttribute('data-marketo-munchkin-id')],
       ['Destination URL', window.importUrl.pathname.replace('.html', '/thank-you')],
     ];
     const mktoTable = WebImporter.DOMUtils.createTable(mktoCells, document);
     formContainer.remove();
-    return mktoTable;
+    const cells = [
+      ['Section Metadata'],
+      ['style', 'container, xxl spacing, divider, two-up'],
+    ];
+    return [mktoTable, WebImporter.DOMUtils.createTable(cells, document)];
   }
 
   const jcrContent = JSON.stringify(window.data);
@@ -113,6 +109,8 @@ const getFormLink = async (document, faasTitleSelector) => {
   const { utf8ToB64 } = await import('https://milo.adobe.com/libs/utils/utils.js');
   faasConfig = JSON.parse(faasConfig);
   faasConfig.complete = true;
+  const destinationUrl = `/resources${getJSONValues(window.data, 'destinationUrl')[0].split('resources')[1]}`;
+  faasConfig.d = destinationUrl;
   faasConfig.title = document.querySelector(faasTitleSelector)?.textContent.trim();
   if (jcrContent?.includes('theme-2cols')) {
     faasConfig.style_layout = 'column2';
@@ -127,8 +125,11 @@ const getFormLink = async (document, faasTitleSelector) => {
   const formLinkURL = `https://milo.adobe.com/tools/faas#${utf8ToB64(JSON.stringify(faasConfig))}`;
   formLink.href = formLinkURL;
   formLink.innerHTML = `FaaS Link - FormID: ${faasConfig.id} ${faasConfig.cleabitStyle}`;
-  
-  return formLink;
+  const cells = [
+    ['Section Metadata'],
+    ['style', 'container, xxl spacing, divider'],
+  ];
+  return [formLink, WebImporter.DOMUtils.createTable(cells, document)];
 };
 
 const appendBackward = (elements, main) => {
@@ -157,7 +158,6 @@ export default {
     elementsToGo.push(createMarquee(main, document));
     elementsToGo.push('---');
     createColumns(main, document, formLink).forEach((c) => {elementsToGo.push(c)});
-    elementsToGo.push(createSectionMetadata(main, document));
     elementsToGo.push('---');
     appendBackward(elementsToGo, main);
 
