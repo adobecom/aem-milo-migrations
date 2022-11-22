@@ -47,10 +47,11 @@ const getRecommendedArticles = async (main, document) => {
 }
 
 const getResource = (main, document) => {
-  const video = document.querySelector('.video');
-  if (video) {
-    return video.querySelector('iframe').src;
+  const videoIframe = document.querySelector('.video iframe, .modal iframe');
+  if (videoIframe) {
+    return videoIframe.getAttribute('data-video-src') || videoIframe.src;
   }
+  
   let pdfLink = document.querySelector('.dexter-Cta a');
   
   if (!pdfLink) {
@@ -86,6 +87,9 @@ export default {
    */
   transformDOM: async ({ document, html}) => {
     // console.log(window.fetchUrl);
+    WebImporter.DOMUtils.remove(document, [
+      `header, footer, xf`,
+    ]);
     const main = document.querySelector('main');
     const eyebrow = document.querySelector('p') || '';
     const defaultCaaSTitle = document.createElement('h3');
@@ -95,7 +99,7 @@ export default {
     if (eyebrow.querySelector('a')) {
       eyebrow.querySelector('a').remove();
     }
-    if (eyebrow.textContent.length < 20) {
+    if (eyebrow.textContent.length < 50) {
       const title = document.querySelector('.title, h1, h2, h3');
       main.append(WebImporter.DOMUtils.createTable([
         ['text (large)'],
@@ -105,9 +109,10 @@ export default {
       eyebrow?.remove();
       title?.remove();
     } else {
-      document.querySelector('#root_content_flex_1141994466_copy > .dexter-FlexContainer-Items > *:nth-child(3)').remove();
-      document.querySelector('.dexter-FlexContainer').remove();
-      document.querySelector('h3 a').parentElement.remove();
+      document.querySelector('#root_content_flex_1141994466_copy > .dexter-FlexContainer-Items > *:nth-child(3)')?.remove();
+      document.querySelector('#root_content_flex_1141994466_copy_255569858 > .dexter-FlexContainer-Items > *:nth-child(3)')?.remove();
+      document.querySelector('.dexter-FlexContainer')?.remove();
+      document.querySelector('h3 a')?.parentElement?.remove();
       main.append(WebImporter.DOMUtils.createTable([
         ['text (large)'],
         [''],
@@ -123,7 +128,7 @@ export default {
       ['style', 'container'],
     ], document));
     main.append('---');
-    main.append(document.querySelector('h2, h3, .aem-Grid > .title .cmp-title__text').textContent.trim() ? 
+    main.append(document.querySelector('h2, h3, .aem-Grid > .title .cmp-title__text')?.textContent.trim() ? 
       document.querySelector('h2, h3, .aem-Grid > .title .cmp-title__text') :
       defaultCaaSTitle);
     main.append(await getRecommendedArticles(main, document));
@@ -139,7 +144,7 @@ export default {
       }
     });
     WebImporter.DOMUtils.remove(document, [
-      `header, footer, xf, img, northstar-card-collection, consonant-card-collection, p`,
+      `img, .image, a[target=_parent], northstar-card-collection, consonant-card-collection, p, .xfreference`,
     ]);
 
     return main;
