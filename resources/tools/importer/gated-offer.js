@@ -70,7 +70,7 @@ const createMetadata = (main, document) => {
   return block;
 };
 
-const createCardMetadata = (main, document) => {  
+const createCardMetadata = (main, document) => {
   const cells = [
     ['Card Metadata'],
     ['cardTitle', getMetadataValue(document, 'cardTitle')],
