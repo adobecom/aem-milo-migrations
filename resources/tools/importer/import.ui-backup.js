@@ -360,7 +360,8 @@ const attachListeners = () => {
         // ui.transformedEditor.setValue('');
         // ui.markdownEditor.setValue('');
 
-        // Custom code for getting JCR content
+  // Custom code for getting JCR content
+        window.local = '';
         const importURL = new URL(remote.url);
         window.importUrl = importURL;
         let { pathname } = importURL;
@@ -370,11 +371,12 @@ const attachListeners = () => {
         } else {
             pathname = pathname.replace(localFromURL, localMap[localFromURL]);
             pathname = pathname.replace('.html', '');
+            window.local = localMap[localFromURL];
         }
         const fetchUrl = `https://www-author.corp.adobe.com/content/dx${pathname}/jcr:content.infinity.json`;
         window.fetchUrl = fetchUrl;
         window.data = await getJSON(fetchUrl); // then in your import script you can access window.data.anything
-        // End custom code
+  // End custom code
 
       } else {
         const frame = getContentFrame();

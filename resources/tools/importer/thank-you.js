@@ -74,7 +74,7 @@ export default {
    */
   transformDOM: async ({ document, html}) => {
     // console.log(document.querySelector('.title h3').textContent);
-    // console.log(window.fetchUrl);
+    console.log(window.fetchUrl);
     WebImporter.DOMUtils.remove(document, [
       `header, footer, xf`,
     ]);

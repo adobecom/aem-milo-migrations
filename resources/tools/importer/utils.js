@@ -103,11 +103,18 @@ export const getJSONValues = (obj, key) => {
   var objects = [];
   for (var i in obj) {
       if (!obj.hasOwnProperty(i)) continue;
-      if (typeof obj[i] == 'object') {
-          objects = objects.concat(getJSONValues(obj[i], key));
-      } else if (i == key) {
+      if (typeof obj[i] === 'object') {
+          const childObjects = getJSONValues(obj[i], key);
+          if (childObjects.length) {
+            objects = objects.concat(childObjects);
+          }
+      } else if (i === key) {
           objects.push(obj[i]);
       }
+      // debugging
+      // if (key === 'og:image') {
+      //   console.log('i', i, 'key', key, 'objects', objects);
+      // }
   }
   if (objects.length) {
     return objects;
@@ -158,12 +165,14 @@ export const getJSONValues = (obj, key) => {
 const getMetadataValueFromCqTags = (obj, key) => {
   const cqTags = getJSONValues(obj, 'cq:tags');
   let cqTagMetaValue = '';
-  cqTags.forEach((tag) => {
-    if(tag.startsWith(key)) {
-      cqTagMetaValue = tag.split('/')[1];
-      return;
-    }
-  });
+  if (cqTags && cqTags.length) {
+    cqTags.forEach((tag) => {
+      if(tag.startsWith(key)) {
+        cqTagMetaValue = tag.split('/')[1];
+        return;
+      }
+    });
+  }
   return cqTagMetaValue;
 };
 
