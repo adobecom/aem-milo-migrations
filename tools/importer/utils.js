@@ -195,6 +195,12 @@ export const createElementFromHTML = (htmlString) => {
   return div;
 };
 
+/**
+ * Get a CaaS auto block link for recommended articles.
+ * @param {*} main 
+ * @param {*} document 
+ * @returns CaaS auto block link
+ */
 export const getRecommendedArticles = async (main, document) => {
   const caasLink = document.createElement('a');
   const consonantCaaS = document.querySelector('consonant-card-collection');
@@ -228,7 +234,15 @@ export const createMetadata = (document, kv = {}) => {
   return block;
 };
 
+
+/**
+ * Create Form.
+ * @param {*} document 
+ * @param {*} faasTitleSelector 
+ * @returns either Marketo form or FaaS auto block link including a Section metadata.
+ */
 export const createForm = async (document, faasTitleSelector) => {
+  // Check if there is marketo form then build a marketo form.
   const formContainer = document.querySelector('.marketoForm');
   if (formContainer) {
     const marketoForm = document.querySelector('.marketo-form');
@@ -249,8 +263,11 @@ export const createForm = async (document, faasTitleSelector) => {
     return [mktoTable, WebImporter.DOMUtils.createTable(cells, document)];
   }
 
+  // If there is no marketo form, get a FaaS form from ".faas-form-settings".
   const jcrContent = JSON.stringify(window.data);
   const formLink = document.createElement('a');
+  
+  // Modify faas config from ".faas-form-settings".
   let faasConfig = document.querySelector('.faas-form-settings')?.innerHTML;
   const { utf8ToB64 } = await import('https://milo.adobe.com/libs/utils/utils.js');
   faasConfig = JSON.parse(faasConfig);
@@ -268,6 +285,8 @@ export const createForm = async (document, faasTitleSelector) => {
     faasConfig.cleabitStyle = 'Cleabit Style'
   }
   console.log('faasConfig:', faasConfig);
+
+  // Get a FaaS auto block link.
   const formLinkURL = `https://milo.adobe.com/tools/faas#${utf8ToB64(JSON.stringify(faasConfig))}`;
   formLink.href = formLinkURL;
   formLink.innerHTML = `FaaS Link - FormID: ${faasConfig.id} ${faasConfig.cleabitStyle}`;
