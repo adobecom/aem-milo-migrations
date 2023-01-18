@@ -296,3 +296,60 @@ export const createForm = async (document, faasTitleSelector) => {
   ];
   return [formLink, WebImporter.DOMUtils.createTable(cells, document)];
 };
+
+/**
+ * Creating breadcrumbs for resources.
+ * @param {*} document 
+ * @returns table element
+ */
+export const createBreadcrumbs = (document) => {
+  // Find breadcrumbs from JCR content
+  const breadcrumbsPath = findPaths(window.data, 'breadcrumbs');
+  if (!breadcrumbsPath?.length) {
+    return WebImporter.DOMUtils.createTable([['breadcrumbs'],['<ul><li><a href="/">Home</a></li><li>Adobe Resource Center</li></ul>']], document);
+  }
+
+  // Build breadcrumbs object.
+  let breadcrumbs = window.data;
+  breadcrumbsPath[0][0]?.split('/').forEach((pathItem) => {
+    breadcrumbs = breadcrumbs[pathItem];
+  });
+  breadcrumbs = breadcrumbs.links;
+  breadcrumbs = Object.values(breadcrumbs);
+  
+  // Take the last item out since it should be just text (not a link)
+  const breadcrumbsLastItem = breadcrumbs.pop();
+  
+  // Build breadcrumbsItems that is actual output.
+  const breadcrumbsItems = document.createElement('ul');
+  const firstItem = document.createElement('li');
+  const firstItemLink = document.createElement('a');
+  firstItemLink.href = '/';
+  firstItemLink.innerHTML = 'Home';
+  firstItem.append(firstItemLink);
+  breadcrumbsItems.append(firstItem);
+  breadcrumbs.forEach((item) => {
+    if (item.title) {
+      let breadcrumbsItem = document.createElement('li');
+      if (item.url) {
+        const breadcrumbLink = document.createElement('a');
+        const url = item.url.split('resources')[1];
+        breadcrumbLink.href = `${window.local ? window.local + '/' : '/'}resources${url}`;
+        breadcrumbLink.innerHTML = item.title;
+        breadcrumbsItem.append(breadcrumbLink);
+      } else {
+        breadcrumbsItem.innerHTML = item.title;
+      }
+      breadcrumbsItems.append(breadcrumbsItem);
+    }
+  });
+  const lastItem = document.createElement('li');
+  lastItem.innerHTML = breadcrumbsLastItem.title;
+  breadcrumbsItems.append(lastItem);
+  const cells = [
+    ['breadcrumbs'],
+    [breadcrumbsItems],
+  ];
+  const table = WebImporter.DOMUtils.createTable(cells, document);
+  return table;
+};
