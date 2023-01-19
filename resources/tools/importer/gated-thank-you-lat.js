@@ -41,8 +41,8 @@ const getResource = (main, document) => {
   let pdfLink = document.querySelector('.dexter-Cta a');
   if (!pdfLink) {
     console.log('!pdfLink');
-    console.log(window.data);
-    const pdfTextElementStr = findPaths(window.data, typeof searchValue === "string", '.pdf')[0][1];
+    console.log(window.jcrContent);
+    const pdfTextElementStr = findPaths(window.jcrContent, typeof searchValue === "string", '.pdf')[0][1];
     const pdfTextElement = createElementFromHTML(pdfTextElementStr);
     pdfLink =  pdfTextElement.querySelector('a');
   }

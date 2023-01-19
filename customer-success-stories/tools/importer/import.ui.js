@@ -176,9 +176,9 @@ const postImportProcess = async (results, originalURL) => {
       status: 'Success',
       url: originalURL,
       path,
-      pageCreatedAt: window.data.pageCreatedAt,
-      translated: window.data.translated,
-      template: window.data.template,
+      pageCreatedAt: window.jcrContent.pageCreatedAt,
+      translated: window.jcrContent.translated,
+      template: window.jcrContent.template,
     };
     
     const includeDocx = !!docx;
@@ -555,11 +555,11 @@ const attachListeners = () => {
         //   fetchUrl = `http://localhost:3001/tools/importer/local-json/de/${customerName}.json`;
         // }        
         console.log(`fetchUrl: ${fetchUrl}`);
-        window.data = await getJSON(fetchUrl);
+        window.jcrContent = await getJSON(fetchUrl);
         window.currentImportItem = remote.url.split('/')[4].split('.')[0];
-        console.log('window.data');
+        console.log('window.jcrContent');
 
-        window.data.locale = locale;
+        window.jcrContent.locale = locale;
 
 
         importStatus.imported += 1;

@@ -29,8 +29,8 @@ let tableHTML = table.outerHTML;
 let fragmentBaseUrl = '';
 
 const setFragmentBaseUrl = () => {
-    if (window.data.locale !== 'en_us') {
-        fragmentBaseUrl = `https://main--bacom--adobecom.hlx.page/${window.data.locale}/fragments/customer-success-stories/`;
+    if (window.jcrContent.locale !== 'en_us') {
+        fragmentBaseUrl = `https://main--bacom--adobecom.hlx.page/${window.jcrContent.locale}/fragments/customer-success-stories/`;
     } else {
         fragmentBaseUrl = 'https://main--bacom--adobecom.hlx.page/fragments/customer-success-stories/';
     }
@@ -52,9 +52,9 @@ const findKeyValue = (obj, keyName) => {
 }
 
 const createMarquee = (document, main, modal) => {
-    let mobile = findKeyValue(window.data, 'fileReferenceMobile');
-    let tablet = findKeyValue(window.data, 'fileReferenceTablet');
-    let desktop = findKeyValue(window.data, 'fileReference');
+    let mobile = findKeyValue(window.jcrContent, 'fileReferenceMobile');
+    let tablet = findKeyValue(window.jcrContent, 'fileReferenceTablet');
+    let desktop = findKeyValue(window.jcrContent, 'fileReference');
     if (mobile === tablet && tablet === desktop) {
         desktop = null;
         tablet = null;
@@ -452,10 +452,10 @@ const reccomendedBlock = (document, main, cardCollectionId) => {
 
         const link = document.createElement('a');
 
-        if (window.data.locale === 'jp') {
+        if (window.jcrContent.locale === 'jp') {
             link.innerHTML = 'その他の関連トピックスを見る';
             link.setAttribute('href', 'https://business.adobe.com/jp/customer-success-stories/index');
-        } else if (window.data.locale === 'de') {
+        } else if (window.jcrContent.locale === 'de') {
             link.innerHTML = 'Alle Kundenreferenzen anzeigen';
             link.setAttribute('href', 'https://business.adobe.com/de/customer-success-stories/index');
         } else {
@@ -748,12 +748,12 @@ const makeLinksAbsolute = (document, main) => {
 
 const createCaasMetadata = (document, main) => {
 
-    const cardTitle = findKeyValue(window.data, 'cardTitle');
-    const cardDate = findKeyValue(window.data, 'cardDate');
-    const altCardImageText = findKeyValue(window.data, 'altCardImageText');
-    const cardImagePath = findKeyValue(window.data, 'cardImagePath');
-    const cqTags = findKeyValue(window.data, 'cq:tags');
-    const logoImage = findKeyValue(window.data, 'logoImage');
+    const cardTitle = findKeyValue(window.jcrContent, 'cardTitle');
+    const cardDate = findKeyValue(window.jcrContent, 'cardDate');
+    const altCardImageText = findKeyValue(window.jcrContent, 'altCardImageText');
+    const cardImagePath = findKeyValue(window.jcrContent, 'cardImagePath');
+    const cqTags = findKeyValue(window.jcrContent, 'cq:tags');
+    const logoImage = findKeyValue(window.jcrContent, 'logoImage');
     const entity_id = document.querySelector('meta[name="entity_id"]')?.content;
 
     const caasTags = cqTags?.filter(tag => tag.includes('caas:'));
@@ -948,16 +948,16 @@ const createBreadCrumbs = (document, main) => {
         main.prepend(table);
     } else {
         let breadcrumbsHTML = '';
-        const pageTitle = findKeyValue(window.data, 'jcr:title');
+        const pageTitle = findKeyValue(window.jcrContent, 'jcr:title');
 
-        if (window.data.locale !== 'en_us') {
+        if (window.jcrContent.locale !== 'en_us') {
             breadcrumbsHTML = `
             <ul>
                 <li>
-                    <a href="https://www.adobe.com/${window.data.locale}/">Home</a>
+                    <a href="https://www.adobe.com/${window.jcrContent.locale}/">Home</a>
                 </li>
                 <li>
-                    <a href="https://business.adobe.com/${window.data.locale}/customer-success-stories/">Customer Success Stories</a>
+                    <a href="https://business.adobe.com/${window.jcrContent.locale}/customer-success-stories/">Customer Success Stories</a>
                 </li>
                 <li>
                     <span>${pageTitle}</span>

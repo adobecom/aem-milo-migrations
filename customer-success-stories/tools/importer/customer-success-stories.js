@@ -142,7 +142,7 @@ const tier2Theme3 = (document, params) => {
 
 export default {
     transform: ({ document, params }) => {
-        const template = findKeyValue(window.data, 'cq:template');
+        const template = findKeyValue(window.jcrContent, 'cq:template');
         console.log('template: ' + template);
         let currentTemplate = '';
         if (template === '/conf/northstar/settings/wcm/templates/customer-showcase-cm') {

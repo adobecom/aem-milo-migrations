@@ -141,11 +141,11 @@ const appendBackward = (elements, main) => {
 }
 
 const createBreadcrumbs = (main, document) => {
-  const breadcrumbsPath = findPaths(window.data, 'breadcrumbs');
+  const breadcrumbsPath = findPaths(window.jcrContent, 'breadcrumbs');
   if (!breadcrumbsPath?.length) {
     return '';
   }
-  let breadcrumbs = window.data;
+  let breadcrumbs = window.jcrContent;
   breadcrumbsPath[0][0]?.split('/').forEach((pathItem) => {
     breadcrumbs = breadcrumbs[pathItem];
   });

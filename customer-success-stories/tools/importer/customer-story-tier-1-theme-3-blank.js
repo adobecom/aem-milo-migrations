@@ -809,13 +809,13 @@ function findKeyValue(obj, keyName) {
 
 const createCaasMetadata = (document, main) => {
 
-    const cardTitle = findKeyValue(window.data, 'cardTitle');
-    const cardDate = findKeyValue(window.data, 'cardDate');
-    const altCardImageText = findKeyValue(window.data, 'altCardImageText');
-    const cardImagePath = findKeyValue(window.data, 'cardImagePath');
-    const cqTags = findKeyValue(window.data, 'cq:tags');
+    const cardTitle = findKeyValue(window.jcrContent, 'cardTitle');
+    const cardDate = findKeyValue(window.jcrContent, 'cardDate');
+    const altCardImageText = findKeyValue(window.jcrContent, 'altCardImageText');
+    const cardImagePath = findKeyValue(window.jcrContent, 'cardImagePath');
+    const cqTags = findKeyValue(window.jcrContent, 'cq:tags');
     const entity_id = document.querySelector('meta[name="entity_id"]')?.content;
-    const logoImage = findKeyValue(window.data, 'logoImage');
+    const logoImage = findKeyValue(window.jcrContent, 'logoImage');
 
     // create array of values from cqTags that contain 'caas:content-type'
     const caasTags = cqTags?.filter(tag => tag.includes('caas:'));

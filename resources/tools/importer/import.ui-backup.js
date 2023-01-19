@@ -375,7 +375,7 @@ const attachListeners = () => {
         }
         const fetchUrl = `https://www-author.corp.adobe.com/content/dx${pathname}/jcr:content.infinity.json`;
         window.fetchUrl = fetchUrl;
-        window.data = await getJSON(fetchUrl); // then in your import script you can access window.data.anything
+        window.jcrContent = await getJSON(fetchUrl); // then in your import script you can access window.jcrContent.anything
   // End custom code
 
       } else {

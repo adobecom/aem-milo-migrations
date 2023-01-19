@@ -179,8 +179,8 @@ const getMetadataValueFromCqTags = (obj, key) => {
 export const getMetadataValue = (document, key) => {
   return document.head.querySelector(`meta[property="${key}"`)?.content ||
     document.head.querySelector(`meta[name="${key}"`)?.content ||
-    getMetadataValueFromCqTags(window.data, key) || 
-    getJSONValues(window.data, key) || '';
+    getMetadataValueFromCqTags(window.jcrContent, key) || 
+    getJSONValues(window.jcrContent, key) || '';
 }
 
 export const createElementFromHTML = (htmlString) => {

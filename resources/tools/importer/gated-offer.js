@@ -89,9 +89,9 @@ const getFormLink = async (document, faasTitleSelector) => {
     const mktoCells = [
       ['Marketo'],
       ['Title', formContainer.querySelector('p')?.textContent || ''],
-      ['Form ID', getJSONValues(window.data, 'formId')[0] || marketoForm.getAttribute('data-marketo-form-id')],
-      ['Base URL', getJSONValues(window.data, 'baseURL')[0] || marketoForm.getAttribute('data-marketo-baseurl')],
-      ['Munchkin ID', getJSONValues(window.data, 'munchkinId')[0] || marketoForm.getAttribute('data-marketo-munchkin-id')],
+      ['Form ID', getJSONValues(window.jcrContent, 'formId')[0] || marketoForm.getAttribute('data-marketo-form-id')],
+      ['Base URL', getJSONValues(window.jcrContent, 'baseURL')[0] || marketoForm.getAttribute('data-marketo-baseurl')],
+      ['Munchkin ID', getJSONValues(window.jcrContent, 'munchkinId')[0] || marketoForm.getAttribute('data-marketo-munchkin-id')],
       ['Destination URL', window.importUrl.pathname.replace('.html', '/thank-you')],
     ];
     const mktoTable = WebImporter.DOMUtils.createTable(mktoCells, document);
@@ -103,20 +103,20 @@ const getFormLink = async (document, faasTitleSelector) => {
     return [mktoTable, WebImporter.DOMUtils.createTable(cells, document)];
   }
 
-  const jcrContent = JSON.stringify(window.data);
+  const jcrContent = JSON.stringify(window.jcrContent);
   const formLink = document.createElement('a');
   let faasConfig = document.querySelector('.faas-form-settings')?.innerHTML;
   const { utf8ToB64 } = await import('https://milo.adobe.com/libs/utils/utils.js');
   faasConfig = JSON.parse(faasConfig);
   faasConfig.complete = true;
-  const destinationUrl = `/resources${getJSONValues(window.data, 'destinationUrl')[0].split('resources')[1]}`;
+  const destinationUrl = `/resources${getJSONValues(window.jcrContent, 'destinationUrl')[0].split('resources')[1]}`;
   faasConfig.d = destinationUrl;
   faasConfig.title = document.querySelector(faasTitleSelector)?.textContent.trim();
   if (jcrContent?.includes('theme-2cols')) {
     faasConfig.style_layout = 'column2';
   }
   faasConfig.cleabitStyle = '';
-  if (getJSONValues(window.data, 'clearbit')[0] && getJSONValues(window.data, 'formSubType')[0] === '2847') {
+  if (getJSONValues(window.jcrContent, 'clearbit')[0] && getJSONValues(window.jcrContent, 'formSubType')[0] === '2847') {
     faasConfig.title_size = 'p';
     faasConfig.title_align = 'left';
     faasConfig.cleabitStyle = 'Cleabit Style'
