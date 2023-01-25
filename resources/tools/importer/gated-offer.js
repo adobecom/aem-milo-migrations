@@ -20,7 +20,7 @@ const createMarquee = (main, document) => {
   const cells = [
     ['marquee (small, light)'],
     ['#f5f5f5'],
-    [`<h6>${eyebrow}</h6><h6>${title}</h6>`, marqueeDoc.querySelector('img') || ''],
+    [`<h6>${eyebrow}</h6><h1>${title}</h1>`, marqueeDoc.querySelector('img') || ''],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
   document.querySelector('h1')?.remove();
