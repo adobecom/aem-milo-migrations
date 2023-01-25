@@ -11,7 +11,7 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { getMetadataValue, createMetadata, createForm } from './utils.js';
+import { setGlobals, getMetadataValue, createMetadata, createForm } from './utils.js';
 
 const createMarquee = (main, document) => {
   const marqueeDoc = document.querySelector('.dexter-FlexContainer')
@@ -60,11 +60,12 @@ export default {
    * @param {HTMLDocument} document The document
    * @returns {HTMLElement} The root element
    */
-  transformDOM: async ({ document, html}) => {
-    console.log('fetchUrl', window.fetchUrl);
+  transformDOM: async ({ document, params }) => {
+    await setGlobals(params.originalURL);
+    console.log(window.fetchUrl);
     const main = document.querySelector('main');
     const faasTitleSelector = '.cmp-text.mobile-padding-top-48.mobile-padding-right-48.mobile-padding-left-48';
-    const formLink = await createForm(document, faasTitleSelector);
+    const formLink = await createForm(document, faasTitleSelector, new URL(params.originalURL));
     WebImporter.DOMUtils.remove(document, [
       `header, footer, .faas-form-settings, ${faasTitleSelector}, .xf`,
     ]);

@@ -206,3 +206,20 @@ export const getRecommendedArticles = async (main, document) => {
 }
 
 export const isRelative = url => !url.startsWith('http');
+
+export async function setGlobals(originalURL) {
+  window.local = '';
+  const importURL = new URL(originalURL);
+  let { pathname } = importURL;
+  const localFromURL = pathname.split('/')[1];
+  if (localFromURL.startsWith('resource')) {
+    pathname = `/us/en${pathname.replace('.html', '')}`;
+  } else {
+    pathname = pathname.replace(localFromURL, localMap[localFromURL]);
+    pathname = pathname.replace('.html', '');
+    window.local = localMap[localFromURL];
+  }
+  const fetchUrl = `/content/dx${pathname}/jcr:content.infinity.json?host=https://www-author.corp.adobe.com`;
+  window.fetchUrl = fetchUrl;
+  window.jcrContent = await getJSON(fetchUrl);
+}

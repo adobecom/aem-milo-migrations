@@ -11,7 +11,7 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { findPaths, getJSONValues, getMetadataValue, getRecommendedArticles } from './utils.js';
+import { setGlobals, findPaths, getMetadataValue, getRecommendedArticles } from './utils.js';
 
 const createMetadata = (main, document) => {
   const meta = {};
@@ -48,7 +48,7 @@ const createCardMetadata = (main, document) => {
   return table;
 };
 
-const createMarquee = (main, document) => {
+const createMarquee = (main, document, originalURL) => {
   let marqueeDoc = document.querySelector('.dexter-FlexContainer');
   if (!marqueeDoc.textContent.trim()) {
     marqueeDoc = document.querySelectorAll('.dexter-FlexContainer')[1];
@@ -64,7 +64,7 @@ const createMarquee = (main, document) => {
     cta = document.createElement('a');
     cta.innerHTML = 'Watch now';
   }
-  let { pathname } = window.importUrl;
+  let { pathname } = originalURL;
   let path = pathname.replace('.html', '');
   path = `/fragments/resources/modal/forms/${path.split('/').at(-1)}`;
   cta.href = `/fragments/resources/modal/forms/${path.split('/').at(-1)}#faas-form`;
@@ -193,7 +193,8 @@ export default {
    * @param {HTMLDocument} document The document
    * @returns {HTMLElement} The root element
    */
-  transformDOM: async ({ document, html}) => {
+  transformDOM: async ({ document, params}) => {
+    await setGlobals(params.originalURL);
     console.log(window.fetchUrl);
     WebImporter.DOMUtils.remove(document, [
       `header, footer, .faas-form-settings, .xf, style, northstar-card-collection, consonant-card-collection`,
@@ -203,7 +204,7 @@ export default {
     // Top area
     const elementsToGo = [];
     elementsToGo.push(createBreadcrumbs(main, document));
-    elementsToGo.push(createMarquee(main, document));
+    elementsToGo.push(createMarquee(main, document, new URL(params.originalURL)));
     elementsToGo.push(WebImporter.DOMUtils.createTable([
       ['Section Metadata'],
       ['style', 'L spacing'],

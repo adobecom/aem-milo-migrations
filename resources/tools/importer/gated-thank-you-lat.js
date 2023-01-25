@@ -11,7 +11,7 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { getMetadataValue, isRelative, findPaths, createElementFromHTML, getRecommendedArticles } from './utils.js';
+import { setGlobals, getMetadataValue, isRelative, findPaths, createElementFromHTML, getRecommendedArticles } from './utils.js';
 
 const createMetadata = (main, document) => {
   const meta = {};
@@ -32,7 +32,7 @@ const createMetadata = (main, document) => {
   return block;
 };
 
-const getResource = (main, document) => {
+const getResource = (main, document, originalURL) => {
   const videoIframe = document.querySelector('.video iframe, .modal iframe');
   if (videoIframe) {
     return videoIframe.getAttribute('data-video-src') || videoIframe.src;
@@ -48,10 +48,10 @@ const getResource = (main, document) => {
   }
   
   if (isRelative(pdfLink.href)) {
-    pdfLink.href = window.importUrl.origin + pdfLink.href;
+    pdfLink.href = originalURL.origin + pdfLink.href;
   } else {
     const hrefURL = new URL(pdfLink.href);
-    pdfLink.href = window.importUrl.origin + hrefURL.pathname;
+    pdfLink.href = originalURL.origin + hrefURL.pathname;
   }
   
   pdfLink.textContent = decodeURI(pdfLink.href);
@@ -72,7 +72,9 @@ export default {
    * @param {HTMLDocument} document The document
    * @returns {HTMLElement} The root element
    */
-  transformDOM: async ({ document, html}) => {
+  transformDOM: async ({ document, params}) => {
+    await setGlobals(params.originalURL);
+    
     WebImporter.DOMUtils.remove(document, [
       `h1`,
     ]);
@@ -82,7 +84,8 @@ export default {
       `header, footer, xf`,
     ]);
     const main = document.querySelector('main');
-    let eyebrow = window.importUrl.pathname.split('/')[2];
+    const u = new URL(params.originalURL);
+    let eyebrow = u.pathname.split('/')[2];
     if (eyebrow.length > 12) {
       eyebrow = 'Guide';
     }
@@ -98,7 +101,7 @@ export default {
     title?.remove();
     
     // Resources (pdf, video, etc.)
-    main.append(getResource(main, document));
+    main.append(getResource(main, document, u));
     main.append(WebImporter.DOMUtils.createTable([
       ['Section Metadata'],
       ['style', 'container, L spacing'],

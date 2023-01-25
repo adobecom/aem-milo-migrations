@@ -11,7 +11,7 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { findPaths, getJSONValues, getMetadataValue, getRecommendedArticles } from './utils.js';
+import { setGlobals, findPaths, getMetadataValue } from './utils.js';
 
 const createMetadata = (main, document) => {
   const meta = {};
@@ -131,7 +131,8 @@ export default {
    * @param {HTMLDocument} document The document
    * @returns {HTMLElement} The root element
    */
-  transformDOM: async ({ document, html}) => {
+  transformDOM: async ({ document, params }) => {
+    await setGlobals(params.originalURL);
     console.log(window.fetchUrl);
     WebImporter.DOMUtils.remove(document, [
       `header, footer, .faas-form-settings, .xf, style, northstar-card-collection, consonant-card-collection`,

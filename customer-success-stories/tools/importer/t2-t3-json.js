@@ -39,6 +39,8 @@
 // console.log(desktop); 
 // console.log(typeof desktop);
 
+import { setGlobals } from "../../../tools/importer/utils.js";
+
 const DEFAULT_COLSPAN = 2;
 
 let table = document.createElement('table');
@@ -907,8 +909,9 @@ const getJSON = async (url) => {
 
 export default {
 
-     transformDOM:  ({ document, params, test }) => {
-
+     transformDOM: async ({ document, params, test }) => {
+        await setGlobals(params.originalURL);
+        
  
         getJSON('https://www-author.corp.adobe.com/content/dx/us/en/customer-success-stories/abb-case-study/jcr:content.6.json').then(data => {
             console.log('the baaaaaaaaby');

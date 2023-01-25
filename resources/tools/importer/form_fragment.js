@@ -11,6 +11,8 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
+import { setGlobals } from "./utils.js";
+
 export default {
   /**
    * Apply DOM operations to the provided document and return
@@ -18,8 +20,9 @@ export default {
    * @param {HTMLDocument} document The document
    * @returns {HTMLElement} The root element
    */
-  transformDOM: async ({ document, html}) => {
+  transformDOM: async ({ document, params}) => {
     // class="faas_form theme-dark theme-2cols theme-amc"
+    await setGlobals(params.originalURL);
 
     const main = document.createElement('main');
     const faasTitle = document.querySelector('.modal h1, .modal h2, .modal h3, .modal h4, .modal h5, .modal h6')?.textContent.trim();
@@ -28,7 +31,7 @@ export default {
     const faasConfig = {
       id: formSetting.dataset.faas,
       l: formSetting.dataset.faasLang,
-      d: formSetting.dataset.faasDestinationurl || window.importUrl.pathname.replace('.html', '/thank-you'),
+      d: formSetting.dataset.faasDestinationurl || params.originalURL.pathname.replace('.html', '/thank-you'),
       as: false,
       ar: true,
       pc: {

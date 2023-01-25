@@ -241,7 +241,7 @@ export const createMetadata = (document, kv = {}) => {
  * @param {*} faasTitleSelector 
  * @returns either Marketo form or FaaS auto block link including a Section metadata.
  */
-export const createForm = async (document, faasTitleSelector) => {
+export const createForm = async (document, faasTitleSelector, originalURL) => {
   // Check if there is marketo form then build a marketo form.
   const formContainer = document.querySelector('.marketoForm');
   if (formContainer) {
@@ -252,7 +252,7 @@ export const createForm = async (document, faasTitleSelector) => {
       ['Form ID', getJSONValues(window.jcrContent, 'formId')[0] || marketoForm.getAttribute('data-marketo-form-id')],
       ['Base URL', getJSONValues(window.jcrContent, 'baseURL')[0] || marketoForm.getAttribute('data-marketo-baseurl')],
       ['Munchkin ID', getJSONValues(window.jcrContent, 'munchkinId')[0] || marketoForm.getAttribute('data-marketo-munchkin-id')],
-      ['Destination URL', window.importUrl.pathname.replace('.html', '/thank-you')],
+      ['Destination URL', originalURL.pathname.replace('.html', '/thank-you')],
     ];
     const mktoTable = WebImporter.DOMUtils.createTable(mktoCells, document);
     formContainer.remove();
@@ -353,3 +353,20 @@ export const createBreadcrumbs = (document) => {
   const table = WebImporter.DOMUtils.createTable(cells, document);
   return table;
 };
+
+export async function setGlobals(originalURL) {
+  window.local = '';
+  const importURL = new URL(originalURL);
+  let { pathname } = importURL;
+  const localFromURL = pathname.split('/')[1];
+  if (localFromURL.startsWith('resource')) {
+    pathname = `/us/en${pathname.replace('.html', '')}`;
+  } else {
+    pathname = pathname.replace(localFromURL, localMap[localFromURL]);
+    pathname = pathname.replace('.html', '');
+    window.local = localMap[localFromURL];
+  }
+  const fetchUrl = `/content/dx${pathname}/jcr:content.infinity.json?host=https://www-author.corp.adobe.com`;
+  window.fetchUrl = fetchUrl;
+  window.jcrContent = await getJSON(fetchUrl);
+}
