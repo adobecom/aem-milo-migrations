@@ -12,16 +12,18 @@
 /* eslint-disable no-console, class-methods-use-this */
 
 
-import { setGlobals, getJSONValues, getMetadataValue } from '../utils.js';
+import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue } from '../utils.js';
 
 const createMarquee = (main, document) => {
   const marqueeDoc = document.querySelector('.dexter-FlexContainer')
   const eyebrow = marqueeDoc.querySelector('p')?.textContent?.toUpperCase().trim() || 'REPORT';
   const title = marqueeDoc.querySelector('h1')?.textContent;
+  const img = marqueeDoc.querySelector('img') || '';
+  const background =  WebImporter.DOMUtils.getImgFromBackground(marqueeDoc, document) || '#f5f5f5';
   const cells = [
     ['marquee (small, light)'],
-    ['#f5f5f5'],
-    [`<h6>${eyebrow}</h6><h1>${title}</h1>`, marqueeDoc.querySelector('img') || ''],
+    [background],
+    [`<h6>${eyebrow}</h6><h1>${title}</h1>`, img],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
   document.querySelector('h1')?.remove();
@@ -180,6 +182,13 @@ export default {
     if (!getMetadataValue(document, 'robots').toLowerCase().includes('noindex')) {
       main.append(createCardMetadata(main, document));
     }
+
+    cleanupParagraphs(main);
+
+    WebImporter.DOMUtils.remove(main, [
+    '.faasform',
+    'style',
+    ]);
     
     return main;
   },
@@ -191,8 +200,7 @@ export default {
    * @param {HTMLDocument} document The document
    */
   generateDocumentPath: ({ document, url }) => {
-    const path = new URL(url).pathname.replace(/\/$/, '');
-    path.replace('.html', '');
+    const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '');
     return path;
   },
 };

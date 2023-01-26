@@ -126,7 +126,7 @@ export default {
    */
   generateDocumentPath: ({ document, url }) => {
     const path = new URL(url).pathname.replace(/\/$/, '');
-    path.replace('.html', '');
+    path = path.replace('.html', '');
     return path;
   },
 };

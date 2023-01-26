@@ -205,6 +205,21 @@ export const getRecommendedArticles = async (main, document) => {
   return caasLink;
 }
 
+export const cleanupHeadings = (main) => {
+  const headings = main.querySelectorAll('h1, h2, h3, h4, h5, h6');
+  headings.forEach((h) => {
+    h.innerHTML = h.textContent.trim();
+  });
+}
+
+export const cleanupParagraphs = (main) => {
+  const ps = main.querySelectorAll('p');
+  ps.forEach((p) => {
+    // invalid HTML but is fixed by parser and fixes the \ problem on manually handled lists 
+    p.innerHTML = p.innerHTML.replace(/\-\&nbsp;/gm,'<li>');
+  });
+}
+
 export const isRelative = url => !url.startsWith('http');
 
 export async function setGlobals(originalURL) {
@@ -219,7 +234,7 @@ export async function setGlobals(originalURL) {
     pathname = pathname.replace('.html', '');
     window.local = localMap[localFromURL];
   }
-  const fetchUrl = `/content/dx${pathname}/jcr:content.infinity.json?host=https://www-author.corp.adobe.com`;
+  const fetchUrl = `https://www-author.corp.adobe.com/content/dx${pathname}/jcr:content.infinity.json`;
   window.fetchUrl = fetchUrl;
   window.jcrContent = await getJSON(fetchUrl);
 }

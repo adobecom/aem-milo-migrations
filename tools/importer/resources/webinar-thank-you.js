@@ -170,7 +170,7 @@ export default {
     if (!localFromURL.startsWith('resource')) {
       pathname = pathname.replace(localFromURL, window.local);
     }
-    pathname.replace('.html', '');
+    pathname = pathname.replace('.html', '');
     return pathname;
   },
 };

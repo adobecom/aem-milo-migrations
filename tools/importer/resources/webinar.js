@@ -11,7 +11,7 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { setGlobals, findPaths, getMetadataValue, getRecommendedArticles } from '../utils.js';
+import { cleanupHeadings, setGlobals, findPaths, getMetadataValue, getRecommendedArticles } from '../utils.js';
 
 const createMetadata = (main, document) => {
   const meta = {};
@@ -56,8 +56,11 @@ const createMarquee = (main, document, originalURL) => {
   const eyebrow = marqueeDoc.querySelector('p')?.textContent?.toUpperCase().trim() || 'REPORT';
   const title = marqueeDoc.querySelector('h1')?.textContent;
   const bgURL = marqueeDoc.style.backgroundImage?.slice(4, -1).replace(/"/g, "") || '';
-  const price = marqueeDoc.querySelectorAll('b')[0]?.parentElement;
-  const length = marqueeDoc.querySelectorAll('b')[1]?.parentElement;
+  const priceElement = marqueeDoc.querySelectorAll('b')[0]?.parentElement;
+  const price = priceElement ? priceElement.outerHTML : '<p><b>Price:</b> Free</p>';
+  const lengthElement = marqueeDoc.querySelectorAll('b')[1]?.parentElement;
+  const webinarDuration = getMetadataValue(document, 'webinarDuration');
+  const length = lengthElement ? lengthElement.outerHTML : `<p><b>Length:</b> ${ webinarDuration ? `${webinarDuration} min` : 'Unkwown'}</p>`;
   const description = marqueeDoc.querySelectorAll('b')[marqueeDoc.querySelectorAll('b').length-1]?.closest('.text').nextElementSibling;
   let cta = marqueeDoc.querySelector('.dexter-Cta a');
   if (!cta) {
@@ -78,9 +81,9 @@ const createMarquee = (main, document, originalURL) => {
     [bg],
     [`<p><strong>${eyebrow}</strong></p>
     <h1>${title}</h1>
-    ${price.outerHTML}
-    ${length.outerHTML}
-    ${description.textContent}
+    ${price}
+    ${length}
+    ${description ? description.textContent : ''}
     <strong>${cta.outerHTML}</strong>`,
     marqueeDoc.querySelector('img') || ''],
   ];
@@ -91,7 +94,9 @@ const createMarquee = (main, document, originalURL) => {
 };
 
 const createEventSpeakers = (main, document) => {
-  const parent = document.querySelector('.title h2').closest('.position');
+  const h2 = document.querySelector('.title h2');
+  if (!h2) return '';
+  const parent = h2.closest('.position');
   const speakers = [];
   parent.querySelectorAll('img').forEach((image) => {
     if (image.src) {
@@ -201,6 +206,8 @@ export default {
     ]);
     const main = document.querySelector('main');
 
+    cleanupHeadings(document.body);
+
     // Top area
     const elementsToGo = [];
     elementsToGo.push(createBreadcrumbs(main, document));
@@ -210,7 +217,10 @@ export default {
       ['style', 'L spacing'],
     ], document));
     elementsToGo.push('---');
-    elementsToGo.push(document.querySelector('.title h2'));
+    const h2 = document.querySelector('.title h2');
+    if (h2) {
+      elementsToGo.push(h2);
+    }
     const eventSpeakers = createEventSpeakers(main, document);
     if (eventSpeakers) {
       elementsToGo.push('---');
@@ -259,7 +269,7 @@ export default {
     if (!localFromURL.startsWith('resource')) {
       pathname = pathname.replace(localFromURL, window.local);
     }
-    pathname.replace('.html', '');
+    pathname = pathname.replace('.html', '');
     return pathname;
   },
 };
