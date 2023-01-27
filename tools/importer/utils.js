@@ -16,7 +16,7 @@ export const localMap = {
   ch_fr: 'ch/fr',
   ch_it: 'ch/it',
   cl: 'cl/es',
-  cn: 'cn/zh',
+  cn: 'cn/zh-Hans',
   co: 'co/es',
   cy_en: 'cy/en',
   cz: 'cz/cs',
