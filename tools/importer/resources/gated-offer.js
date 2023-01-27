@@ -15,7 +15,7 @@
 import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue } from '../utils.js';
 
 const createMarquee = (main, document) => {
-  const marqueeDoc = document.querySelector('.dexter-FlexContainer')
+  const marqueeDoc = document.querySelector('.dexter-FlexContainer') || document.querySelector('.dexter-Position');
   const eyebrow = marqueeDoc.querySelector('p')?.textContent?.toUpperCase().trim() || 'REPORT';
   const title = marqueeDoc.querySelector('h1')?.textContent;
   const img = marqueeDoc.querySelector('img') || '';
