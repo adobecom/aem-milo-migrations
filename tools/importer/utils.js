@@ -74,7 +74,7 @@ export const localMap = {
   tr: 'tr/tr',
   tw: 'tw/zh',
   ua: 'ua/uk',
-  uk: 'uk/uk',
+  uk: 'uk/en',
   vn_en: 'vn/en',
   vn_vi: 'vn/vi',
 };
@@ -236,5 +236,10 @@ export async function setGlobals(originalURL) {
   }
   const fetchUrl = `https://www-author.corp.adobe.com/content/dx${pathname}/jcr:content.infinity.json`;
   window.fetchUrl = fetchUrl;
-  window.jcrContent = await getJSON(fetchUrl);
+  try {
+    window.jcrContent = await getJSON(fetchUrl);
+  } catch (e) {
+    console.warn(`Could not fetch ${fetchUrl}`, e);
+    window.jcrContent = {};
+  }
 }
