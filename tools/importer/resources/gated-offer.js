@@ -19,15 +19,16 @@ async function delay(t, v) {
 }
 
 const createMarquee = (main, document) => {
-  const marqueeDoc = document.querySelector('.dexter-FlexContainer')
+  const marqueeDoc = document.querySelector('.dexter-FlexContainer') || document.querySelector('.dexter-Position');
   const eyebrow = marqueeDoc.querySelector('p')?.textContent?.toUpperCase().trim() || 'REPORT';
   const title = marqueeDoc.querySelector('h1')?.textContent;
+  const subTitle = marqueeDoc.querySelector('h3')?.textContent;
   const img = marqueeDoc.querySelector('img') || '';
   const background =  WebImporter.DOMUtils.getImgFromBackground(marqueeDoc, document) || '#f5f5f5';
   const cells = [
     ['marquee (small, light)'],
     [background],
-    [`<h6>${eyebrow}</h6><h1>${title}</h1>`, img],
+    [`<h6>${eyebrow}</h6><h1>${title}</h1>${subTitle ? `<p>${subTitle}</p>` : ''}`, img],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
   document.querySelector('h1')?.remove();
