@@ -14,6 +14,10 @@
 
 import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue } from '../utils.js';
 
+async function delay(t, v) {
+  return new Promise(resolve => setTimeout(resolve, t, v));
+}
+
 const createMarquee = (main, document) => {
   const marqueeDoc = document.querySelector('.dexter-FlexContainer')
   const eyebrow = marqueeDoc.querySelector('p')?.textContent?.toUpperCase().trim() || 'REPORT';
@@ -108,7 +112,13 @@ const getFormLink = async (document, faasTitleSelector, originalURL) => {
 
   const jcrContent = JSON.stringify(window.jcrContent);
   const formLink = document.createElement('a');
-  let faasConfig = document.querySelector('.faas-form-settings')?.innerHTML;
+
+  const faasSettingElement = document.querySelector('.faas-form-settings');
+  if (!faasSettingElement) {
+    throw new Error('No faas-form-settings element found - add more delay ?');
+  }
+
+  let faasConfig = faasSettingElement.innerHTML;
   const { utf8ToB64 } = await import('https://milo.adobe.com/libs/utils/utils.js');
   faasConfig = JSON.parse(faasConfig);
   faasConfig.complete = true;
