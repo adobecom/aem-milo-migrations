@@ -41,7 +41,6 @@ const handleFaasForm = (document, faasTitleSelector) => {
     faasConfig.cleabitStyle = 'Cleabit Style'
   }
 
-  console.log('faasConfig from faasForm', faasConfig);
   const formLinkURL = `https://milo.adobe.com/tools/faas#${utf8ToB64(JSON.stringify(faasConfig))}`;
 
   const formLink = document.createElement('a');
