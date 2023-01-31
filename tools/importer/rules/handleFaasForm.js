@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 /* eslint-disable no-console, class-methods-use-this */
-import { utf8ToB64 } from '../utils.js';
+import { utf8ToB64 } from './utils.js';
 
 const handleFaasForm = (document, faasTitleSelector) => {
   const faasFormElement = document.querySelector('.faas_form');
