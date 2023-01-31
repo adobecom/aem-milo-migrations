@@ -243,3 +243,6 @@ export async function setGlobals(originalURL) {
     window.jcrContent = {};
   }
 }
+
+export const utf8ToB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
+export const b64ToUtf8 = (str) => decodeURIComponent(escape(window.atob(str)));
