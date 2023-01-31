@@ -12,11 +12,19 @@
 /* eslint-disable no-console, class-methods-use-this */
 import { utf8ToB64 } from './utils.js';
 
-const handleFaasForm = (document, faasTitleSelector) => {
-  const faasFormElement = document.querySelector('.faas_form');
+/**
+ * Replace a form with a faas link
+ * @param {*} root The root element in which to search for the form
+ * @param {*} document Document
+ * @param {String} faasTitleSelector  (optional) CSS selector to find the title of the form
+ * @returns The link element or null if no form was found
+ */
+
+const handleFaasForm = (root, document, faasTitleSelector) => {
+  const faasFormElement = root.querySelector('.faas_form');
   if (!faasFormElement) return;
 
-  const faasSettingElement = document.querySelector('.faas-form-settings');
+  const faasSettingElement = faasFormElement.querySelector('.faas-form-settings');
   if (!faasSettingElement) {
     throw new Error('faas_form detected but no faas-form-settings element found - add more delay ?');
   }
@@ -29,7 +37,7 @@ const handleFaasForm = (document, faasTitleSelector) => {
   const destinationUrl = `/resources${data.faasDestinationurl.split('resources')[1]}`;
   faasConfig.d = destinationUrl;
 
-  faasConfig.title = faasTitleSelector && document.querySelector(faasTitleSelector)? document.querySelector(faasTitleSelector).textContent.trim() : faasConfig.title || '';
+  faasConfig.title = faasTitleSelector && root.querySelector(faasTitleSelector)? root.querySelector(faasTitleSelector).textContent.trim() : faasConfig.title || '';
 
   if (faasFormElement.className.includes('theme-2cols')) {
     faasConfig.style_layout = 'column2';

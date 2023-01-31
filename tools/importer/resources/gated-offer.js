@@ -116,7 +116,7 @@ const getFormLink = async (document, faasTitleSelector, originalURL) => {
     ['style', 'container, xxl spacing, divider'],
   ];
 
-  const formLink = handleFaasForm(document, faasTitleSelector);
+  const formLink = handleFaasForm(document, document, faasTitleSelector);
   return [formLink, WebImporter.DOMUtils.createTable(cells, document)];
 };
 
