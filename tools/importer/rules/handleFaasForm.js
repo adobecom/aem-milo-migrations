@@ -22,7 +22,8 @@ import { utf8ToB64 } from './utils.js';
 
 const handleFaasForm = (root, document, faasTitleSelector) => {
   const faasFormElement = root.querySelector('.faas_form');
-  if (!faasFormElement) return;
+  // TDOO: handle modal forms ?
+  if (!faasFormElement || faasFormElement.closest('.modal')) return;
 
   const faasSettingElement = faasFormElement.querySelector('.faas-form-settings');
   if (!faasSettingElement) {
