@@ -98,23 +98,31 @@ export default {
       ], document));
       eyebrow?.remove();
       title?.remove();
+
+      // Resources (pdf, video, etc.)
+      main.append(getResource(main, document, new URL(params.originalURL)));
     } else {
       // console.log('here', document.querySelector('.title h3').textContent);
       // document.querySelector('#root_content_flex_1141994466_copy > .dexter-FlexContainer-Items > *:nth-child(3)')?.remove();
       // document.querySelector('#root_content_flex_1141994466_copy_255569858 > .dexter-FlexContainer-Items > *:nth-child(3)')?.remove();
       // document.querySelector('.dexter-FlexContainer')?.remove();
-      document.querySelector('.cta')?.remove();
-      document.querySelector('h3 a')?.parentElement?.remove();
-      main.append(WebImporter.DOMUtils.createTable([
-        ['text (large)'],
-        [''],
-        [`<h1>${document.querySelector('.title h3').textContent}</h1>`],
-      ], document));
-      document.querySelector('.title h3').remove();
+      if (document.querySelector('.title h3')) {
+        document.querySelector('.cta')?.remove();
+        document.querySelector('h3 a')?.parentElement?.remove();
+        main.append(WebImporter.DOMUtils.createTable([
+          ['text (large)'],
+          [''],
+          [`<h1>${document.querySelector('.title h3').textContent}</h1>`],
+        ], document));
+        document.querySelector('.title h3').remove();
+
+        // Resources (pdf, video, etc.)
+        main.append(getResource(main, document, new URL(params.originalURL)));
+      } else {
+        // TODO include all content
+      }
     }
     
-    // Resources (pdf, video, etc.)
-    main.append(getResource(main, document, new URL(params.originalURL)));
     main.append(WebImporter.DOMUtils.createTable([
       ['Section Metadata'],
       ['style', 'container'],
