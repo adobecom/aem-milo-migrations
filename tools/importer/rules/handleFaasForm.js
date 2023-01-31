@@ -29,7 +29,7 @@ const handleFaasForm = (document, faasTitleSelector) => {
   const destinationUrl = `/resources${data.faasDestinationurl.split('resources')[1]}`;
   faasConfig.d = destinationUrl;
 
-  faasConfig.title = document.querySelector(faasTitleSelector)?.textContent.trim();
+  faasConfig.title = faasTitleSelector && document.querySelector(faasTitleSelector)? document.querySelector(faasTitleSelector).textContent.trim() : faasConfig.title || '';
 
   if (faasFormElement.className.includes('theme-2cols')) {
     faasConfig.style_layout = 'column2';
