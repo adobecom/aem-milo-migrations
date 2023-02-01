@@ -11,8 +11,8 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import handleFaasForm from '../rules/handleFaasForm.js';
-import { cleanupHeadings, setGlobals, findPaths, getMetadataValue, getRecommendedArticles } from '../utils.js';
+// import handleFaasForm from '../rules/handleFaasForm.js';
+import { getCaasTags, cleanupHeadings, setGlobals, findPaths, getMetadataValue, getRecommendedArticles } from '../utils.js';
 
 const createMetadata = (main, document) => {
   const meta = {};
@@ -208,7 +208,7 @@ export default {
   transformDOM: async ({ document, params}) => {
     await setGlobals(params.originalURL);
     console.log(window.fetchUrl);
-    const formLink = handleFaasForm(document, document);
+    // const formLink = handleFaasForm(document, document);
     WebImporter.DOMUtils.remove(document, [
       `header, footer, .faas-form-settings, .xf, style, northstar-card-collection, consonant-card-collection`,
       '.globalnavheader', 
@@ -234,12 +234,12 @@ export default {
 
     const eventSpeakers = createEventSpeakers(main, document);
     if (eventSpeakers) {
-      if (formLink) {
-        elementsToGo.push(document.createElement('hr'));
-        const form = document.createElement('p');
-        form.append(formLink);
-        elementsToGo.push(form);
-      }
+      // if (formLink) {
+      //   elementsToGo.push(document.createElement('hr'));
+      //   const form = document.createElement('p');
+      //   form.append(formLink);
+      //   elementsToGo.push(form);
+      // }
 
       elementsToGo.push(document.createElement('hr'));
       elementsToGo.push(eventSpeakers);
@@ -255,10 +255,10 @@ export default {
       let content;
 
       [...document.querySelectorAll('.dexter-FlexContainer p')].some((p) => {
-        console.log('looking at',p.textContent.trim());
+        // console.log('looking at',p.textContent.trim());
         const str = p.textContent.trim().toLowerCase();
         if (str.includes('speaker') || str.includes('host')) {
-          console.log('found',p.textContent);
+          // console.log('found',p.textContent);
           content = p.closest('.dexter-FlexContainer');
           return true;
         }
@@ -266,25 +266,25 @@ export default {
       });
 
       if (content) {
-        if (formLink) {
-          const form = document.createElement('p');
-          form.append(formLink);
+        // if (formLink) {
+        //   const form = document.createElement('p');
+        //   form.append(formLink);
         
-          const cells = [['Columns']];
-          cells.push([content, form])
-          const table = WebImporter.DOMUtils.createTable(cells, document);
-          elementsToGo.push(table);
-        } else {
+        //   const cells = [['Columns']];
+        //   cells.push([content, form])
+        //   const table = WebImporter.DOMUtils.createTable(cells, document);
+        //   elementsToGo.push(table);
+        // } else {
           elementsToGo.push(content);
-        }
+        // }
         elementsToGo.push(document.createElement('hr'));
-      } else {
-        if (formLink) {
-          const form = document.createElement('p');
-          form.append(formLink);
-          elementsToGo.push(form);
-          elementsToGo.push(document.createElement('hr'));
-        }
+      // } else {
+        // if (formLink) {
+        //   const form = document.createElement('p');
+        //   form.append(formLink);
+        //   elementsToGo.push(form);
+        //   elementsToGo.push(document.createElement('hr'));
+        // }
       }
     }
     appendBackward(elementsToGo, main);
