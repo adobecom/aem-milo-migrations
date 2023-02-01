@@ -125,7 +125,7 @@ export default {
    * @param {HTMLDocument} document The document
    */
   generateDocumentPath: ({ document, url }) => {
-    const path = new URL(url).pathname.replace(/\/$/, '');
+    let path = new URL(url).pathname.replace(/\/$/, '');
     path = path.replace('.html', '');
     return path;
   },
