@@ -11,17 +11,17 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { findPaths, getJSONValues, getMetadataValue, getRecommendedArticles } from './utils.js';
+import { setGlobals, findPaths, getMetadataValue } from '../utils.js';
 
 const createMetadata = (main, document) => {
   const meta = {};
 
   const title = document.querySelector('title');
   if (title) {
-    meta.Title = title.innerHTML.replace(/[\n\t]/gm, '');
+    meta.title = title.innerHTML.replace(/[\n\t]/gm, '');
   }
   meta.robots = getMetadataValue(document, 'robots');
-  meta.Description = getMetadataValue(document, 'og:description');
+  meta.description = getMetadataValue(document, 'og:description');
   meta.keywords = getMetadataValue(document, 'keywords');
   meta['serp-content-type'] = getMetadataValue(document, 'serp-content-type');
   meta.pageCreatedAt = getMetadataValue(document, 'pageCreatedAt');
@@ -29,23 +29,11 @@ const createMetadata = (main, document) => {
   meta.publishDate = getMetadataValue(document, 'publishDate');
   meta.productJcrID = getMetadataValue(document, 'productJcrID');
   meta.primaryProductName = getMetadataValue(document, 'primaryProductName');
-  meta.image = `https://business.adobe.com${getMetadataValue(document, 'og:image')}`;
+  meta.image = getMetadataValue(document, 'og:image') ? `https://business.adobe.com${getMetadataValue(document, 'og:image')}` : '';
   meta['caas:content-type'] = getMetadataValue(document, 'caas:content-type') ?? 'webinar';
 
   const block = WebImporter.Blocks.getMetadataBlock(document, meta);
   return block;
-};
-
-const createCardMetadata = (main, document) => {  
-  const cells = [
-    ['Card Metadata'],
-    ['cardTitle', getMetadataValue(document, 'cardTitle')],
-    ['cardImagePath', `https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`],
-    ['CardDescription', getMetadataValue(document, 'cardDesc')],
-    ['primaryTag', `caas:content-type/${getMetadataValue(document, 'caas:content-type')}`],
-  ];
-  const table = WebImporter.DOMUtils.createTable(cells, document);
-  return table;
 };
 
 const createMarquee = (main, document) => {
@@ -55,19 +43,14 @@ const createMarquee = (main, document) => {
   }
   const eyebrow = marqueeDoc.querySelector('p')?.textContent?.toUpperCase().trim() || 'REPORT';
   const title = marqueeDoc.querySelector('h1')?.textContent;
-  const bgURL = marqueeDoc.style.backgroundImage?.slice(4, -1).replace(/"/g, "") || '';
   const price = marqueeDoc.querySelectorAll('b')[0]?.parentElement;
   const length = marqueeDoc.querySelectorAll('b')[1]?.parentElement;
+  const videoIframe = document.querySelector('iframe');
+  const videoHeader = marqueeDoc.querySelectorAll('.position')[2].querySelector('p');
+  const videoHeaderText = videoHeader?.textContent || 'Thank you for registering. Click to play.';
+  videoHeader?.remove();
   const description = marqueeDoc.querySelectorAll('b')[marqueeDoc.querySelectorAll('b').length-1]?.closest('.text').nextElementSibling;
-  let cta = marqueeDoc.querySelector('.dexter-Cta a');
-  if (!cta) {
-    cta = document.createElement('a');
-    cta.innerHTML = 'Watch now';
-  }
-  let { pathname } = window.importUrl;
-  let path = pathname.replace('.html', '');
-  path = `/fragments/resources/modal/forms/${path.split('/').at(-1)}`;
-  cta.href = `/fragments/resources/modal/forms/${path.split('/').at(-1)}#faas-form`;
+  const bgURL = marqueeDoc.style.backgroundImage?.slice(4, -1).replace(/"/g, "") || '';
   let bg = '#f5f5f5'
   if (bgURL) {
     bg = document.createElement('img');
@@ -80,57 +63,12 @@ const createMarquee = (main, document) => {
     <h1>${title}</h1>
     ${price.outerHTML}
     ${length.outerHTML}
-    ${description.textContent}
-    <strong>${cta.outerHTML}</strong>`,
-    marqueeDoc.querySelector('img') || ''],
+    ${description.textContent}`,
+    `<strong>${videoHeaderText}</strong>${videoIframe.src || videoIframe.dataset.videoSrc}`],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
   document.querySelector('h1')?.remove();
   marqueeDoc.remove();
-  return table;
-};
-
-const createEventSpeakers = (main, document) => {
-  const parent = document.querySelector('.title h2').closest('.position');
-  const speakers = [];
-  parent.querySelectorAll('img').forEach((image) => {
-    if (image.src) {
-      const speaker = [];
-      speaker.push(image);
-      const texts = image.closest('.image').nextElementSibling.querySelectorAll('.cmp-text');
-      speaker.push(`<p><strong>${texts[0].innerHTML}</strong></p><p>${texts[1]?.innerHTML}</p>`);
-      const secoundTexts = [];
-      for(let i = 2; i < texts.length; i++) {
-        if (!texts[i].closest('.text').nextElementSibling?.classList.contains('cta')) {
-          secoundTexts.push(`<p>${texts[i].innerHTML}</p`); 
-        }
-      };
-      speaker.push(`${secoundTexts}`);
-      speaker.push(`${image.closest('.image').nextElementSibling.querySelector('a')?.textContent || ''}`);
-      speakers.push(speaker);
-    }
-  });
-  if (!speakers.length) {
-    return '';
-  }
-  const cells = [
-    ['Event Speakers'],
-    ...speakers,
-  ];
-  parent.remove();
-  const table = WebImporter.DOMUtils.createTable(cells, document);
-  return table;
-};
-
-const createRelatedProducts = (main, document) => {
-  const relatedProducts = document.querySelector('.title h2').closest('.position');
-  relatedProducts.nextElementSibling?.remove();
-  const cells = [
-    ['Text (vertical)'],
-    ['#f5f5f5'],
-    [relatedProducts],
-  ];
-  const table = WebImporter.DOMUtils.createTable(cells, document);
   return table;
 };
 
@@ -143,7 +81,7 @@ const appendBackward = (elements, main) => {
 const createBreadcrumbs = (main, document) => {
   const breadcrumbsPath = findPaths(window.jcrContent, 'breadcrumbs');
   if (!breadcrumbsPath?.length) {
-    return '';
+    return WebImporter.DOMUtils.createTable([['breadcrumbs'],['<ul><li><a href="/">Home</a></li><li>Adobe Resource Center</li></ul>']], document);
   }
   let breadcrumbs = window.jcrContent;
   breadcrumbsPath[0][0]?.split('/').forEach((pathItem) => {
@@ -193,7 +131,8 @@ export default {
    * @param {HTMLDocument} document The document
    * @returns {HTMLElement} The root element
    */
-  transformDOM: async ({ document, html}) => {
+  transformDOM: async ({ document, params }) => {
+    await setGlobals(params.originalURL);
     console.log(window.fetchUrl);
     WebImporter.DOMUtils.remove(document, [
       `header, footer, .faas-form-settings, .xf, style, northstar-card-collection, consonant-card-collection`,
@@ -206,42 +145,15 @@ export default {
     elementsToGo.push(createMarquee(main, document));
     elementsToGo.push(WebImporter.DOMUtils.createTable([
       ['Section Metadata'],
-      ['style', 'L spacing'],
+      ['style', 'L spacing, center'],
     ], document));
-    elementsToGo.push('---');
-    elementsToGo.push(document.querySelector('.title h2'));
-    const eventSpeakers = createEventSpeakers(main, document);
-    if (eventSpeakers) {
-      elementsToGo.push('---');
-      elementsToGo.push(eventSpeakers);
-      elementsToGo.push(createRelatedProducts(main, document));
-      elementsToGo.push(WebImporter.DOMUtils.createTable([
-        ['Section Metadata'],
-        ['style', 'Two-up'],
-      ], document));
-      elementsToGo.push('---');
-    }
     appendBackward(elementsToGo, main);
     
     // All other content from page should be automatically added here //
-    main.append(await getRecommendedArticles(main, document));
-
-    document.querySelectorAll('.cta a').forEach(link => {link.href.includes('/resources/main') ? link.remove() : false});
     
     // Bottom area
-    const cells = [
-      ['Section Metadata'],
-      ['style', 'L spacing, center'],
-    ];
-    const table = WebImporter.DOMUtils.createTable(cells, document);
-    main.append(table);
     main.append('---');
     main.append(createMetadata(main, document));
-    
-    // if robots doesn't have noindex include Card Metadata;
-    if (!getMetadataValue(document, 'robots')?.toLowerCase()?.includes('noindex')) {
-      main.append(createCardMetadata(main, document));
-    }
     
     return main;
   },

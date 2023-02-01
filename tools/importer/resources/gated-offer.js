@@ -11,7 +11,8 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { getJSONValues, getMetadataValue } from './utils.js';
+
+import { setGlobals, getJSONValues, getMetadataValue } from '../utils.js';
 
 const createMarquee = (main, document) => {
   const marqueeDoc = document.querySelector('.dexter-FlexContainer')
@@ -82,7 +83,7 @@ const createCardMetadata = (main, document) => {
   return table;
 };
 
-const getFormLink = async (document, faasTitleSelector) => {
+const getFormLink = async (document, faasTitleSelector, originalURL) => {
   const formContainer = document.querySelector('.marketoForm');
   if (formContainer) {
     const marketoForm = document.querySelector('.marketo-form');
@@ -92,7 +93,7 @@ const getFormLink = async (document, faasTitleSelector) => {
       ['Form ID', getJSONValues(window.jcrContent, 'formId')[0] || marketoForm.getAttribute('data-marketo-form-id')],
       ['Base URL', getJSONValues(window.jcrContent, 'baseURL')[0] || marketoForm.getAttribute('data-marketo-baseurl')],
       ['Munchkin ID', getJSONValues(window.jcrContent, 'munchkinId')[0] || marketoForm.getAttribute('data-marketo-munchkin-id')],
-      ['Destination URL', window.importUrl.pathname.replace('.html', '/thank-you')],
+      ['Destination URL', originalURL.pathname.replace('.html', '/thank-you')],
     ];
     const mktoTable = WebImporter.DOMUtils.createTable(mktoCells, document);
     formContainer.remove();
@@ -145,9 +146,11 @@ export default {
    * @param {HTMLDocument} document The document
    * @returns {HTMLElement} The root element
    */
-  transformDOM: async ({ document, html}) => {
+  transformDOM: async ({ document, params }) => {
+    await setGlobals(params.originalURL);
+
     const faasTitleSelector = '.cmp-text.mobile-padding-top-48.mobile-padding-right-48.mobile-padding-left-48';
-    const formLink = await getFormLink(document, faasTitleSelector);
+    const formLink = await getFormLink(document, faasTitleSelector, new URL(params.originalURL));
     WebImporter.DOMUtils.remove(document, [
       `header, footer, .faas-form-settings, ${faasTitleSelector}, .xf`,
     ]);
