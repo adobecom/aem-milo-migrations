@@ -12,7 +12,7 @@
 /* eslint-disable no-console, class-methods-use-this */
 
 
-import { setGlobals, getJSONValues, getMetadataValue } from './utils.js';
+import { setGlobals, getJSONValues, getMetadataValue } from '../utils.js';
 
 const createMarquee = (main, document) => {
   const marqueeDoc = document.querySelector('.dexter-FlexContainer')

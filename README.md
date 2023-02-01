@@ -3,9 +3,6 @@ A central point for storing and reviewing our migrations from AEM into Milo.
 
 ## Installation 
 
-Inside of the project folder you're working on, run `npm install` to download the latest helix web importer. 
-
-Example: `cd customer-success-stories && npm install` 
-
-To start the application, run `hlx import`. 
+Just run `hlx import` in the current project.
+In the importer ui, use the options to configure the import script to use (e.g. http://localhost:3001/tools/importer/resources/gated-offer.js)
 

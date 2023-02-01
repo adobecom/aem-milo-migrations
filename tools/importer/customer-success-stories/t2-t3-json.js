@@ -39,7 +39,7 @@
 // console.log(desktop); 
 // console.log(typeof desktop);
 
-import { setGlobals } from "../../../tools/importer/utils.js";
+import { setGlobals } from "../utils.js";
 
 const DEFAULT_COLSPAN = 2;
 

@@ -177,10 +177,6 @@ const getMetadataValueFromCqTags = (obj, key) => {
 };
 
 export const getMetadataValue = (document, key) => {
-  if (key === 'title') {
-    return document.head.querySelector('title')?.textContent || '';
-  }
-
   return document.head.querySelector(`meta[property="${key}"`)?.content ||
     document.head.querySelector(`meta[name="${key}"`)?.content ||
     getMetadataValueFromCqTags(window.jcrContent, key) || 
@@ -195,12 +191,6 @@ export const createElementFromHTML = (htmlString) => {
   return div;
 };
 
-/**
- * Get a CaaS auto block link for recommended articles.
- * @param {*} main 
- * @param {*} document 
- * @returns CaaS auto block link
- */
 export const getRecommendedArticles = async (main, document) => {
   const caasLink = document.createElement('a');
   const consonantCaaS = document.querySelector('consonant-card-collection');
@@ -216,143 +206,6 @@ export const getRecommendedArticles = async (main, document) => {
 }
 
 export const isRelative = url => !url.startsWith('http');
-
-export const createMetadata = (document, kv = {}) => {
-  const meta = {};
-  Object.keys(kv).forEach((key) => {
-    let metaValue = getMetadataValue(document, kv[key]);
-    if (!metaValue.length) {
-      metaValue = '';
-    }
-    else if (metaValue.startsWith('/content/dam/')) {
-      metaValue = `https://business.adobe.com${metaValue}`;
-    }
-    meta[key] = metaValue;
-  });
-  
-  const block = WebImporter.Blocks.getMetadataBlock(document, meta);
-  return block;
-};
-
-
-/**
- * Create Form.
- * @param {*} document 
- * @param {*} faasTitleSelector 
- * @returns either Marketo form or FaaS auto block link including a Section metadata.
- */
-export const createForm = async (document, faasTitleSelector, originalURL) => {
-  // Check if there is marketo form then build a marketo form.
-  const formContainer = document.querySelector('.marketoForm');
-  if (formContainer) {
-    const marketoForm = document.querySelector('.marketo-form');
-    const mktoCells = [
-      ['Marketo'],
-      ['Title', formContainer.querySelector('p')?.textContent || ''],
-      ['Form ID', getJSONValues(window.jcrContent, 'formId')[0] || marketoForm.getAttribute('data-marketo-form-id')],
-      ['Base URL', getJSONValues(window.jcrContent, 'baseURL')[0] || marketoForm.getAttribute('data-marketo-baseurl')],
-      ['Munchkin ID', getJSONValues(window.jcrContent, 'munchkinId')[0] || marketoForm.getAttribute('data-marketo-munchkin-id')],
-      ['Destination URL', originalURL.pathname.replace('.html', '/thank-you')],
-    ];
-    const mktoTable = WebImporter.DOMUtils.createTable(mktoCells, document);
-    formContainer.remove();
-    const cells = [
-      ['Section Metadata'],
-      ['style', 'container, xxl spacing, divider, two-up'],
-    ];
-    return [mktoTable, WebImporter.DOMUtils.createTable(cells, document)];
-  }
-
-  // If there is no marketo form, get a FaaS form from ".faas-form-settings".
-  const jcrContent = JSON.stringify(window.jcrContent);
-  const formLink = document.createElement('a');
-  
-  // Modify faas config from ".faas-form-settings".
-  let faasConfig = document.querySelector('.faas-form-settings')?.innerHTML;
-  const { utf8ToB64 } = await import('https://milo.adobe.com/libs/utils/utils.js');
-  faasConfig = JSON.parse(faasConfig);
-  faasConfig.complete = true;
-  const destinationUrl = `/resources${getJSONValues(window.jcrContent, 'destinationUrl')[0].split('resources')[1]}`;
-  faasConfig.d = destinationUrl;
-  faasConfig.title = document.querySelector(faasTitleSelector)?.textContent.trim();
-  if (jcrContent?.includes('theme-2cols')) {
-    faasConfig.style_layout = 'column2';
-  }
-  faasConfig.cleabitStyle = '';
-  if (getJSONValues(window.jcrContent, 'clearbit')[0] && getJSONValues(window.jcrContent, 'formSubType')[0] === '2847') {
-    faasConfig.title_size = 'p';
-    faasConfig.title_align = 'left';
-    faasConfig.cleabitStyle = 'Cleabit Style'
-  }
-  console.log('faasConfig:', faasConfig);
-
-  // Get a FaaS auto block link.
-  const formLinkURL = `https://milo.adobe.com/tools/faas#${utf8ToB64(JSON.stringify(faasConfig))}`;
-  formLink.href = formLinkURL;
-  formLink.innerHTML = `FaaS Link - FormID: ${faasConfig.id} ${faasConfig.cleabitStyle}`;
-  const cells = [
-    ['Section Metadata'],
-    ['style', 'container, xxl spacing, divider'],
-  ];
-  return [formLink, WebImporter.DOMUtils.createTable(cells, document)];
-};
-
-/**
- * Creating breadcrumbs for resources.
- * @param {*} document 
- * @returns table element
- */
-export const createBreadcrumbs = (document) => {
-  // Find breadcrumbs from JCR content
-  const breadcrumbsPath = findPaths(window.jcrContent, 'breadcrumbs');
-  if (!breadcrumbsPath?.length) {
-    return WebImporter.DOMUtils.createTable([['breadcrumbs'],['<ul><li><a href="/">Home</a></li><li>Adobe Resource Center</li></ul>']], document);
-  }
-
-  // Build breadcrumbs object.
-  let breadcrumbs = window.jcrContent;
-  breadcrumbsPath[0][0]?.split('/').forEach((pathItem) => {
-    breadcrumbs = breadcrumbs[pathItem];
-  });
-  breadcrumbs = breadcrumbs.links;
-  breadcrumbs = Object.values(breadcrumbs);
-  
-  // Take the last item out since it should be just text (not a link)
-  const breadcrumbsLastItem = breadcrumbs.pop();
-  
-  // Build breadcrumbsItems that is actual output.
-  const breadcrumbsItems = document.createElement('ul');
-  const firstItem = document.createElement('li');
-  const firstItemLink = document.createElement('a');
-  firstItemLink.href = '/';
-  firstItemLink.innerHTML = 'Home';
-  firstItem.append(firstItemLink);
-  breadcrumbsItems.append(firstItem);
-  breadcrumbs.forEach((item) => {
-    if (item.title) {
-      let breadcrumbsItem = document.createElement('li');
-      if (item.url) {
-        const breadcrumbLink = document.createElement('a');
-        const url = item.url.split('resources')[1];
-        breadcrumbLink.href = `${window.local ? window.local + '/' : '/'}resources${url}`;
-        breadcrumbLink.innerHTML = item.title;
-        breadcrumbsItem.append(breadcrumbLink);
-      } else {
-        breadcrumbsItem.innerHTML = item.title;
-      }
-      breadcrumbsItems.append(breadcrumbsItem);
-    }
-  });
-  const lastItem = document.createElement('li');
-  lastItem.innerHTML = breadcrumbsLastItem.title;
-  breadcrumbsItems.append(lastItem);
-  const cells = [
-    ['breadcrumbs'],
-    [breadcrumbsItems],
-  ];
-  const table = WebImporter.DOMUtils.createTable(cells, document);
-  return table;
-};
 
 export async function setGlobals(originalURL) {
   window.local = '';
