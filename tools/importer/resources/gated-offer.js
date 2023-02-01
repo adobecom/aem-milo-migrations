@@ -11,7 +11,7 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-
+import handleFaasForm from '../rules/handleFaasForm.js';
 import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue } from '../utils.js';
 
 async function delay(t, v) {
@@ -111,38 +111,12 @@ const getFormLink = async (document, faasTitleSelector, originalURL) => {
     return [mktoTable, WebImporter.DOMUtils.createTable(cells, document)];
   }
 
-  const jcrContent = JSON.stringify(window.jcrContent);
-  const formLink = document.createElement('a');
-
-  const faasSettingElement = document.querySelector('.faas-form-settings');
-  if (!faasSettingElement) {
-    throw new Error('No faas-form-settings element found - add more delay ?');
-  }
-
-  let faasConfig = faasSettingElement.innerHTML;
-  const { utf8ToB64 } = await import('https://milo.adobe.com/libs/utils/utils.js');
-  faasConfig = JSON.parse(faasConfig);
-  faasConfig.complete = true;
-  const destinationUrl = `/resources${getJSONValues(window.jcrContent, 'destinationUrl')[0].split('resources')[1]}`;
-  faasConfig.d = destinationUrl;
-  faasConfig.title = document.querySelector(faasTitleSelector)?.textContent.trim();
-  if (jcrContent?.includes('theme-2cols')) {
-    faasConfig.style_layout = 'column2';
-  }
-  faasConfig.cleabitStyle = '';
-  if (getJSONValues(window.jcrContent, 'clearbit')[0] && getJSONValues(window.jcrContent, 'formSubType')[0] === '2847') {
-    faasConfig.title_size = 'p';
-    faasConfig.title_align = 'left';
-    faasConfig.cleabitStyle = 'Cleabit Style'
-  }
-  console.log(faasConfig);
-  const formLinkURL = `https://milo.adobe.com/tools/faas#${utf8ToB64(JSON.stringify(faasConfig))}`;
-  formLink.href = formLinkURL;
-  formLink.innerHTML = `FaaS Link - FormID: ${faasConfig.id} ${faasConfig.cleabitStyle}`;
   const cells = [
     ['Section Metadata'],
     ['style', 'container, xxl spacing, divider'],
   ];
+
+  const formLink = handleFaasForm(document, document, faasTitleSelector);
   return [formLink, WebImporter.DOMUtils.createTable(cells, document)];
 };
 

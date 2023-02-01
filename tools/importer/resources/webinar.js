@@ -11,6 +11,7 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
+import handleFaasForm from '../rules/handleFaasForm.js';
 import { cleanupHeadings, setGlobals, findPaths, getMetadataValue, getRecommendedArticles } from '../utils.js';
 
 const createMetadata = (main, document) => {
@@ -201,8 +202,11 @@ export default {
   transformDOM: async ({ document, params}) => {
     await setGlobals(params.originalURL);
     console.log(window.fetchUrl);
+    const formLink = handleFaasForm(document, document);
     WebImporter.DOMUtils.remove(document, [
       `header, footer, .faas-form-settings, .xf, style, northstar-card-collection, consonant-card-collection`,
+      '.globalnavheader', 
+      '.globalNavHeader',
     ]);
     const main = document.querySelector('main');
 
@@ -216,26 +220,73 @@ export default {
       ['Section Metadata'],
       ['style', 'L spacing'],
     ], document));
-    elementsToGo.push('---');
+    elementsToGo.push(document.createElement('hr'));
     const h2 = document.querySelector('.title h2');
     if (h2) {
       elementsToGo.push(h2);
     }
+
     const eventSpeakers = createEventSpeakers(main, document);
     if (eventSpeakers) {
-      elementsToGo.push('---');
+      if (formLink) {
+        elementsToGo.push(document.createElement('hr'));
+        const form = document.createElement('p');
+        form.append(formLink);
+        elementsToGo.push(form);
+      }
+
+      elementsToGo.push(document.createElement('hr'));
       elementsToGo.push(eventSpeakers);
       elementsToGo.push(createRelatedProducts(main, document));
       elementsToGo.push(WebImporter.DOMUtils.createTable([
         ['Section Metadata'],
         ['style', 'Two-up'],
       ], document));
-      elementsToGo.push('---');
+      elementsToGo.push(document.createElement('hr'));
+    } else {
+      // try to find the content
+      elementsToGo.push(document.createElement('hr'));
+      let content;
+
+      [...document.querySelectorAll('.dexter-FlexContainer p')].some((p) => {
+        console.log('looking at',p.textContent.trim());
+        const str = p.textContent.trim().toLowerCase();
+        if (str.includes('speaker') || str.includes('host')) {
+          console.log('found',p.textContent);
+          content = p.closest('.dexter-FlexContainer');
+          return true;
+        }
+        return false;
+      });
+
+      if (content) {
+        if (formLink) {
+          const form = document.createElement('p');
+          form.append(formLink);
+        
+          const cells = [['Columns']];
+          cells.push([content, form])
+          const table = WebImporter.DOMUtils.createTable(cells, document);
+          elementsToGo.push(table);
+        } else {
+          elementsToGo.push(content);
+        }
+        elementsToGo.push(document.createElement('hr'));
+      } else {
+        if (formLink) {
+          const form = document.createElement('p');
+          form.append(formLink);
+          elementsToGo.push(form);
+          elementsToGo.push(document.createElement('hr'));
+        }
+      }
     }
     appendBackward(elementsToGo, main);
     
     // All other content from page should be automatically added here //
-    main.append(await getRecommendedArticles(main, document));
+    const recommendedArticles = document.createElement('p');
+    recommendedArticles.append(await getRecommendedArticles(main, document));
+    main.append(recommendedArticles);
 
     document.querySelectorAll('.cta a').forEach(link => {link.href.includes('/resources/main') ? link.remove() : false});
     
@@ -246,7 +297,7 @@ export default {
     ];
     const table = WebImporter.DOMUtils.createTable(cells, document);
     main.append(table);
-    main.append('---');
+    elementsToGo.push(document.createElement('hr'));
     main.append(createMetadata(main, document));
     
     // if robots doesn't have noindex include Card Metadata;
