@@ -30,20 +30,26 @@ const createMetadata = (main, document) => {
   meta.publishDate = getMetadataValue(document, 'publishDate');
   meta.productJcrID = getMetadataValue(document, 'productJcrID');
   meta.primaryProductName = getMetadataValue(document, 'primaryProductName');
-  meta.image = `https://business.adobe.com${getMetadataValue(document, 'og:image')}`;
+  const img = document.createElement('img');
+  img.src = `https://business.adobe.com${getMetadataValue(document, 'og:image')}`
+  meta.image = img;
   meta['caas:content-type'] = getMetadataValue(document, 'caas:content-type') ?? 'webinar';
 
   const block = WebImporter.Blocks.getMetadataBlock(document, meta);
   return block;
 };
 
-const createCardMetadata = (main, document) => {  
+const createCardMetadata = (main, document) => {
+  const img = document.createElement('img');
+  img.src = `https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`
+
   const cells = [
     ['Card Metadata'],
     ['cardTitle', getMetadataValue(document, 'cardTitle')],
-    ['cardImagePath', `https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`],
+    ['cardImage', img],
     ['CardDescription', getMetadataValue(document, 'cardDesc')],
     ['primaryTag', `caas:content-type/${getMetadataValue(document, 'caas:content-type')}`],
+    ['Tags', getCaasTags(document).join(', ')],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
   return table;

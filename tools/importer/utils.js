@@ -185,6 +185,21 @@ export const getMetadataValue = (document, key) => {
     getJSONValues(window.jcrContent, key) || '';
 }
 
+export const getCaasTags = (document) => {
+  const tags = [];
+  if (window.jcrContent) {
+    const cqTags = getJSONValues(window.jcrContent, 'cq:tags');
+    if (cqTags && cqTags.length) {
+      cqTags.forEach((tag) => {
+        if(tag.startsWith('caas:')) {
+          tags.push(tag);
+        }
+      });
+    }
+  }
+  return tags;
+};
+
 export const createElementFromHTML = (htmlString) => {
   var div = document.createElement('div');
   div.innerHTML = htmlString.trim();
