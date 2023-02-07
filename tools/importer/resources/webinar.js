@@ -65,7 +65,6 @@ const createMarquee = (main, document, originalURL) => {
   const description = marqueeDoc.querySelectorAll('b')[marqueeDoc.querySelectorAll('b').length-1]?.closest('.text').nextElementSibling;
   let { pathname } = originalURL;
   let path = pathname.replace('.html', '');
-  path = `/fragments/resources/modal/forms/${path.split('/').at(-1)}`;
   let cta = marqueeDoc.querySelector('.dexter-Cta a');
   if (cta) {
     cta.href = `/fragments/resources/modal/forms/${path.split('/').at(-1)}#faas-form`;
@@ -246,10 +245,10 @@ export default {
       elementsToGo.push(document.createElement('hr'));
       let content;
 
-      [...document.querySelectorAll('.dexter-FlexContainer p')].some((p) => {
+      [...document.querySelectorAll('.dexter-FlexContainer .text p')].some((p) => {
         console.log('looking at',p.textContent.trim());
         const str = p.textContent.trim().toLowerCase();
-        if (str.includes('speaker') || str.includes('host')) {
+        if (str && !str.match(/\|.*\|/)) {
           console.log('found',p.textContent);
           content = p.closest('.dexter-FlexContainer');
           return true;
