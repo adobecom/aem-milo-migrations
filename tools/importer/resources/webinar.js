@@ -63,15 +63,13 @@ const createMarquee = (main, document, originalURL) => {
   const webinarDuration = getMetadataValue(document, 'webinarDuration');
   const length = lengthElement ? lengthElement.outerHTML : `<p><b>Length:</b> ${ webinarDuration ? `${webinarDuration} min` : 'Unkwown'}</p>`;
   const description = marqueeDoc.querySelectorAll('b')[marqueeDoc.querySelectorAll('b').length-1]?.closest('.text').nextElementSibling;
-  let cta = marqueeDoc.querySelector('.dexter-Cta a');
-  if (!cta) {
-    cta = document.createElement('a');
-    cta.innerHTML = 'Watch now';
-  }
   let { pathname } = originalURL;
   let path = pathname.replace('.html', '');
   path = `/fragments/resources/modal/forms/${path.split('/').at(-1)}`;
-  cta.href = `/fragments/resources/modal/forms/${path.split('/').at(-1)}#faas-form`;
+  let cta = marqueeDoc.querySelector('.dexter-Cta a');
+  if (cta) {
+    cta.href = `/fragments/resources/modal/forms/${path.split('/').at(-1)}#faas-form`;
+  }
   let bg = '#f5f5f5'
   if (bgURL) {
     bg = document.createElement('img');
@@ -85,7 +83,7 @@ const createMarquee = (main, document, originalURL) => {
     ${price}
     ${length}
     ${description ? description.textContent : ''}
-    <strong>${cta.outerHTML}</strong>`,
+    ${cta ? `<strong>${cta.outerHTML}</strong>` : ''}`,
     marqueeDoc.querySelector('img') || ''],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
@@ -264,7 +262,7 @@ export default {
           const form = document.createElement('p');
           form.append(formLink);
         
-          const cells = [['Columns']];
+          const cells = [['Columns (contained)']];
           cells.push([content, form])
           const table = WebImporter.DOMUtils.createTable(cells, document);
           elementsToGo.push(table);
