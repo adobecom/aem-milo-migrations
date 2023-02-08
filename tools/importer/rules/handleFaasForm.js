@@ -15,7 +15,7 @@ import { utf8ToB64 } from './utils.js';
 const waitForFaasForm = async (document) => {
   if (document.querySelector('.faas_form')) {
     try {
-      await WebImporter.Loader.waitFormElement('.faas-form-settings', document, 10000);
+      await WebImporter.Loader.waitForElement('.faas-form-settings', document, 10000);
     } catch (error) {
       console.error('faas form not added to the DOM after 10s.');
     }
