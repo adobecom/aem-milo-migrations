@@ -11,8 +11,8 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-// import handleFaasForm from '../rules/handleFaasForm.js';
-import { getCaasTags, cleanupHeadings, setGlobals, findPaths, getMetadataValue, getRecommendedArticles } from '../utils.js';
+import handleFaasForm from '../rules/handleFaasForm.js';
+import { cleanupHeadings, setGlobals, findPaths, getMetadataValue, getRecommendedArticles } from '../utils.js';
 
 const createMetadata = (main, document) => {
   const meta = {};
@@ -30,26 +30,20 @@ const createMetadata = (main, document) => {
   meta.publishDate = getMetadataValue(document, 'publishDate');
   meta.productJcrID = getMetadataValue(document, 'productJcrID');
   meta.primaryProductName = getMetadataValue(document, 'primaryProductName');
-  const img = document.createElement('img');
-  img.src = `https://business.adobe.com${getMetadataValue(document, 'og:image')}`
-  meta.image = img;
+  meta.image = `https://business.adobe.com${getMetadataValue(document, 'og:image')}`;
   meta['caas:content-type'] = getMetadataValue(document, 'caas:content-type') ?? 'webinar';
 
   const block = WebImporter.Blocks.getMetadataBlock(document, meta);
   return block;
 };
 
-const createCardMetadata = (main, document) => {
-  const img = document.createElement('img');
-  img.src = `https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`
-
+const createCardMetadata = (main, document) => {  
   const cells = [
     ['Card Metadata'],
     ['cardTitle', getMetadataValue(document, 'cardTitle')],
-    ['cardImage', img],
+    ['cardImagePath', `https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`],
     ['CardDescription', getMetadataValue(document, 'cardDesc')],
     ['primaryTag', `caas:content-type/${getMetadataValue(document, 'caas:content-type')}`],
-    ['Tags', getCaasTags(document).join(', ')],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
   return table;
@@ -69,15 +63,12 @@ const createMarquee = (main, document, originalURL) => {
   const webinarDuration = getMetadataValue(document, 'webinarDuration');
   const length = lengthElement ? lengthElement.outerHTML : `<p><b>Length:</b> ${ webinarDuration ? `${webinarDuration} min` : 'Unkwown'}</p>`;
   const description = marqueeDoc.querySelectorAll('b')[marqueeDoc.querySelectorAll('b').length-1]?.closest('.text').nextElementSibling;
-  let cta = marqueeDoc.querySelector('.dexter-Cta a');
-  if (!cta) {
-    cta = document.createElement('a');
-    cta.innerHTML = 'Watch now';
-  }
   let { pathname } = originalURL;
   let path = pathname.replace('.html', '');
-  path = `/fragments/resources/modal/forms/${path.split('/').at(-1)}`;
-  cta.href = `/fragments/resources/modal/forms/${path.split('/').at(-1)}#faas-form`;
+  let cta = marqueeDoc.querySelector('.dexter-Cta a');
+  if (cta) {
+    cta.href = `/fragments/resources/modal/forms/${path.split('/').at(-1)}#faas-form`;
+  }
   let bg = '#f5f5f5'
   if (bgURL) {
     bg = document.createElement('img');
@@ -91,7 +82,7 @@ const createMarquee = (main, document, originalURL) => {
     ${price}
     ${length}
     ${description ? description.textContent : ''}
-    <strong>${cta.outerHTML}</strong>`,
+    ${cta ? `<strong>${cta.outerHTML}</strong>` : ''}`,
     marqueeDoc.querySelector('img') || ''],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
@@ -208,7 +199,8 @@ export default {
   transformDOM: async ({ document, params}) => {
     await setGlobals(params.originalURL);
     console.log(window.fetchUrl);
-    // const formLink = handleFaasForm(document, document);
+    const titleElement = document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-text');
+    const formLink = handleFaasForm(document, document, titleElement);
     WebImporter.DOMUtils.remove(document, [
       `header, footer, .faas-form-settings, .xf, style, northstar-card-collection, consonant-card-collection`,
       '.globalnavheader', 
@@ -234,12 +226,12 @@ export default {
 
     const eventSpeakers = createEventSpeakers(main, document);
     if (eventSpeakers) {
-      // if (formLink) {
-      //   elementsToGo.push(document.createElement('hr'));
-      //   const form = document.createElement('p');
-      //   form.append(formLink);
-      //   elementsToGo.push(form);
-      // }
+      if (formLink) {
+        elementsToGo.push(document.createElement('hr'));
+        const form = document.createElement('p');
+        form.append(formLink);
+        elementsToGo.push(form);
+      }
 
       elementsToGo.push(document.createElement('hr'));
       elementsToGo.push(eventSpeakers);
@@ -254,11 +246,11 @@ export default {
       elementsToGo.push(document.createElement('hr'));
       let content;
 
-      [...document.querySelectorAll('.dexter-FlexContainer p')].some((p) => {
-        // console.log('looking at',p.textContent.trim());
+      [...document.querySelectorAll('.dexter-FlexContainer .text p')].some((p) => {
+        console.log('looking at',p.textContent.trim());
         const str = p.textContent.trim().toLowerCase();
-        if (str.includes('speaker') || str.includes('host')) {
-          // console.log('found',p.textContent);
+        if (str && !str.match(/\|.*\|/)) {
+          console.log('found',p.textContent);
           content = p.closest('.dexter-FlexContainer');
           return true;
         }
@@ -266,25 +258,25 @@ export default {
       });
 
       if (content) {
-        // if (formLink) {
-        //   const form = document.createElement('p');
-        //   form.append(formLink);
+        if (formLink) {
+          const form = document.createElement('p');
+          form.append(formLink);
         
-        //   const cells = [['Columns']];
-        //   cells.push([content, form])
-        //   const table = WebImporter.DOMUtils.createTable(cells, document);
-        //   elementsToGo.push(table);
-        // } else {
+          const cells = [['Columns (contained)']];
+          cells.push([content, form])
+          const table = WebImporter.DOMUtils.createTable(cells, document);
+          elementsToGo.push(table);
+        } else {
           elementsToGo.push(content);
-        // }
+        }
         elementsToGo.push(document.createElement('hr'));
-      // } else {
-        // if (formLink) {
-        //   const form = document.createElement('p');
-        //   form.append(formLink);
-        //   elementsToGo.push(form);
-        //   elementsToGo.push(document.createElement('hr'));
-        // }
+      } else {
+        if (formLink) {
+          const form = document.createElement('p');
+          form.append(formLink);
+          elementsToGo.push(form);
+          elementsToGo.push(document.createElement('hr'));
+        }
       }
     }
     appendBackward(elementsToGo, main);

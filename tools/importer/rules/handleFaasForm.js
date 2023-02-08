@@ -16,11 +16,11 @@ import { utf8ToB64 } from './utils.js';
  * Replace a form with a faas link
  * @param {*} root The root element in which to search for the form
  * @param {*} document Document
- * @param {String} faasTitleSelector  (optional) CSS selector to find the title of the form
+ * @param {String || Element} faasTitle  (optional) CSS selector to find the title of the form
  * @returns The link element or null if no form was found
  */
 
-const handleFaasForm = (root, document, faasTitleSelector) => {
+const handleFaasForm = (root, document, faasTitle) => {
   const faasFormElement = root.querySelector('.faas_form');
   // TDOO: handle modal forms ?
   if (!faasFormElement || faasFormElement.closest('.modal')) return;
@@ -38,7 +38,17 @@ const handleFaasForm = (root, document, faasTitleSelector) => {
   const destinationUrl = `/resources${data.faasDestinationurl.split('resources')[1]}`;
   faasConfig.d = destinationUrl;
 
-  faasConfig.title = faasTitleSelector && root.querySelector(faasTitleSelector)? root.querySelector(faasTitleSelector).textContent.trim() : faasConfig.title || '';
+  faasConfig.title = '';
+  if (faasTitle) {
+    let el = faasTitle;
+    if (typeof faasTitle === 'string') {
+      el = root.querySelector(faasTitle);
+    }
+    if (el) {
+      faasConfig.title = el.textContent.trim();
+    }
+  }
+  console.log(`faasform title: ${faasConfig.title}`);
 
   if (faasFormElement.className.includes('theme-2cols')) {
     faasConfig.style_layout = 'column2';
