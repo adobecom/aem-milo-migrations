@@ -11,7 +11,7 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import handleFaasForm from '../rules/handleFaasForm.js';
+import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
 import { cleanupHeadings, setGlobals, findPaths, getMetadataValue, getRecommendedArticles } from '../utils.js';
 
 const createMetadata = (main, document) => {
@@ -190,6 +190,10 @@ const createBreadcrumbs = (main, document) => {
 
 
 export default {
+  onLoad: async ({ document }) => {
+    await waitForFaasForm(document);
+  },
+
   /**
    * Apply DOM operations to the provided document and return
    * the root element to be then transformed to Markdown.

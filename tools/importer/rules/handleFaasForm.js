@@ -12,6 +12,16 @@
 /* eslint-disable no-console, class-methods-use-this */
 import { utf8ToB64 } from './utils.js';
 
+const waitForFaasForm = async (document, params) => {
+  if (root.querySelector('.faas_form')) {
+    try {
+      await WebImporter.Loader.waitFormElement('.faas-form-settings', document, 10000);
+    } catch (error) {
+      console.error('faas form not added to the DOM after 10s.');
+    }
+  }
+};
+
 /**
  * Replace a form with a faas link
  * @param {*} root The root element in which to search for the form
@@ -19,7 +29,6 @@ import { utf8ToB64 } from './utils.js';
  * @param {String || Element} faasTitle  (optional) CSS selector to find the title of the form
  * @returns The link element or null if no form was found
  */
-
 const handleFaasForm = (root, document, faasTitle) => {
   const faasFormElement = root.querySelector('.faas_form');
   // TDOO: handle modal forms ?
@@ -27,7 +36,7 @@ const handleFaasForm = (root, document, faasTitle) => {
 
   const faasSettingElement = faasFormElement.querySelector('.faas-form-settings');
   if (!faasSettingElement) {
-    throw new Error('faas_form detected but no faas-form-settings element found - add more delay ?');
+    throw new Error('faas_form detected but no faas-form-settings element found - invalid form ?');
   }
 
   const data = faasFormElement.dataset;
@@ -69,4 +78,4 @@ const handleFaasForm = (root, document, faasTitle) => {
   return formLink;
 }
 
-export default handleFaasForm;
+export { handleFaasForm, waitForFaasForm };
