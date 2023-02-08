@@ -12,7 +12,7 @@
 /* eslint-disable no-console, class-methods-use-this */
 
 import handleFaasForm from '../rules/handleFaasForm.js';
-import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue } from '../utils.js';
+import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue, getCaasTags } from '../utils.js';
 
 async function delay(t, v) {
   return new Promise(resolve => setTimeout(resolve, t, v));
@@ -24,10 +24,9 @@ const createMarquee = (main, document) => {
   const title = marqueeDoc.querySelector('h1')?.textContent;
   const subTitle = marqueeDoc.querySelector('h3')?.textContent;
   const img = marqueeDoc.querySelector('img') || '';
-  const background =  WebImporter.DOMUtils.getImgFromBackground(marqueeDoc, document) || '#f5f5f5';
   const cells = [
     ['marquee (small, light)'],
-    [background],
+    ['#f5f5f5'],
     [`<h6>${eyebrow}</h6><h1>${title}</h1>${subTitle ? `<p>${subTitle}</p>` : ''}`, img],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
@@ -71,7 +70,9 @@ const createMetadata = (main, document) => {
   meta.publishDate = getMetadataValue(document, 'publishDate');
   meta.productJcrID = getMetadataValue(document, 'productJcrID');
   meta.primaryProductName = getMetadataValue(document, 'primaryProductName');
-  meta.image = `https://business.adobe.com${getMetadataValue(document, 'og:image')}`;
+  const img = document.createElement('img');
+  img.src = `https://business.adobe.com${getMetadataValue(document, 'og:image')}`
+  meta.image = img;
   meta['caas:content-type'] = getMetadataValue(document, 'caas:content-type');
 
   const block = WebImporter.Blocks.getMetadataBlock(document, meta);
@@ -79,12 +80,16 @@ const createMetadata = (main, document) => {
 };
 
 const createCardMetadata = (main, document) => {
+  const img = document.createElement('img');
+  img.src = `https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`
+
   const cells = [
     ['Card Metadata'],
     ['cardTitle', getMetadataValue(document, 'cardTitle')],
-    ['cardImagePath', `https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`],
+    ['cardImage', img],
     ['CardDescription', getMetadataValue(document, 'cardDescription')],
     ['primaryTag', `caas:content-type/${getMetadataValue(document, 'caas:content-type')}`],
+    ['Tags', getCaasTags(document).join(', ')],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
   return table;
