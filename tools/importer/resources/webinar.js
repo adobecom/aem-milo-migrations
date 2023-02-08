@@ -199,7 +199,8 @@ export default {
   transformDOM: async ({ document, params}) => {
     await setGlobals(params.originalURL);
     console.log(window.fetchUrl);
-    const formLink = handleFaasForm(document, document);
+    const titleElement = document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-text');
+    const formLink = handleFaasForm(document, document, titleElement);
     WebImporter.DOMUtils.remove(document, [
       `header, footer, .faas-form-settings, .xf, style, northstar-card-collection, consonant-card-collection`,
       '.globalnavheader', 
