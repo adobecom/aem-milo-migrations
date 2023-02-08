@@ -12,8 +12,8 @@
 /* eslint-disable no-console, class-methods-use-this */
 import { utf8ToB64 } from './utils.js';
 
-const waitForFaasForm = async (document, params) => {
-  if (root.querySelector('.faas_form')) {
+const waitForFaasForm = async (document) => {
+  if (document.querySelector('.faas_form')) {
     try {
       await WebImporter.Loader.waitFormElement('.faas-form-settings', document, 10000);
     } catch (error) {
