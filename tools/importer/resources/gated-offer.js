@@ -11,7 +11,7 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import handleFaasForm from '../rules/handleFaasForm.js';
+import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
 import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue, getCaasTags } from '../utils.js';
 
 async function delay(t, v) {
@@ -132,6 +132,10 @@ const appendBackward = (elements, main) => {
 }
 
 export default {
+  onLoad: async ({ document }) => {
+    await waitForFaasForm(document);
+  },
+
   /**
    * Apply DOM operations to the provided document and return
    * the root element to be then transformed to Markdown.
