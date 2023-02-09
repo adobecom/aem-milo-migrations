@@ -249,7 +249,7 @@ export default {
       [...document.querySelectorAll('.dexter-FlexContainer .text p')].some((p) => {
         console.log('looking at',p.textContent.trim());
         const str = p.textContent.trim().toLowerCase();
-        if (str && !str.match(/\|.*\|/)) {
+        if (str && !str.match(/\|.*\|/) && !str.match(/\/.*\//)) {
           console.log('found',p.textContent);
           content = p.closest('.dexter-FlexContainer');
           return true;
@@ -319,6 +319,6 @@ export default {
       pathname = pathname.replace(localFromURL, window.local);
     }
     pathname = pathname.replace('.html', '');
-    return pathname;
+    return WebImporter.FileUtils.sanitizePath(pathname);
   },
 };
