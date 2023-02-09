@@ -219,6 +219,7 @@ export default {
    */
   generateDocumentPath: ({ document, url }) => {
     let { pathname } = new URL(url);
-    return pathname.replace('.html', '');
+    pathname = pathname.replace('.html', '');
+    return WebImporter.FileUtils.sanitizePath(pathname);
   },
 };

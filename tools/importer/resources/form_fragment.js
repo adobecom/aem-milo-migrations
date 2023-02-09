@@ -83,6 +83,6 @@ export default {
     let path = new URL(url).pathname.replace(/\/$/, '');
     path = path.replace('.html', '');
     path = `/fragments/resources/modal/forms/${path.split('/').at(-1)}`;
-    return path;
+    return WebImporter.FileUtils.sanitizePath(path);
   },
 };
