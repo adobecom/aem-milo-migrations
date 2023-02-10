@@ -171,6 +171,6 @@ export default {
       pathname = pathname.replace(localFromURL, window.local);
     }
     pathname = pathname.replace('.html', '');
-    return pathname;
+    return WebImporter.FileUtils.sanitizePath(pathname);
   },
 };
