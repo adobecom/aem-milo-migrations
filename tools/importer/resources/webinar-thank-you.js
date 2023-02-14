@@ -11,7 +11,7 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { setGlobals, findPaths, getMetadataValue } from '../utils.js';
+import { findPaths, getMetadataValue, setGlobals } from '../utils.js';
 
 const createMetadata = (main, document) => {
   const meta = {};
@@ -36,47 +36,36 @@ const createMetadata = (main, document) => {
   return block;
 };
 
-const createMarquee = (main, document) => {
-  let marqueeDoc = document.querySelector('.dexter-FlexContainer');
+const createMarquee = (el, document) => {
+  let marqueeDoc = el.querySelector(':scope .dexter-FlexContainer') || el.querySelector(':scope .dexter-Position');
   if (!marqueeDoc.textContent.trim()) {
     marqueeDoc = document.querySelectorAll('.dexter-FlexContainer')[1];
   }
-  const eyebrow = marqueeDoc.querySelector('p')?.textContent?.toUpperCase().trim() || 'REPORT';
-  const title = marqueeDoc.querySelector('h1')?.textContent;
-  const price = marqueeDoc.querySelectorAll('b')[0]?.parentElement;
-  const length = marqueeDoc.querySelectorAll('b')[1]?.parentElement;
+  const title = marqueeDoc.querySelector('h1')?.textContent.trim();
+  const price = marqueeDoc.querySelectorAll('b')[0]?.parentElement?.outerHTML || '';
+  const length = marqueeDoc.querySelectorAll('b')[1]?.parentElement?.outerHTML || '';
   const videoIframe = document.querySelector('iframe');
-  const videoHeader = marqueeDoc.querySelectorAll('.position')[2].querySelector('p');
+  const videoHeader = marqueeDoc.querySelectorAll('.position')[2]?.querySelector('p');
   const videoHeaderText = videoHeader?.textContent || 'Thank you for registering. Click to play.';
   videoHeader?.remove();
-  const description = marqueeDoc.querySelectorAll('b')[marqueeDoc.querySelectorAll('b').length-1]?.closest('.text').nextElementSibling;
-  const bgURL = marqueeDoc.style.backgroundImage?.slice(4, -1).replace(/"/g, "") || '';
-  let bg = '#f5f5f5'
-  if (bgURL) {
-    bg = document.createElement('img');
-    bg.src = bgURL;
-  }
+  const description = marqueeDoc.querySelectorAll('b')[marqueeDoc.querySelectorAll('b').length-1]?.closest('.text')?.nextElementSibling?.textContent || '';
+
+  const background =  WebImporter.DOMUtils.getImgFromBackground(marqueeDoc, document) || '#f5f5f5';
+
   const cells = [
     ['marquee (small, light)'],
-    [bg],
-    [`<p><strong>${eyebrow}</strong></p>
-    <h1>${title}</h1>
-    ${price.outerHTML}
-    ${length.outerHTML}
-    ${description.textContent}`,
-    `<strong>${videoHeaderText}</strong>${videoIframe.src || videoIframe.dataset.videoSrc}`],
+    [background],
+    [`<h1>${title}</h1>
+    ${price.indexOf(title) > -1 ? '' : price }
+    ${length.indexOf(title) > -1 ? '' : length }
+    ${description.indexOf(title) > -1 ? '' : description}`,
+    videoIframe ? `<strong>${videoHeaderText}</strong>${videoIframe.src || videoIframe.dataset.videoSrc}` : ''],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
   document.querySelector('h1')?.remove();
   marqueeDoc.remove();
-  return table;
+  return [ table, videoIframe != null ];
 };
-
-const appendBackward = (elements, main) => {
-  for (let i=elements.length-1; i>=0; i--) {
-    main.prepend(elements[i]);
-  }
-}
 
 const createBreadcrumbs = (main, document) => {
   const breadcrumbsPath = findPaths(window.jcrContent, 'breadcrumbs');
@@ -123,39 +112,86 @@ const createBreadcrumbs = (main, document) => {
   return table;
 };
 
-
 export default {
+
   /**
    * Apply DOM operations to the provided document and return
    * the root element to be then transformed to Markdown.
    * @param {HTMLDocument} document The document
    * @returns {HTMLElement} The root element
    */
-  transformDOM: async ({ document, params }) => {
+
+  transform: async ({ document, params }) => {
+
     await setGlobals(params.originalURL);
-    console.log(window.fetchUrl);
+
+
+
+    /*
+     * clean
+     */
+
     WebImporter.DOMUtils.remove(document, [
-      `header, footer, .faas-form-settings, .xf, style, northstar-card-collection, consonant-card-collection`,
+      `.globalnavheader, header, footer, .faas-form-settings, .xf, style, northstar-card-collection, consonant-card-collection`,
     ]);
+
+
+
+    /*
+     * content
+     */
+
     const main = document.querySelector('main');
 
-    // Top area
-    const elementsToGo = [];
-    elementsToGo.push(createBreadcrumbs(main, document));
-    elementsToGo.push(createMarquee(main, document));
-    elementsToGo.push(WebImporter.DOMUtils.createTable([
-      ['Section Metadata'],
-      ['style', 'L spacing, center'],
-    ], document));
-    appendBackward(elementsToGo, main);
+    main.append(createBreadcrumbs(main, document));
+
+    let sectionsRootElSelector = '.root main .content';
+
+    if (document.querySelector(sectionsRootElSelector).textContent.trim() === '') {
+      sectionsRootElSelector = '.root';
+    }
+
+    const sections = [...document.querySelectorAll(`${sectionsRootElSelector} > div > div`)];
     
-    // All other content from page should be automatically added here //
-    
-    // Bottom area
-    main.append('---');
+    let foundVideo = false;
+
+    if (sections.length > 0) {
+
+      // consider first section a marquee
+      const marqueeEl = sections.shift();
+      const [ marquee, found ] = createMarquee(marqueeEl, document);
+      foundVideo = found;
+      main.append(marquee);
+
+      sections.forEach((section, idx) => {
+        section.querySelectorAll('.text, .flex').forEach((el) => {
+          main.append(el);
+        });
+      });
+    }
+
+
+
+    /*
+     * metadata
+     */
+
     main.append(createMetadata(main, document));
-    
-    return main;
+
+
+
+    /*
+     * return + custom report
+     */
+
+    return [{
+      element: main,
+      path: generateDocumentPath({ document, url: params.originalURL }),
+      report: {
+        'found video': foundVideo ? 'true' : 'false',
+      },
+    }];
+
   },
 
   /**
@@ -173,4 +209,15 @@ export default {
     pathname = pathname.replace('.html', '');
     return WebImporter.FileUtils.sanitizePath(pathname);
   },
+
+};
+
+const generateDocumentPath = ({ document, url }) => {
+  let { pathname } = new URL(url);
+  const localFromURL = pathname.split('/')[1];
+  if (!localFromURL.startsWith('resource')) {
+    pathname = pathname.replace(localFromURL, window.local);
+  }
+  pathname = pathname.replace('.html', '');
+  return WebImporter.FileUtils.sanitizePath(pathname);
 };
