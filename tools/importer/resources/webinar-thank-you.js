@@ -46,7 +46,7 @@ const createMarquee = (el, document) => {
   const length = marqueeDoc.querySelectorAll('b')[1]?.parentElement?.outerHTML || '';
   const videoIframe = document.querySelector('iframe');
   const videoHeader = marqueeDoc.querySelectorAll('.position')[2]?.querySelector('p');
-  const videoHeaderText = videoHeader?.textContent || 'Thank you for registering. Click to play.';
+  const videoHeaderText = videoHeader?.textContent || '';
   videoHeader?.remove();
   const description = marqueeDoc.querySelectorAll('b')[marqueeDoc.querySelectorAll('b').length-1]?.closest('.text')?.nextElementSibling?.textContent || '';
 
@@ -59,7 +59,7 @@ const createMarquee = (el, document) => {
     ${price.indexOf(title) > -1 ? '' : price }
     ${length.indexOf(title) > -1 ? '' : length }
     ${description.indexOf(title) > -1 ? '' : description}`,
-    videoIframe ? `<strong>${videoHeaderText}</strong>${videoIframe.src || videoIframe.dataset.videoSrc}` : ''],
+    videoIframe ? `${videoIframe.src || videoIframe.dataset.videoSrc}` : ''],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
   document.querySelector('h1')?.remove();
@@ -67,50 +67,83 @@ const createMarquee = (el, document) => {
   return [ table, videoIframe != null ];
 };
 
-const createBreadcrumbs = (main, document) => {
-  const breadcrumbsPath = findPaths(window.jcrContent, 'breadcrumbs');
-  if (!breadcrumbsPath?.length) {
-    return WebImporter.DOMUtils.createTable([['breadcrumbs'],['<ul><li><a href="/">Home</a></li><li>Adobe Resource Center</li></ul>']], document);
-  }
-  let breadcrumbs = window.jcrContent;
-  breadcrumbsPath[0][0]?.split('/').forEach((pathItem) => {
-    breadcrumbs = breadcrumbs[pathItem];
-  });
-  breadcrumbs = breadcrumbs.links;
-  breadcrumbs = Object.values(breadcrumbs);
-  const breadcrumbsLastItem = breadcrumbs.pop();
-  const breadcrumbsItems = document.createElement('ul');
-  const firstItem = document.createElement('li');
-  const firstItemLink = document.createElement('a');
-  firstItemLink.href = '/';
-  firstItemLink.innerHTML = 'Home';
-  firstItem.append(firstItemLink);
-  breadcrumbsItems.append(firstItem);
-  breadcrumbs.forEach((item) => {
-    if (item.title) {
-      let breadcrumbsItem = document.createElement('li');
-      if (item.url) {
-        const breadcrumbLink = document.createElement('a');
-        const url = item.url.split('resources')[1];
-        breadcrumbLink.href = `${window.local ? window.local + '/' : '/'}resources${url}`;
-        breadcrumbLink.innerHTML = item.title;
-        breadcrumbsItem.append(breadcrumbLink);
-      } else {
-        breadcrumbsItem.innerHTML = item.title;
-      }
-      breadcrumbsItems.append(breadcrumbsItem);
+const createBreadcrumbs = (document) => {
+  // default breadcrumb
+  let bcType = 'default';
+  let bcContent = WebImporter.DOMUtils.createTable([['breadcrumbs'],['<ul><li><a href="/">Home</a></li><li>Adobe Resource Center</li></ul>']], document);
+
+  // try building breadcrumb from DOM
+  const domBreadcrumb = document.querySelector('.feds-breadcrumbs');
+  if (domBreadcrumb) {
+    const items = [];
+    const domBreadcrumbItems = domBreadcrumb.querySelectorAll('li');
+    if (domBreadcrumbItems.length > 0) {
+      domBreadcrumbItems.forEach((item) => {
+        const link = item.querySelector('a');
+        if (link) {
+          // make link relative if needed
+          if (link.href.indexOf('http') === 0) {
+            let { pathname } = new URL(link.href);
+            pathname = pathname.replace('.html', '');
+            link.href = pathname;
+          }
+        }
+        items.push(item.outerHTML);
+      });
+  
+      bcType = 'dom';
+      bcContent = WebImporter.DOMUtils.createTable([['breadcrumbs'],[`<ul>${items.join('')}</ul>`]], document);
     }
-  });
-  const lastItem = document.createElement('li');
-  lastItem.innerHTML = breadcrumbsLastItem.title;
-  breadcrumbsItems.append(lastItem);
-  const cells = [
-    ['breadcrumbs'],
-    [breadcrumbsItems],
-  ];
-  const table = WebImporter.DOMUtils.createTable(cells, document);
-  return table;
+  }
+  
+  // try building breadcrumb from jcrContent
+  const breadcrumbsPath = findPaths(window.jcrContent, 'breadcrumbs');
+  if (breadcrumbsPath?.length > 0) {
+    let breadcrumbs = window.jcrContent;
+    breadcrumbsPath[0][0]?.split('/').forEach((pathItem) => {
+      breadcrumbs = breadcrumbs[pathItem];
+    });
+    breadcrumbs = breadcrumbs.links;
+    breadcrumbs = Object.values(breadcrumbs);
+    const breadcrumbsLastItem = breadcrumbs.pop();
+    const breadcrumbsItems = document.createElement('ul');
+    const firstItem = document.createElement('li');
+    const firstItemLink = document.createElement('a');
+    firstItemLink.href = '/';
+    firstItemLink.innerHTML = 'Home';
+    firstItem.append(firstItemLink);
+    breadcrumbsItems.append(firstItem);
+    breadcrumbs.forEach((item) => {
+      if (item.title) {
+        let breadcrumbsItem = document.createElement('li');
+        if (item.url) {
+          const breadcrumbLink = document.createElement('a');
+          const url = item.url.split('resources')[1];
+          breadcrumbLink.href = `${window.local ? window.local + '/' : '/'}resources${url}`;
+          breadcrumbLink.innerHTML = item.title;
+          breadcrumbsItem.append(breadcrumbLink);
+        } else {
+          breadcrumbsItem.innerHTML = item.title;
+        }
+        breadcrumbsItems.append(breadcrumbsItem);
+      }
+    });
+    const lastItem = document.createElement('li');
+    lastItem.innerHTML = breadcrumbsLastItem.title;
+    breadcrumbsItems.append(lastItem);
+    const cells = [
+      ['breadcrumbs'],
+      [breadcrumbsItems],
+    ];
+
+    bcType = 'jcrContent';
+    bcContent = WebImporter.DOMUtils.createTable(cells, document);
+}
+
+  return [ bcType, bcContent ];
 };
+
+
 
 export default {
 
@@ -125,7 +158,7 @@ export default {
 
     await setGlobals(params.originalURL);
 
-
+    const [breadcrumbType, breadcrumb] = createBreadcrumbs(document);
 
     /*
      * clean
@@ -143,7 +176,7 @@ export default {
 
     const main = document.querySelector('main');
 
-    main.append(createBreadcrumbs(main, document));
+    main.append(breadcrumb);
 
     let sectionsRootElSelector = '.root main .content';
 
@@ -188,6 +221,7 @@ export default {
       element: main,
       path: generateDocumentPath({ document, url: params.originalURL }),
       report: {
+        'breadcrumb type': breadcrumbType,
         'found video': foundVideo ? 'true' : 'false',
       },
     }];
