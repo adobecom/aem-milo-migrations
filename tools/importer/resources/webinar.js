@@ -223,11 +223,6 @@ export default {
     const elementsToGo = [];
     elementsToGo.push(createBreadcrumbs(main, document));
     elementsToGo.push(createMarquee(main, document, new URL(params.originalURL)));
-    elementsToGo.push(WebImporter.DOMUtils.createTable([
-      ['Section Metadata'],
-      ['style', 'L spacing'],
-    ], document));
-    elementsToGo.push(document.createElement('hr'));
     const h2 = document.querySelector('.title h2');
     if (h2) {
       elementsToGo.push(h2);
