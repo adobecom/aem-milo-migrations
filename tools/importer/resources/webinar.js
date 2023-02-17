@@ -150,8 +150,9 @@ const appendBackward = (elements, main) => {
 
 const createBreadcrumbs = (document) => {
   // default breadcrumb
+  const defaultLink = window.local.split('/')[0] || '';
   let bcType = 'default';
-  let bcContent = WebImporter.DOMUtils.createTable([['breadcrumbs'],['<ul><li><a href="/">Home</a></li><li>Adobe Resource Center</li></ul>']], document);
+  let bcContent = WebImporter.DOMUtils.createTable([['breadcrumbs'],[`<ul><li><a href="/${defaultLink}">Home</a></li><li>Adobe Resource Center</li></ul>`]], document);
 
   // try building breadcrumb from DOM
   const domBreadcrumb = document.querySelector('.feds-breadcrumbs');
@@ -241,6 +242,11 @@ export default {
     console.log(window.fetchUrl);
     const titleElement = document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-text');
     const formLink = handleFaasForm(document, document, titleElement);
+    
+    const [breadcrumbType, breadcrumb] = createBreadcrumbs(document);
+
+    console.log(breadcrumbType, breadcrumb.innerHTML, params.originalURL);
+
     WebImporter.DOMUtils.remove(document, [
       `header, footer, .faas-form-settings, .xf, style, northstar-card-collection, consonant-card-collection`,
       '.globalnavheader', 
@@ -249,8 +255,6 @@ export default {
     const main = document.querySelector('main');
 
     cleanupHeadings(document.body);
-
-    const [breadcrumbType, breadcrumb] = createBreadcrumbs(document);
 
     // Top area
     const elementsToGo = [];
@@ -316,6 +320,7 @@ export default {
         }
       }
     }
+
     appendBackward(elementsToGo, main);
     
     // All other content from page should be automatically added here //
