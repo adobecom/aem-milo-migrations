@@ -131,15 +131,18 @@ const createEventSpeakers = (main, document) => {
 };
 
 const createRelatedProducts = (main, document) => {
-  const relatedProducts = document.querySelector('.title h2').closest('.position');
-  relatedProducts.nextElementSibling?.remove();
-  const cells = [
-    ['Text (vertical)'],
-    ['#f5f5f5'],
-    [relatedProducts],
-  ];
-  const table = WebImporter.DOMUtils.createTable(cells, document);
-  return table;
+  const relatedProducts = document.querySelector('.title h2')?.closest('.position');
+  if (relatedProducts) {
+    relatedProducts.nextElementSibling?.remove();
+    const cells = [
+      ['Text (vertical)'],
+      ['#f5f5f5'],
+      [relatedProducts],
+    ];
+    const table = WebImporter.DOMUtils.createTable(cells, document);
+    return table;
+  }
+  return '';
 };
 
 const appendBackward = (elements, main) => {
