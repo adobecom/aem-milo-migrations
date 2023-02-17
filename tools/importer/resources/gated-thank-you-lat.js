@@ -33,27 +33,45 @@ const createMetadata = (main, document) => {
 };
 
 const getResource = (main, document, originalURL) => {
+  // video
   const videoIframe = document.querySelector('.video iframe, .modal iframe');
   if (videoIframe) {
     return videoIframe.getAttribute('data-video-src') || videoIframe.src;
   }
-  
-  let pdfLink = document.querySelector('.dexter-Cta a');
+  const videoLink = document.querySelector('.dexter-Cta a[href*="tv.adobe.com"]');
+  if (videoLink) {
+    return videoLink.href;
+  }
+
+  // pdf link
+  let pdfLink = document.querySelector('.dexter-Cta a[href*=".pdf"]');
   if (!pdfLink) {
+    // try from jcrContent
     console.log('!pdfLink');
     console.log(window.jcrContent);
-    const pdfTextElementStr = findPaths(window.jcrContent, typeof searchValue === "string", '.pdf')[0][1];
-    const pdfTextElement = createElementFromHTML(pdfTextElementStr);
-    pdfLink =  pdfTextElement.querySelector('a');
+    const pdfTextElementPaths = findPaths(window.jcrContent, typeof searchValue === "string", '.pdf')
+    if (pdfTextElementPaths && pdfTextElementPaths[0] && pdfTextElementPaths[0][1]) {
+      const pdfTextElement = createElementFromHTML(pdfTextElementPaths[0][1]);
+      pdfLink =  pdfTextElement.querySelector('a');
+      // this method transforms the relative pdf link into a full url with helix-import-ui domain
+    } else {
+      // search for pdf link in the whole document
+      pdfLink = document.querySelector('a[href*=".pdf"], a[href*="gartner.com/"], a[href*="forrester.com/"]');
+    }
   }
-  
+
+  if (!pdfLink) {
+    console.warn('No pdf link found.');
+    return null;
+  }
+
   if (isRelative(pdfLink.href)) {
     pdfLink.href = originalURL.origin + pdfLink.href;
-  } else {
-    const hrefURL = new URL(pdfLink.href);
-    pdfLink.href = originalURL.origin + hrefURL.pathname;
+  } else if (pdfLink.href.indexOf('//localhost') > -1) {
+    const u = new URL(pdfLink.href);
+    pdfLink.href = originalURL.origin + u.pathname;
   }
-  
+
   pdfLink.textContent = decodeURI(pdfLink.href);
   
   // For cleanup (to avoid a weird bug from original a link.)
@@ -72,43 +90,73 @@ export default {
    * @param {HTMLDocument} document The document
    * @returns {HTMLElement} The root element
    */
-  transformDOM: async ({ document, params}) => {
+  transform: async ({ document, params}) => {
+
+    /*
+     * init
+     */
+
     await setGlobals(params.originalURL);
-    
+
+
+    /*
+     * clean up
+     */
+
     WebImporter.DOMUtils.remove(document, [
-      `h1`,
+      '.globalnavheader',
+      '.globalnavfooter',
+      'header',
+      'footer',
+      '.xfreference',
     ]);
-    // console.log(document.querySelector('.title h3').textContent);
-    console.log(window.fetchUrl);
-    WebImporter.DOMUtils.remove(document, [
-      `header, footer, xf`,
-    ]);
+
+
+
+    /*
+     * title + resource link
+     */
+
     const main = document.querySelector('main');
     const u = new URL(params.originalURL);
-    let eyebrow = u.pathname.split('/')[2];
+    let eyebrow = u.pathname.split('/')[3];
     if (eyebrow.length > 12) {
       eyebrow = 'Guide';
     }
-    const defaultCaaSTitle = document.createElement('h3');
-    defaultCaaSTitle.textContent = 'Recommended for you';
 
-    const title = document.querySelector('.cmp-text a, .cta a');
+    const titleEl = document.querySelector('.dexter-FlexContainer') || document.querySelector('.dexter-Position');
+    const titleTextEl = titleEl.querySelector('.cmp-title') || titleEl.querySelector('.cmp-text');
+    const title = titleTextEl ? titleTextEl.textContent : '';
     main.append(WebImporter.DOMUtils.createTable([
       ['text (large)'],
-      [`${eyebrow.toUpperCase()}<h1>${title.textContent}</h1>`],
+      [`${eyebrow.toUpperCase()}<h1>${title}</h1>`],
     ], document));
-    
-    title?.remove();
-    
-    // Resources (pdf, video, etc.)
-    main.append(getResource(main, document, u));
+
+    // Resource (pdf, video, etc.)
+    const resource = getResource(main, document, u);
+    if (resource) {
+      main.append(resource);
+    }
+
+    titleEl?.remove();
+
     main.append(WebImporter.DOMUtils.createTable([
       ['Section Metadata'],
       ['style', 'container, L spacing'],
     ], document));
-    main.append('---');
-    document.querySelector('h3, h2').remove();
-    main.append(document.querySelector('h2, h3, .aem-Grid > .title .cmp-title__text')?.textContent.trim() ? 
+    main.append(document.createElement('hr'));
+    document.querySelector('h3, h2')?.remove();
+
+
+
+    /*
+     * recommended articles
+     */
+
+    const defaultCaaSTitle = document.createElement('h3');
+    defaultCaaSTitle.textContent = 'Recommended for you';
+
+    main.append(document.querySelector('h2, h3, .aem-Grid > .title .cmp-title__text')?.textContent.trim() ?
       document.querySelector('h2, h3, .aem-Grid > .title .cmp-title__text') :
       defaultCaaSTitle);
     main.append(await getRecommendedArticles(main, document));
@@ -116,18 +164,51 @@ export default {
       ['Section Metadata'],
       ['style', 'container, m spacing, center'],
     ], document));
+
+
+
+    /*
+     * metadata
+     */
+
     main.append(createMetadata(main, document));
-    
+
+
+
+    /*
+     * clean up
+     */
+
     document.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((h) => {
       if(!h.textContent.trim()) {
         h.remove();
       }
     });
+
     WebImporter.DOMUtils.remove(document, [
-      `img, .image, a[target=_parent], northstar-card-collection, consonant-card-collection, p, .xfreference`,
+      '.dexter-FlexContainer',
+      '.xreference',
+      '.dexter-Position',
+      'northstar-card-collection',
+      'consonant-card-collection',
+      'img',
+      '.image',
+      'a[target=_parent]',
+      'p',
     ]);
 
-    return main;
+    /*
+     * return + custom report
+     */
+
+    return [{
+      element: main,
+      path: new URL(params.originalURL).pathname.replace(/\/$/, '').replace(/\.html$/, ''),
+      report: {
+        'found resource': resource ? 'true' : 'false',
+        'franklin url': 'https://main--bacom--adobecom.hlx.page/drafts/acapt/import-gatedoffer-ty' + new URL(params.originalURL).pathname.replace(/\/$/, '').replace(/\.html$/, ''),
+      },
+    }];
   },
 
   /**
@@ -138,6 +219,7 @@ export default {
    */
   generateDocumentPath: ({ document, url }) => {
     let { pathname } = new URL(url);
-    return pathname.replace('.html', '');
+    pathname = pathname.replace('.html', '');
+    return WebImporter.FileUtils.sanitizePath(pathname);
   },
 };

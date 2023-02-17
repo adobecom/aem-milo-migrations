@@ -11,17 +11,23 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
+import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
+import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue, getCaasTags } from '../utils.js';
 
-import { setGlobals, getJSONValues, getMetadataValue } from '../utils.js';
+async function delay(t, v) {
+  return new Promise(resolve => setTimeout(resolve, t, v));
+}
 
 const createMarquee = (main, document) => {
-  const marqueeDoc = document.querySelector('.dexter-FlexContainer')
+  const marqueeDoc = document.querySelector('.dexter-FlexContainer') || document.querySelector('.dexter-Position');
   const eyebrow = marqueeDoc.querySelector('p')?.textContent?.toUpperCase().trim() || 'REPORT';
   const title = marqueeDoc.querySelector('h1')?.textContent;
+  const subTitle = marqueeDoc.querySelector('h3')?.textContent;
+  const img = marqueeDoc.querySelector('img') || '';
   const cells = [
     ['marquee (small, light)'],
     ['#f5f5f5'],
-    [`<h6>${eyebrow}</h6><h1>${title}</h1>`, marqueeDoc.querySelector('img') || ''],
+    [`<h6>${eyebrow}</h6><h1>${title}</h1>${subTitle ? `<p>${subTitle}</p>` : ''}`, img],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
   document.querySelector('h1')?.remove();
@@ -64,7 +70,9 @@ const createMetadata = (main, document) => {
   meta.publishDate = getMetadataValue(document, 'publishDate');
   meta.productJcrID = getMetadataValue(document, 'productJcrID');
   meta.primaryProductName = getMetadataValue(document, 'primaryProductName');
-  meta.image = `https://business.adobe.com${getMetadataValue(document, 'og:image')}`;
+  const img = document.createElement('img');
+  img.src = `https://business.adobe.com${getMetadataValue(document, 'og:image')}`
+  meta.image = img;
   meta['caas:content-type'] = getMetadataValue(document, 'caas:content-type');
 
   const block = WebImporter.Blocks.getMetadataBlock(document, meta);
@@ -72,12 +80,16 @@ const createMetadata = (main, document) => {
 };
 
 const createCardMetadata = (main, document) => {
+  const img = document.createElement('img');
+  img.src = `https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`
+
   const cells = [
     ['Card Metadata'],
     ['cardTitle', getMetadataValue(document, 'cardTitle')],
-    ['cardImagePath', `https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`],
+    ['cardImage', img],
     ['CardDescription', getMetadataValue(document, 'cardDescription')],
     ['primaryTag', `caas:content-type/${getMetadataValue(document, 'caas:content-type')}`],
+    ['Tags', getCaasTags(document).join(', ')],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
   return table;
@@ -104,32 +116,12 @@ const getFormLink = async (document, faasTitleSelector, originalURL) => {
     return [mktoTable, WebImporter.DOMUtils.createTable(cells, document)];
   }
 
-  const jcrContent = JSON.stringify(window.jcrContent);
-  const formLink = document.createElement('a');
-  let faasConfig = document.querySelector('.faas-form-settings')?.innerHTML;
-  const { utf8ToB64 } = await import('https://milo.adobe.com/libs/utils/utils.js');
-  faasConfig = JSON.parse(faasConfig);
-  faasConfig.complete = true;
-  const destinationUrl = `/resources${getJSONValues(window.jcrContent, 'destinationUrl')[0].split('resources')[1]}`;
-  faasConfig.d = destinationUrl;
-  faasConfig.title = document.querySelector(faasTitleSelector)?.textContent.trim();
-  if (jcrContent?.includes('theme-2cols')) {
-    faasConfig.style_layout = 'column2';
-  }
-  faasConfig.cleabitStyle = '';
-  if (getJSONValues(window.jcrContent, 'clearbit')[0] && getJSONValues(window.jcrContent, 'formSubType')[0] === '2847') {
-    faasConfig.title_size = 'p';
-    faasConfig.title_align = 'left';
-    faasConfig.cleabitStyle = 'Cleabit Style'
-  }
-  console.log(faasConfig);
-  const formLinkURL = `https://milo.adobe.com/tools/faas#${utf8ToB64(JSON.stringify(faasConfig))}`;
-  formLink.href = formLinkURL;
-  formLink.innerHTML = `FaaS Link - FormID: ${faasConfig.id} ${faasConfig.cleabitStyle}`;
   const cells = [
     ['Section Metadata'],
     ['style', 'container, xxl spacing, divider'],
   ];
+
+  const formLink = handleFaasForm(document, document, faasTitleSelector);
   return [formLink, WebImporter.DOMUtils.createTable(cells, document)];
 };
 
@@ -140,6 +132,10 @@ const appendBackward = (elements, main) => {
 }
 
 export default {
+  onLoad: async ({ document }) => {
+    await waitForFaasForm(document);
+  },
+
   /**
    * Apply DOM operations to the provided document and return
    * the root element to be then transformed to Markdown.
@@ -180,6 +176,13 @@ export default {
     if (!getMetadataValue(document, 'robots').toLowerCase().includes('noindex')) {
       main.append(createCardMetadata(main, document));
     }
+
+    cleanupParagraphs(main);
+
+    WebImporter.DOMUtils.remove(main, [
+    '.faasform',
+    'style',
+    ]);
     
     return main;
   },
@@ -191,8 +194,7 @@ export default {
    * @param {HTMLDocument} document The document
    */
   generateDocumentPath: ({ document, url }) => {
-    const path = new URL(url).pathname.replace(/\/$/, '');
-    path.replace('.html', '');
-    return path;
+    const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '');
+    return WebImporter.FileUtils.sanitizePath(path);
   },
 };
