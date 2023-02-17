@@ -61,7 +61,6 @@ const createMarquee = (main, document, originalURL) => {
   if (!marqueeDoc.textContent.trim()) {
     marqueeDoc = document.querySelectorAll('.dexter-FlexContainer')[1];
   }
-  const eyebrow = marqueeDoc.querySelector('p')?.textContent?.toUpperCase().trim() || 'REPORT';
   const title = marqueeDoc.querySelector('h1')?.textContent;
   const bgURL = marqueeDoc.style.backgroundImage?.slice(4, -1).replace(/"/g, "") || '';
   const priceElement = marqueeDoc.querySelectorAll('b')[0]?.parentElement;
@@ -84,8 +83,7 @@ const createMarquee = (main, document, originalURL) => {
   const cells = [
     ['marquee (small, light)'],
     [bg],
-    [`<p><strong>${eyebrow}</strong></p>
-    <h1>${title}</h1>
+    [`<h1>${title}</h1>
     ${price}
     ${length}
     ${description ? description.textContent : ''}
