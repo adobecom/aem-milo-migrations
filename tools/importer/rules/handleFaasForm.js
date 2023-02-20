@@ -13,7 +13,7 @@
 import { utf8ToB64 } from './utils.js';
 
 const waitForFaasForm = async (document) => {
-  if (document.querySelector('.faas_form, .faasform')) {
+  if (document.querySelector('.faas_form, .faasform') && document.querySelector('.faas_form, .faasform').closest('.modal') === null) {
     try {
       await WebImporter.Loader.waitForElement('.faas-form-settings', document, 10000);
     } catch (error) {
