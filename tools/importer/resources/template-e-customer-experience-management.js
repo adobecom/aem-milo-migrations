@@ -29,7 +29,8 @@ const createMetadata = (document) => {
   meta.publishDate = getMetadataValue(document, 'publishDate');
   meta.productJcrID = getMetadataValue(document, 'productJcrID');
   meta.primaryProductName = getMetadataValue(document, 'primaryProductName');
-  meta.image = createImage(document, `https://business.adobe.com${getMetadataValue(document, 'og:image')}`);
+  const imageMeta = getMetadataValue(document, 'og:image');
+  meta.image = imageMeta === '' ? '' : createImage(document, `https://business.adobe.com${imageMeta}`);
 
   const block = WebImporter.Blocks.getMetadataBlock(document, meta);
   return block;
@@ -51,17 +52,25 @@ const createMarquee = (main, document, originalURL) => {
 
   const textElements = [];
 
-  ['text', 'title', 'cta'].forEach((className) => {
-    marqueeDoc.querySelectorAll(`.${className}`).forEach((element) => {
-      if (className === 'cta') {
-        const link = element.querySelector('a');
-        if (link.href.indexOf('#watch-now') > -1) {
-          return;
-        }
-      }
-      textElements.push(element.innerHTML);
-    });
-  });
+  const title = marqueeDoc.querySelector('.title');
+  if (title) {
+    textElements.push(title.innerHTML);
+  }
+
+  const text = marqueeDoc.querySelector('.text');
+  if (text) {
+    textElements.push(text.innerHTML);
+  }
+
+  const cta = marqueeDoc.querySelector('.cta');
+  if (cta) {
+    const link = cta.querySelector('a');
+    if (link.href.indexOf('#watch-now') < 0) {
+      const str = document.createElement('B');
+      str.append(cta);
+      textElements.push(str.outerHTML); 
+    }
+  }
 
   /*
    * background
@@ -116,7 +125,7 @@ const createCardMetadata = (document) => {
   const cells = [
     ['Card Metadata'],
     ['title', getMetadataValue(document, 'cardTitle')],
-    ['cardImagePath', createImage(document,`https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`)],
+    ['cardImagePath', getMetadataValue(document, 'cardImagePath') === '' ? '' : createImage(document,`https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`)],
     ['CardDescription', getMetadataValue(document, 'cardDesc')],
     ['primaryTag', `caas:content-type/${getMetadataValue(document, 'caas:content-type')}`],
     ['tags', `${getMetadataValue(document, 'cq:tags')}`],
@@ -376,6 +385,15 @@ export default {
     ], document));
     elementsToPush.push(document.createElement('hr'));
 
+    // Make all links (minus the breadcrumb) italic to trigger button decoration
+    for (var i = 1 ; i < elementsToPush.length; i++) {
+      const elToPush = elementsToPush[i];
+      elToPush.querySelectorAll('a').forEach((el) => {
+        const str = document.createElement('i');
+        el.before(str);
+        str.append(el);
+      });
+    }
 
     // https://main--bacom--adobecom.hlx.page/fragments/resources/request-demo
     const demoLink = document.createElement('a');
@@ -387,6 +405,8 @@ export default {
       ['style', 'XXL Spacing, center'],
       ['background', '#ffffff'],
     ], document));
+
+    elementsToPush.push(document.createElement('hr'));
 
     elementsToPush.push(createMetadata(document));
     elementsToPush.push(createCardMetadata(document));
@@ -401,7 +421,6 @@ export default {
     elementsToPush.forEach((el) => {
       content.append(el);
     });
-
 
 
     /*
