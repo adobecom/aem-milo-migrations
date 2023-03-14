@@ -11,7 +11,7 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { setGlobals, getMetadataValue, getJSONValues, isRelative, findPaths, createElementFromHTML, getRecommendedArticles } from '../utils.js';
+import { setGlobals, getMetadataValue, isRelative, findPaths, createElementFromHTML, getRecommendedArticles, getCaasTags, getJSONValues } from '../../utils.js';
 
 const createMetadata = (main, document) => {
   const meta = {};
@@ -27,6 +27,8 @@ const createMetadata = (main, document) => {
   meta.publishDate = getMetadataValue(document, 'publishDate');
   meta.productJcrID = getMetadataValue(document, 'productJcrID');
   meta.primaryProductName = getMetadataValue(document, 'primaryProductName');
+  const cqTags = getJSONValues(window.jcrContent, 'cq:tags');
+  meta.tags = cqTags.length ? cqTags.join(', ') : '';
 
   const block = WebImporter.Blocks.getMetadataBlock(document, meta);
   return block;
@@ -39,29 +41,27 @@ const createImage = (document, url)  => {
 };
 
 const createCardMetadata = (document) => {  
-  const cqTags = getJSONValues(window.jcrContent, 'cq:tags');
-
   const cells = [
     ['Card Metadata'],
     ['title', getMetadataValue(document, 'cardTitle')],
     ['cardImagePath', getMetadataValue(document, 'cardImagePath') === '' ? '' : createImage(document,`https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`)],
     ['CardDescription', getMetadataValue(document, 'cardDesc')],
     ['primaryTag', `caas:content-type/${getMetadataValue(document, 'caas:content-type')}`],
-    ['tags', cqTags.length ? cqTags.join(', ') : ''],
+    ['Tags', getCaasTags(document).join(', ')],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
   return table;
 };
 
-const getResource = (main, document, originalURL) => {
+const getResourceFromDOM = (main, document, originalURL) => {
   // video
   const videoIframe = document.querySelector('.video iframe, .modal iframe');
   if (videoIframe) {
-    return videoIframe.getAttribute('data-video-src') || videoIframe.src;
+    return ['', videoIframe.getAttribute('data-video-src') || videoIframe.src];
   }
   const videoLink = document.querySelector('.dexter-Cta a[href*="tv.adobe.com"]');
   if (videoLink) {
-    return videoLink.href;
+    return ['', videoLink.href];
   }
 
   // pdf link
@@ -83,8 +83,10 @@ const getResource = (main, document, originalURL) => {
 
   if (!pdfLink) {
     console.warn('No pdf link found.');
-    return null;
+    return ['', null];
   }
+
+  const linkText = pdfLink.textContent || '';
 
   if (isRelative(pdfLink.href)) {
     pdfLink.href = originalURL.origin + pdfLink.href;
@@ -101,7 +103,7 @@ const getResource = (main, document, originalURL) => {
   newPdfLink.textContent = pdfLink.textContent;
   pdfLink.remove();
 
-  return newPdfLink;
+  return [linkText, newPdfLink];
 }
 
 export default {
@@ -119,6 +121,7 @@ export default {
 
     await setGlobals(params.originalURL);
 
+    console.log(window.jcrContent);
 
     /*
      * clean up
@@ -140,26 +143,34 @@ export default {
 
     const main = document.querySelector('main');
     const u = new URL(params.originalURL);
-    let eyebrow = u.pathname.split('/')[3];
+    let eyebrow = u.pathname.split('/')[2];
     if (eyebrow.length > 12) {
-      eyebrow = 'Guide';
+      eyebrow = 'guide';
     }
 
-    const titleEl = document.querySelector('.dexter-FlexContainer') || document.querySelector('.dexter-Position');
-    const titleTextEl = titleEl.querySelector('.cmp-title') || titleEl.querySelector('.cmp-text');
-    const title = titleTextEl ? titleTextEl.textContent : '';
+    // Resource (pdf, video, etc.)
+    const [resourceLinkText, resource] = getResourceFromDOM(main, document, u);
+
+    // const titleEl = document.querySelector('.dexter-FlexContainer') || document.querySelector('.dexter-Position');
+    const titleTextEl = document.querySelector('.cmp-title') || document.querySelector('.cmp-text');
+    let title = titleTextEl ? titleTextEl.textContent : '';
+    if (title.toLowerCase().indexOf('thank you') > -1) {
+      const t = document.querySelector('.cmp-text a');
+      if (t) {
+        title = t.textContent;
+      } else {
+        title = resourceLinkText;
+      }
+    }
     main.append(WebImporter.DOMUtils.createTable([
       ['text (large)'],
       [`${eyebrow.toUpperCase()}<h1>${title}</h1>`],
     ], document));
-
-    // Resource (pdf, video, etc.)
-    const resource = getResource(main, document, u);
     if (resource) {
       main.append(resource);
     }
 
-    titleEl?.remove();
+    // titleEl?.remove();
 
     main.append(WebImporter.DOMUtils.createTable([
       ['Section Metadata'],

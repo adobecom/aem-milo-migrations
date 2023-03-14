@@ -12,7 +12,7 @@
 /* eslint-disable no-console, class-methods-use-this */
 
 import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
-import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue, getCaasTags } from '../utils.js';
+import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue } from '../utils.js';
 
 async function delay(t, v) {
   return new Promise(resolve => setTimeout(resolve, t, v));
@@ -73,6 +73,8 @@ const createMetadata = (main, document) => {
   const img = document.createElement('img');
   img.src = `https://business.adobe.com${getMetadataValue(document, 'og:image')}`
   meta.image = img;
+  const cqTags = getJSONValues(window.jcrContent, 'cq:tags');
+  meta.tags = cqTags.length ? cqTags.join(', ') : '';
   meta['caas:content-type'] = getMetadataValue(document, 'caas:content-type');
 
   const block = WebImporter.Blocks.getMetadataBlock(document, meta);
@@ -82,6 +84,8 @@ const createMetadata = (main, document) => {
 const createCardMetadata = (main, document) => {
   const img = document.createElement('img');
   img.src = `https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`
+  
+  const cqTags = getJSONValues(window.jcrContent, 'cq:tags');
 
   const cells = [
     ['Card Metadata'],
@@ -89,7 +93,7 @@ const createCardMetadata = (main, document) => {
     ['cardImage', img],
     ['CardDescription', getMetadataValue(document, 'cardDescription')],
     ['primaryTag', `caas:content-type/${getMetadataValue(document, 'caas:content-type')}`],
-    ['Tags', getCaasTags(document).join(', ')],
+    ['Tags', cqTags.length ? cqTags.join(', ') : ''],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
   return table;
@@ -144,7 +148,7 @@ export default {
    */
   transformDOM: async ({ document, params }) => {
     await setGlobals(params.originalURL);
-
+    
     const faasTitleSelector = '.cmp-text.mobile-padding-top-48.mobile-padding-right-48.mobile-padding-left-48';
     const formLink = await getFormLink(document, faasTitleSelector, new URL(params.originalURL));
     WebImporter.DOMUtils.remove(document, [

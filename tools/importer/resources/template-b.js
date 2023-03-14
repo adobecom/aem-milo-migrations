@@ -11,8 +11,7 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
-import { cleanupHeadings, setGlobals, findPaths, getJSONValues, getMetadataValue, getRecommendedArticles } from '../utils.js';
+import { cleanupHeadings, setGlobals, findPaths, getMetadataValue, getRecommendedArticles } from '../utils.js';
 
 const createMetadata = (main, document) => {
   const meta = {};
@@ -31,7 +30,6 @@ const createMetadata = (main, document) => {
   meta.productJcrID = getMetadataValue(document, 'productJcrID');
   meta.primaryProductName = getMetadataValue(document, 'primaryProductName');
   meta.image = createImage(document, `https://business.adobe.com${getMetadataValue(document, 'og:image')}`);
-  meta['caas:content-type'] = getMetadataValue(document, 'caas:content-type') ?? 'webinar';
 
   const block = WebImporter.Blocks.getMetadataBlock(document, meta);
   return block;
@@ -43,54 +41,70 @@ const createImage = (document, url)  => {
   return img;
 };
 
-const createCardMetadata = (main, document) => {  
-  const cqTags = getJSONValues(window.jcrContent, 'cq:tags');
-
-  const cells = [
-    ['Card Metadata'],
-    ['cardTitle', getMetadataValue(document, 'cardTitle')],
-    ['cardImagePath', createImage(document,`https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`)],
-    ['CardDescription', getMetadataValue(document, 'cardDesc')],
-    ['primaryTag', `caas:content-type/${getMetadataValue(document, 'caas:content-type')}`],
-    ['tags', cqTags.length ? cqTags.join(', ') : ''],
-  ];
-  const table = WebImporter.DOMUtils.createTable(cells, document);
-  return table;
-};
-
 const createMarquee = (main, document, originalURL) => {
   let marqueeDoc = document.querySelector('.dexter-FlexContainer');
-  if (!marqueeDoc.textContent.trim()) {
-    marqueeDoc = document.querySelectorAll('.dexter-FlexContainer')[1];
+
+
+  /*
+   * texts
+   */
+
+  const textElements = [];
+
+  ['text', 'title', 'cta'].forEach((className) => {
+    marqueeDoc.querySelectorAll(`.${className}`).forEach((element) => {
+      if (className === 'cta') {
+        const link = element.querySelector('a');
+        if (link.href.indexOf('#watch-now') > -1) {
+          return;
+        }
+      }
+      textElements.push(element.innerHTML);
+    });
+  });
+
+  /*
+   * background
+   */
+
+  const background =  WebImporter.DOMUtils.getImgFromBackground(marqueeDoc, document) || '#F8F8F8';
+
+  /*
+   * image + resource
+   */
+
+  let resource = null;
+
+  const image = marqueeDoc.querySelector('.image');
+
+  if (image) {
+    let img = image.querySelector('img');
+    if (img) {
+      resource = createImage(document, img.src);
+    }
+    
+    const link = image.querySelector('a');
+    if (link) {
+      if (link.href.indexOf('#watch-now') > -1) {
+        const watchNowEl = document.querySelector('#watch-now');
+        if (watchNowEl) {
+          const videoIframe = watchNowEl.querySelector('iframe');
+          if (videoIframe) {
+            resource = videoIframe.src || videoIframe.dataset.videoSrc;
+          }
+        }
+      }
+    }
   }
-  const title = marqueeDoc.querySelector('h1')?.textContent;
-  const bgURL = marqueeDoc.style.backgroundImage?.slice(4, -1).replace(/"/g, "") || '';
-  const priceElement = marqueeDoc.querySelectorAll('b')[0]?.parentElement;
-  const price = priceElement ? priceElement.outerHTML : '<p><b>Price:</b> Free</p>';
-  const lengthElement = marqueeDoc.querySelectorAll('b')[1]?.parentElement;
-  const webinarDuration = getMetadataValue(document, 'webinarDuration');
-  const length = lengthElement ? lengthElement.outerHTML : `<p><b>Length:</b> ${ webinarDuration ? `${webinarDuration} min` : 'Unkwown'}</p>`;
-  const description = marqueeDoc.querySelectorAll('b')[marqueeDoc.querySelectorAll('b').length-1]?.closest('.text').nextElementSibling;
-  let { pathname } = originalURL;
-  let path = pathname.replace('.html', '');
-  let cta = marqueeDoc.querySelector('.dexter-Cta a');
-  if (cta) {
-    cta.href = `/fragments/resources/modal/forms/${path.split('/').at(-1)}#faas-form`;
-  }
-  let bg = '#f5f5f5'
-  if (bgURL) {
-    bg = document.createElement('img');
-    bg.src = bgURL;
-  }
+
+  /*
+   * create table
+   */
+
   const cells = [
     ['marquee (small, light)'],
-    [bg],
-    [`<h1>${title}</h1>
-    ${price}
-    ${length}
-    ${description ? description.textContent : ''}
-    ${cta ? `<strong>${cta.outerHTML}</strong>` : ''}`,
-    marqueeDoc.querySelector('img') || ''],
+    [background],
+    [textElements.join(''), (resource || '')],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
   document.querySelector('h1')?.remove();
@@ -98,54 +112,18 @@ const createMarquee = (main, document, originalURL) => {
   return table;
 };
 
-const createEventSpeakers = (main, document) => {
-  const h2 = document.querySelector('.title h2');
-  if (!h2) return '';
-  const parent = h2.closest('.position');
-  const speakers = [];
-  parent.querySelectorAll('img').forEach((image) => {
-    if (image.src) {
-      const speaker = [];
-      speaker.push(image);
-      const texts = image.closest('.image').nextElementSibling.querySelectorAll('.cmp-text');
-      speaker.push(`<p><strong>${texts[0].innerHTML}</strong></p><p>${texts[1]?.innerHTML}</p>`);
-      const secoundTexts = [];
-      for(let i = 2; i < texts.length; i++) {
-        if (!texts[i].closest('.text').nextElementSibling?.classList.contains('cta')) {
-          secoundTexts.push(`<p>${texts[i].innerHTML}</p`); 
-        }
-      };
-      speaker.push(`${secoundTexts}`);
-      speaker.push(`${image.closest('.image').nextElementSibling.querySelector('a')?.textContent || ''}`);
-      speakers.push(speaker);
-    }
-  });
-  if (!speakers.length) {
-    return '';
-  }
-  const cells = [
-    ['Event Speakers'],
-    ...speakers,
-  ];
-  parent.remove();
-  const table = WebImporter.DOMUtils.createTable(cells, document);
-  return table;
-};
-
-const createRelatedProducts = (main, document) => {
-  const relatedProducts = document.querySelector('.title h2')?.closest('.position');
-  if (relatedProducts) {
-    relatedProducts.nextElementSibling?.remove();
-    const cells = [
-      ['Text (vertical)'],
-      ['#f5f5f5'],
-      [relatedProducts],
-    ];
-    const table = WebImporter.DOMUtils.createTable(cells, document);
-    return table;
-  }
-  return '';
-};
+// const createCardMetadata = (main, document) => {  
+//   const cells = [
+//     ['Card Metadata'],
+//     ['title', getMetadataValue(document, 'cardTitle')],
+//     ['cardImagePath', createImage(document,`https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`)],
+//     ['CardDescription', getMetadataValue(document, 'cardDesc')],
+//     ['primaryTag', `caas:content-type/${getMetadataValue(document, 'caas:content-type')}`],
+//     ['tags', `${getMetadataValue(document, 'cq:tags')}`],
+//   ];
+//   const table = WebImporter.DOMUtils.createTable(cells, document);
+//   return table;
+// };
 
 const appendBackward = (elements, main) => {
   for (let i=elements.length-1; i>=0; i--) {
@@ -232,10 +210,6 @@ const createBreadcrumbs = (document) => {
 
 
 export default {
-  onLoad: async ({ document }) => {
-    await waitForFaasForm(document);
-  },
-
   /**
    * Apply DOM operations to the provided document and return
    * the root element to be then transformed to Markdown.
@@ -245,8 +219,6 @@ export default {
   transformDOM: async ({ document, params}) => {
     await setGlobals(params.originalURL);
     console.log(window.fetchUrl);
-    const titleElement = document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-text');
-    const formLink = handleFaasForm(document, document, titleElement);
     
     const [breadcrumbType, breadcrumb] = createBreadcrumbs(document);
 
@@ -265,91 +237,33 @@ export default {
     const elementsToGo = [];
     elementsToGo.push(breadcrumb);
     elementsToGo.push(createMarquee(main, document, new URL(params.originalURL)));
-    const h2 = document.querySelector('.title h2');
-    if (h2) {
-      elementsToGo.push(h2);
-    }
-
-    const eventSpeakers = createEventSpeakers(main, document);
-    if (eventSpeakers) {
-      if (formLink) {
-        elementsToGo.push(document.createElement('hr'));
-        const form = document.createElement('p');
-        form.append(formLink);
-        elementsToGo.push(form);
-      }
-
-      elementsToGo.push(document.createElement('hr'));
-      elementsToGo.push(eventSpeakers);
-      elementsToGo.push(createRelatedProducts(main, document));
-      elementsToGo.push(WebImporter.DOMUtils.createTable([
-        ['Section Metadata'],
-        ['style', 'Two-up'],
-      ], document));
-      elementsToGo.push(document.createElement('hr'));
-    } else {
-      // try to find the content
-      elementsToGo.push(document.createElement('hr'));
-      let content;
-
-      [...document.querySelectorAll('.dexter-FlexContainer .text p')].some((p) => {
-        console.log('looking at',p.textContent.trim());
-        const str = p.textContent.trim().toLowerCase();
-        if (str && !str.match(/\|.*\|/) && !str.match(/\/.*\//)) {
-          console.log('found',p.textContent);
-          content = p.closest('.dexter-FlexContainer');
-          return true;
-        }
-        return false;
-      });
-
-      if (content) {
-        if (formLink) {
-          const form = document.createElement('p');
-          form.append(formLink);
-        
-          const cells = [['Columns (contained)']];
-          cells.push([content, form])
-          const table = WebImporter.DOMUtils.createTable(cells, document);
-          elementsToGo.push(table);
-        } else {
-          elementsToGo.push(content);
-        }
-        elementsToGo.push(document.createElement('hr'));
-      } else {
-        if (formLink) {
-          const form = document.createElement('p');
-          form.append(formLink);
-          elementsToGo.push(form);
-          elementsToGo.push(document.createElement('hr'));
-        }
-      }
-    }
+    elementsToGo.push(document.createElement('hr'));
+    // const h2 = document.querySelector('.title h2');
+    // if (h2) {
+    //   elementsToGo.push(h2);
+    // }
 
     appendBackward(elementsToGo, main);
-    
-    // All other content from page should be automatically added here //
-    const recommendedArticles = document.createElement('p');
-    recommendedArticles.append(await getRecommendedArticles(main, document));
-    main.append(recommendedArticles);
 
+
+    // All other content from page should be automatically added here //
     document.querySelectorAll('.cta a').forEach(link => {link.href.includes('/resources/main') ? link.remove() : false});
-    
+
     // Bottom area
     const cells = [
       ['Section Metadata'],
-      ['style', 'L spacing, center'],
+      ['style', 'xl spacing'],
     ];
     const table = WebImporter.DOMUtils.createTable(cells, document);
     main.append(table);
     elementsToGo.push(document.createElement('hr'));
     main.append(createMetadata(main, document));
-    
-    // if robots doesn't have noindex include Card Metadata;
-    if (!getMetadataValue(document, 'robots')?.toLowerCase()?.includes('noindex')) {
-      main.append(createCardMetadata(main, document));
-    }
-    
+
+    // // if robots doesn't have noindex include Card Metadata;
+    // if (!getMetadataValue(document, 'robots')?.toLowerCase()?.includes('noindex')) {
+    //   main.append(createCardMetadata(main, document));
+    // }
+
     return main;
   },
 
