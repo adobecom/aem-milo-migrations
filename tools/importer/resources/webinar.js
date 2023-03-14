@@ -12,7 +12,7 @@
 /* eslint-disable no-console, class-methods-use-this */
 
 import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
-import { cleanupHeadings, setGlobals, findPaths, getMetadataValue, getRecommendedArticles } from '../utils.js';
+import { cleanupHeadings, setGlobals, findPaths, getJSONValues, getMetadataValue, getRecommendedArticles } from '../utils.js';
 
 const createMetadata = (main, document) => {
   const meta = {};
@@ -44,13 +44,15 @@ const createImage = (document, url)  => {
 };
 
 const createCardMetadata = (main, document) => {  
+  const cqTags = getJSONValues(window.jcrContent, 'cq:tags');
+
   const cells = [
     ['Card Metadata'],
     ['cardTitle', getMetadataValue(document, 'cardTitle')],
     ['cardImagePath', createImage(document,`https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`)],
     ['CardDescription', getMetadataValue(document, 'cardDesc')],
     ['primaryTag', `caas:content-type/${getMetadataValue(document, 'caas:content-type')}`],
-    ['tags', `${getMetadataValue(document, 'cq:tags')}`],
+    ['tags', cqTags.length ? cqTags.join(', ') : ''],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
   return table;
