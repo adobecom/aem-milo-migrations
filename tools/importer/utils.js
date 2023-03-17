@@ -240,7 +240,7 @@ export async function setGlobals(originalURL) {
   const importURL = new URL(originalURL);
   let { pathname } = importURL;
   const localFromURL = pathname.split('/')[1];
-  if (localFromURL.startsWith('resource')) {
+  if (localFromURL.startsWith('resource') || localFromURL.startsWith('products') || localFromURL.startsWith('solutions')) {
     pathname = `/us/en${pathname.replace('.html', '')}`;
   } else {
     pathname = pathname.replace(localFromURL, localMap[localFromURL]);
@@ -256,3 +256,53 @@ export async function setGlobals(originalURL) {
     window.jcrContent = {};
   }
 }
+
+export function getElementByXpath(doc, path) {
+  return doc.evaluate(path, doc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+}
+
+export function rgbToHex(rgbString) {
+  let c = rgbString;
+  if (c.startsWith('rgb')) {
+    var arr=[]; c.replace(/[\d+\.]+/g, function(v) { arr.push(parseFloat(v)); });
+    c = "#" + arr.slice(0, 3).map(toHex).join("");
+  }
+
+  return c;
+}
+
+function toHex(int) {
+  var hex = int.toString(16);
+  return hex.length == 1 ? "0" + hex : hex;
+}
+
+export function getXPathByElement(elm, addClass = false) {
+  // var allNodes = document.getElementsByTagName('*');
+  for (var segs = []; elm && elm.nodeType == 1; elm = elm.parentNode) {
+    /*if (elm.hasAttribute('id')) {
+        var uniqueIdCount = 0;
+        for (var n=0;n < allNodes.length;n++) {
+            if (allNodes[n].hasAttribute('id') && allNodes[n].id == elm.id) uniqueIdCount++;
+            if (uniqueIdCount > 1) break;
+        };
+        if ( uniqueIdCount == 1) {
+            segs.unshift('id("' + elm.getAttribute('id') + '")');
+            return segs.join('/');
+        } else {
+            segs.unshift(elm.localName.toLowerCase() + '[@id="' + elm.getAttribute('id') + '"]');
+        }
+    } else if (elm.hasAttribute('class')) {
+        segs.unshift(elm.localName.toLowerCase() + '[@class="' + [...elm.classList].join(" ").trim() + '"]');
+    } else {*/
+    if (addClass && elm.hasAttribute('class')) {
+      segs.unshift(elm.localName.toLowerCase() + '[@class="' + [...elm.classList].join(" ").trim() + '"]');
+    } else {
+
+        for (var i = 1, sib = elm.previousSibling; sib; sib = sib.previousSibling) {
+            if (sib.localName == elm.localName) { i++; }
+        }
+        segs.unshift(elm.localName.toLowerCase() + '[' + i + ']');
+    }
+  }
+  return segs.length ? '/' + segs.join('/') : null;
+};
