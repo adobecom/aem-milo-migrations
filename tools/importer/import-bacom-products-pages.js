@@ -83,14 +83,6 @@ export default {
      * init globals and constants
      */
 
-    WebImporter.DOMUtils.remove(document, [
-      '.dexter-Spacer',
-    ]);
-
-    /*
-     * init globals and constants
-     */
-
     await setGlobals(params.originalURL);
 
     const main = document.querySelector('main');
@@ -119,7 +111,10 @@ export default {
       var section = sectionsData[i];
       if (section.block.type !== 'na') {
         const el = getElementByXpath(document, '/' + section.xpath);
-  
+        WebImporter.DOMUtils.remove(el, [
+          '.dexter-Spacer',
+        ]);
+
         if (sectionsRulesMap[section.block.type]) {
           // z-pattern special case (multiple elements)
           if (section.block.type === 'z-pattern') {
