@@ -15,10 +15,7 @@ import { parseMarquee } from './rules/marquee.js';
 import { parseText } from './rules/text.js';
 import { parseFragment } from './rules/fragment.js';
 import { parseCardMetadata, parseMetadata } from './rules/metadata.js';
-import {
-  parseRecommendedArticlesCAAS,
-  parseRelatedFeaturesCAAS,
-} from './rules/caas.js';
+import { parseCAASContent } from './rules/caas.js';
 import { parseZPattern } from './rules/z-pattern.js';
 import { parseAside } from './rules/aside.js';
 import { setGlobals } from './utils.js';
@@ -47,11 +44,10 @@ const sectionsRulesMap = {
   'aside': parseAside,
   'tree-view-two-up-section': parseTwoUpSectionMetadataWithTreeview,
   'media': parseMedia,
-  'recommended-articles': parseRecommendedArticlesCAAS,
-  'related-features': parseRelatedFeaturesCAAS,
   'two-up': parseTwoUpLayoutsSectionMetadata,
   'three-up': parseThreeUpLayoutsSectionMetadataGeneric,
   'see-what-makes-it-work': parse_seeWhatMakesItWork_Section,
+  'caas': parseCAASContent,
 };
 
 
