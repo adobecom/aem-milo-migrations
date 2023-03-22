@@ -12,9 +12,20 @@ export function parseThreeUpLayoutsSectionMetadataGeneric(el, document, section)
     ], document);
   });
 
-  return buildSectionMetadataLayoutGeneric(blocks, {
+  const sectionMetadataEl = buildSectionMetadataLayoutGeneric(blocks, {
     style: 'XL spacing, three up, grid-width-12',
   }, document);
+
+  // look for possible title and text before the "columns" elements
+  const beforeLayoutText = el.querySelector('.title, .text');
+  if (beforeLayoutText) {
+    sectionMetadataEl.prepend(WebImporter.DOMUtils.createTable([
+      ['text (center, xs spacing)'],
+      [beforeLayoutText.parentElement],
+    ], document));
+  }
+
+  return sectionMetadataEl;
 }
 
 export function parseTwoUpLayoutsSectionMetadata(el, document, section) {
