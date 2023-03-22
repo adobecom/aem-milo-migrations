@@ -3,7 +3,7 @@ import { findPaths } from '../utils.js';
 
 export function parseBreadcrumb(document) {
   // default breadcrumb
-  const defaultLink = window.local.split('/')[0] || '';
+  const defaultLink = window.local?.split('/')[0] || '';
   let bcType = 'default';
   let bcContent = WebImporter.DOMUtils.createTable([['breadcrumbs'],[`<ul><li><a href="/${defaultLink}">Home</a></li><li>Adobe Resource Center</li></ul>`]], document);
 
