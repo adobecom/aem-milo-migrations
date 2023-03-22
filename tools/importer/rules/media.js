@@ -37,14 +37,14 @@ export function parseMedia(el, document, section) {
     textEls.append(els[i]);
   }
 
-  const mediaEls = [imgEl, textEls];
+  // sanitize links inside ul/li
+  textEls.querySelectorAll('ol li a, ul li a').forEach((a) => {
+    const t = a.textContent;
+    a.querySelectorAll('*').forEach((n) => n.remove());
+    a.textContent = t;
+  });
 
-  // if (els) {
-  //   const header = els.shift();
-  //   container.append(parseText(header, document, section));
-  // } else {
-  //   els = getNSiblingsElements(el, 2);
-  // }
+  const mediaEls = [imgEl, textEls];
 
   const cells = [ ['media (large, light)'] ];
 
