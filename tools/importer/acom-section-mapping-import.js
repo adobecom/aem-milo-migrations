@@ -50,7 +50,10 @@ const sectionsRulesMap = {
   'caas': parseCAASContent,
 };
 
-
+const sectionsToReport = [
+  'unknown',
+  'caas',
+];
 
 export default {
   onLoad: async ({ document, url, params }) => {
@@ -73,7 +76,7 @@ export default {
     );
   },
 
-  transformDOM: async ({ document, params }) => {
+  transform: async ({ document, params }) => {
 
     /*
      * init globals and constants
@@ -84,6 +87,10 @@ export default {
     const main = document.querySelector('main');
     const elsToPush = [];
     const elsToRemove = [];
+
+    // init sections report
+    const sectionsReport = {};
+    sectionsToReport.forEach((section) => { sectionsReport[section + '-blocks'] = 0; });
 
     // get sections data
     const sectionsData = await getSectionsData(params.originalURL);
@@ -110,6 +117,11 @@ export default {
         WebImporter.DOMUtils.remove(el, [
           '.dexter-Spacer',
         ]);
+
+        // report special sections
+        if (sectionsToReport.includes(section.block.type)) {
+          sectionsReport[section.block.type + '-blocks']++;
+        }
 
         if (sectionsRulesMap[section.block.type]) {
           // z-pattern special case (multiple elements)
@@ -175,11 +187,19 @@ export default {
 
 
 
+
+
+
     /*
-     * return the modified DOM
+     * return + custom report
      */
 
-    return main;
+    return [{
+      element: main,
+      path: generateDocumentPath({ document, url: params.originalURL }),
+      report: sectionsReport,
+    }];
+
   },
 
   /**
@@ -188,9 +208,12 @@ export default {
    * @param {String} url The url of the document being transformed.
    * @param {HTMLDocument} document The document
    */
-  generateDocumentPath: ({ document, url }) => {
-    const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '');
-    return WebImporter.FileUtils.sanitizePath(path);
-  },
+  generateDocumentPath: generateDocumentPath,
 
 };
+
+function generateDocumentPath({ document, url }) {
+  let { pathname } = new URL(url);
+  pathname = pathname.replace('.html', '');
+  return WebImporter.FileUtils.sanitizePath(pathname);
+}
