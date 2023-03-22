@@ -5,7 +5,7 @@ const createImage = (document, url)  => {
   return img;
 };
 
-export async function parseMarquee(el, document, section, backgroundColor = '#000000') {
+export async function parseMarquee(el, document, section, backgroundColor = '') {
   let marqueeDoc = el;
 
   /*
