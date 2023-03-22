@@ -1,12 +1,26 @@
+import { getNSiblingsElements } from './utils.js';
 
-export async function parseZPattern(el, document, sections) {
+export async function parseZPattern(el, document, sectionsEls) {
+  let sections = sectionsEls;
+
   const cells = [
     ['z-pattern'],
   ];
 
-  const titleEl = sections[0].querySelector('.title, .text');
-  if (titleEl) {
-    cells.push([titleEl]);
+  if (sections.length === 1) {
+    sections = getNSiblingsElements(sections[0], (n) => n >= 2);
+
+    if (!sections[0].querySelector('img')) {
+      const titleEl = sections.shift().querySelector('.title, .text');
+      if (titleEl) {
+        cells.push([titleEl]);
+      }
+    }
+  } else {
+    const titleEl = sections[0].querySelector('.title, .text');
+    if (titleEl) {
+      cells.push([titleEl]);
+    }
   }
 
   sections.forEach(section => {
