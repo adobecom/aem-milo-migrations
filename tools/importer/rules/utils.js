@@ -14,7 +14,7 @@ import { getXPathByElement, rgbToHex } from '../utils.js';
 export const utf8ToB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
 export const b64ToUtf8 = (str) => decodeURIComponent(escape(window.atob(str)));
 
-export function getNSiblingsElements(el, n) {
+export function getNSiblingsElements(el, document, n) {
   let cmpFn = n;
 
   if (!isNaN(n)) {
@@ -81,3 +81,13 @@ export function findImageFromCSS(el, document) {
 
   return img;
 }
+
+// >>> CSS Display not properly supported by JSDOM <<<
+// // determine if the element is visible (via CSS)
+// export function isVisible(el, document) {
+//   console.log(el);
+//   const d = document.defaultView.getComputedStyle(el).getPropertyValue('display');
+//   const r = d.match(/.*none.*/i) === null;
+//   console.log(d, r);
+//   return r;
+// }
