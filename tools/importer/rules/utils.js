@@ -51,7 +51,6 @@ export function getBGColor(el, document) {
   // strategy 2
   if (!bgcolor) {
     el.querySelectorAll('div').forEach(d => {
-      console.log(document.defaultView.getComputedStyle(d).getPropertyValue('background-color'));
       const bg = document.defaultView.getComputedStyle(d).getPropertyValue('background-color');
       if (bg != '') {
         bgcolor = rgbToHex(bg);
