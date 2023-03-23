@@ -1,14 +1,19 @@
-import { getNSiblingsElements } from './utils.js';
+import { findImageFromCSS, getNSiblingsElements } from './utils.js';
 
 
 
 export function parseThreeUpLayoutsSectionMetadataGeneric(el, document, section) {
   const els = getNSiblingsElements(el, (n) => n >= 3);
 
-  const blocks = els.map(element => {
+  const blocks = els.map(e => {
+    const img = findImageFromCSS(e, document);
+    if (img) {
+      e.prepend(img);
+    }
+
     return WebImporter.DOMUtils.createTable([
       ['text'],
-      [element],
+      [e],
     ], document);
   });
 
@@ -35,10 +40,15 @@ export function parseTwoUpLayoutsSectionMetadata(el, document, section) {
     els = getNSiblingsElements(els[0], (n) => n >= 2);
   }
 
-  const blocks = els.map(element => {
+  const blocks = els.map(e => {
+    const img = findImageFromCSS(e, document);
+    if (img) {
+      e.prepend(img);
+    }
+
     return WebImporter.DOMUtils.createTable([
       ['text'],
-      [element],
+      [e],
     ], document);
   });
 

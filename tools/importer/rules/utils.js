@@ -61,3 +61,24 @@ export function getBGColor(el, document) {
 
   return bgcolor;
 }
+
+export function findImageFromCSS(el, document) {
+  let url = null;
+  [...el.querySelectorAll('div')].some(d => {
+    const bg = document.defaultView.getComputedStyle(d).getPropertyValue('background-image');
+    if (bg != '') {
+      console.log('getImageFromCSS', bg);
+      url = bg;
+      return true;
+    }
+  });
+
+  let img = null;
+  if (url && url.toLowerCase() !== 'none') {
+    const src = url.replace(/url\(/gm, '').replace(/'/gm, '').replace(/\)/gm, '');
+    img = document.createElement('img');
+    img.src = src;
+  }
+
+  return img;
+}
