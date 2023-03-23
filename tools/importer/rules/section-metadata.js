@@ -29,7 +29,11 @@ export function parseThreeUpLayoutsSectionMetadataGeneric(el, document, section)
 }
 
 export function parseTwoUpLayoutsSectionMetadata(el, document, section) {
-  const els = getNSiblingsElements(el, (n) => n >= 2);
+  let els = getNSiblingsElements(el, (n) => n >= 2);
+
+  if (els.length === 2 && els[1].textContent.replaceAll('\n','').trim().length < 100) {
+    els = getNSiblingsElements(els[0], (n) => n >= 2);
+  }
 
   const blocks = els.map(element => {
     return WebImporter.DOMUtils.createTable([
