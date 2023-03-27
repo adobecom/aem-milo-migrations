@@ -23,7 +23,6 @@ import { parseBreadcrumb } from './rules/breadcrumb.js';
 import {
   parseTwoUpLayoutsSectionMetadata,
   parseThreeUpLayoutsSectionMetadataGeneric,
-  parseTwoUpSectionMetadataWithTreeview,
   parseTwoUpLayoutsSectionMetadataWithCardHor,
 } from './rules/section-metadata.js';
 import { parseUnknown } from './rules/unknown.js';
