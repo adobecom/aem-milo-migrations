@@ -14,7 +14,7 @@ import { getXPathByElement, rgbToHex } from '../utils.js';
 export const utf8ToB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
 export const b64ToUtf8 = (str) => decodeURIComponent(escape(window.atob(str)));
 
-export function getNSiblingsElements(el, document, n) {
+export function getNSiblingsElements(el, n) {
   let cmpFn = n;
 
   if (!isNaN(n)) {
