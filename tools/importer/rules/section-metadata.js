@@ -67,8 +67,6 @@ export function parseTwoUpLayoutsSectionMetadata(el, document, section) {
   return layoutEl;
 }
 
-
-
 export function parseTwoUpSectionMetadataWithTreeview(el, document, section) {
   const els = getNSiblingsElements(el, 2);
   
@@ -176,4 +174,17 @@ export function buildSectionMetadataLayoutGeneric(els, options, document) {
   container.append(document.createElement('hr'));
 
   return container;
+}
+
+export function buildSectionMetadata(options, document) {
+  const cells = [
+    ['Section Metadata'],
+  ];
+
+  if (options) {
+    Object.keys(options).forEach((key) => {
+      cells.push([key, options[key]]);
+    });
+  }
+  return WebImporter.DOMUtils.createTable(cells, document);
 }
