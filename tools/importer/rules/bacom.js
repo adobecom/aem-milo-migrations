@@ -1,5 +1,5 @@
 import { getBGColor, getNSiblingsElements } from './utils.js';
-import { buildSectionMetadataLayoutGeneric } from './section-metadata.js';
+import { buildSectionMetadata, buildSectionMetadataLayoutGeneric } from './section-metadata.js';
 
 
 
@@ -45,14 +45,26 @@ const BACOM_PRODUCTS_FRAGMENT_URL_RELATED_CONTENT = 'https://main--bacom--adobec
 const BACOM_PRODUCTS_FRAGMENT_URL_REQUEST_DEMO = 'https://main--bacom--adobecom.hlx.page/fragments/products/request-demo';
 
 export async function parseFragment_products_related_content_cards(el, document, section) {
-  const fragment = document.createElement('div');
+  const container = document.createElement('div');
+  container.append(document.createElement('hr'));
+
+  const title = document.createElement('h3');
+  title.textContent = 'Recommended for you';
+  container.append(title);
+
   const a = document.createElement('a');
   a.href = BACOM_PRODUCTS_FRAGMENT_URL_RELATED_CONTENT;
   a.innerHTML = BACOM_PRODUCTS_FRAGMENT_URL_RELATED_CONTENT;
   a.textContent = BACOM_PRODUCTS_FRAGMENT_URL_RELATED_CONTENT;
-  fragment.append(a);
+  container.append(a);
 
-  return fragment;
+  container.append(buildSectionMetadata({
+    style: 'center',
+  }, document));
+
+  container.append(document.createElement('hr'));
+
+  return container;
 }
 
 export async function parseFragment_fragment_products_request_demo_marquee(el, document, section) {
@@ -88,6 +100,8 @@ export function parseTwoUpSectionMetadataWithTreeview(el, document, section) {
   });
   
   return buildSectionMetadataLayoutGeneric(blocks, {
-    style: 'two-up, grid-template-columns-1-3, l spacing',
+    style: 'XXL spacing, two up, grid-width-12, xxxl-gap',
+    background: '#f5f5f5',
+    layout: '1 | 3',
   }, document);
 }
