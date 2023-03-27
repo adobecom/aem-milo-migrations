@@ -76,7 +76,7 @@ export function parseTwoUpSectionMetadataWithTreeview(el, document, section) {
     if (treeview) {
       block = 'tree-view';
       console.log(el.outerHTML);
-      treeview.querySelectorAll('input').forEach((input) => {
+      treeview.querySelectorAll('input, label.on').forEach((input) => {
         input.remove();
       });
       el = treeview;
