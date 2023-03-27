@@ -19,6 +19,9 @@ export async function parseZPattern(el, document, sectionsEls) {
     titleEl = sections[0].querySelector('.title, .text');
   }
   
+  // remove potential horizontal rule sub sections
+  sections = sections.filter((s) => !s.querySelector('.horizontalRule'));
+
   const rowEls = sections.map(section => {
     const rowTitle = section.querySelector('.title, .text');
     if (titleEl && rowTitle && rowTitle.textContent === titleEl.textContent) {
