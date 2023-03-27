@@ -24,6 +24,7 @@ import {
   parseTwoUpLayoutsSectionMetadata,
   parseThreeUpLayoutsSectionMetadataGeneric,
   parseTwoUpSectionMetadataWithTreeview,
+  parseTwoUpLayoutsSectionMetadataWithCardHor,
 } from './rules/section-metadata.js';
 import { parseUnknown } from './rules/unknown.js';
 import { getElementByXpath } from './utils.js';
@@ -50,6 +51,7 @@ const sectionsRulesMap = {
   'see-what-makes-it-work': parse_seeWhatMakesItWork_Section,
   'caas': parseCAASContent,
   'table-of-contents': parseTableOfContents,
+  'card-hor-two-up-section': parseTwoUpLayoutsSectionMetadataWithCardHor,
 };
 
 const sectionsToReport = [

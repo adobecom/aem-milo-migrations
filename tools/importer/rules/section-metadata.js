@@ -1,7 +1,6 @@
 import { findImageFromCSS, getNSiblingsElements } from './utils.js';
 
 
-
 export function parseThreeUpLayoutsSectionMetadataGeneric(el, document, section) {
   const els = getNSiblingsElements(el, (n) => n >= 3);
 
@@ -96,6 +95,62 @@ export function parseTwoUpSectionMetadataWithTreeview(el, document, section) {
   }, document);
 }
 
+
+export function parseTwoUpLayoutsSectionMetadataWithCardHor(el, document, section) {
+  let els = getNSiblingsElements(el, (n) => n >= 2);
+
+  let titleLayoutEl = null;
+  let isPost = false
+  if (els.length === 2 && els[1].textContent.replaceAll('\n','').trim().length < 100) {
+    titleLayoutEl = els[1];
+    els = getNSiblingsElements(els[0], (n) => n >= 2);
+    isPost = true
+  } else if(els.length === 2 && els[0].textContent.replaceAll('\n','').trim().length < 100) {
+    titleLayoutEl = els[0];
+    els = getNSiblingsElements(els[1], (n) => n >= 2);
+  }
+
+  const blocks = els.map(e => {
+    const imageContainer = e.querySelector('.image');
+    const image = imageContainer.querySelector('img') || '';
+    const content = imageContainer.nextElementSibling || '';
+    const title = content.querySelector('p')
+    const link = content.querySelector('a')
+    const h2 = document.createElement('h2')
+    h2.append(link)
+
+    const item = document.createElement('div')
+    item.append(image)
+    item.append(document.createElement('br'))
+    item.append(title)
+    item.append(document.createElement('br'))
+    item.append(h2)
+
+    return WebImporter.DOMUtils.createTable([
+      ['card-horizontal'],
+      [item]
+    ], document);
+  });
+
+  const layoutEl = buildSectionMetadataLayoutGeneric(blocks, {
+    style: 'XL spacing, two up, grid-width-12',
+  }, document);
+
+  if (titleLayoutEl) {
+    const titleTable = WebImporter.DOMUtils.createTable([
+      ['text (center, xs spacing)'],
+      [titleLayoutEl],
+    ], document)
+
+    if(isPost){
+      layoutEl.append(titleTable)
+    } else {
+      layoutEl.prepend(titleTable)
+    }
+  }
+
+  return layoutEl;
+}
 
 
 export function buildSectionMetadataLayoutGeneric(els, options, document) {
