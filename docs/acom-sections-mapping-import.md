@@ -3,12 +3,15 @@ adobe.com Sections Mapping Import
 
 ## Requirements
 
+* Node.js >= 18.15.0 (check via `node -v`)
 * [franklin-bulk](https://github.com/catalan-adobe/franklin-bulk-cli) CLI
 * [acom-franklin-import-sections-mapping](https://github.com/catalan-adobe/franklin-importer-service/tree/main/apps/acom-sections-mapping) CLI
 
 
 
 ## Flow
+
+
 
 ### 1. Prepare Sections Mapping Data
 
@@ -28,11 +31,18 @@ The data will be generated in
 * `./sections-mapping/data` - The sections screenshots for each page + the section metadata json file
 * `./sections-mapping/blocks` - The blocks folder structure (where to copy the sections screenshots)
 
+The `prepare` command will auto-generate blocks folder (`./sections-mapping/blocks/<BLOCK_NAME>`) for all known [Milo blocks](https://milo.adobe.com/docs/library/library.json).
+
+You will have to create extra block folders for each type you plan to get imported (ex. `three-up`, `two-up`, `caas`, ...)
+
+
 ### 2. Classify the Sections
 
 > For each section we want to know what type of block to use
 
-This is a manual process, you need to move each section screenshot (from 1.) into the relevant `sections-mapping/blocks/XXXX` folder
+This is a manual process, you need to move each section screenshot (from 1.) into the relevant `sections-mapping/blocks/<BLOCK_NAME>` folder
+
+
 
 ### 3. Start the Sections Mapping Server
 
