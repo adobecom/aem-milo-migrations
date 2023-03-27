@@ -29,6 +29,7 @@ import { parseUnknown } from './rules/unknown.js';
 import { getElementByXpath } from './utils.js';
 import { parseMedia } from './rules/media.js';
 import { parse_seeWhatMakesItWork_Section } from './rules/bacom.js';
+import { parseTableOfContents } from './rules/table-of-contents.js';
 
 
 /*
@@ -48,6 +49,7 @@ const sectionsRulesMap = {
   'three-up': parseThreeUpLayoutsSectionMetadataGeneric,
   'see-what-makes-it-work': parse_seeWhatMakesItWork_Section,
   'caas': parseCAASContent,
+  'table-of-contents': parseTableOfContents,
 };
 
 const sectionsToReport = [
