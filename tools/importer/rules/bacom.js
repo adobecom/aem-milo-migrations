@@ -4,13 +4,43 @@ import { buildSectionMetadata, buildSectionMetadataLayoutGeneric } from './secti
 
 
 export function parse_seeWhatMakesItWork_Section(el, document, section) {
-  // return document.createElement('div');
-  const els = getNSiblingsElements(el, 4);
+  const defaultTitle = 'See what makes it work';
 
-  const blocks = els.filter((el) => {
-    return !el.querySelector('.title');
+  // // remove first title (should be the main "See what makes it work" title)
+  // el.querySelector('.title').remove();
+
+  let blocks = [];
+  
+  // get image first
+  blocks.push(el.querySelector('img'));
+
+  // return document.createElement('div');
+  let els = getNSiblingsElements(el, (n) => n >= 3);
+
+  if (!els) {
+    els = getNSiblingsElements(el, (n) => n >= 2);
+  }
+
+  // blocks.push(...els.filter((el) => {
+  //   return !el.querySelector('img') && !el.classList.contains('title');
+  // }));
+
+  els = els.filter((el) => {
+    return !el.querySelector('img') && !el.classList.contains('title');
   });
 
+  const textsCol1 = document.createElement('div');
+  const textsCol2 = document.createElement('div');
+  for (var i = 0; i < els.length; i += 2) {
+    textsCol1.append(els[i]);
+    if (els[i + 1]) {
+      textsCol2.append(els[i + 1]);
+    }
+  }
+
+  blocks.push(textsCol1);
+  blocks.push(textsCol2);
+  
   blocks.forEach((el, idx) => {
     if (!el.querySelector('img')) {
       blocks[idx] = WebImporter.DOMUtils.createTable([
@@ -19,9 +49,10 @@ export function parse_seeWhatMakesItWork_Section(el, document, section) {
       ], document);
     }
   });
+    
 
   const title = document.createElement('h3');
-  title.textContent = 'See what makes it work';
+  title.textContent = defaultTitle;
 
   const container = document.createElement('div');
 
