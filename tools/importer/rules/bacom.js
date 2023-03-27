@@ -66,3 +66,28 @@ export async function parseFragment_fragment_products_request_demo_marquee(el, d
   return fragment;
 }
 
+
+export function parseTwoUpSectionMetadataWithTreeview(el, document, section) {
+  const els = getNSiblingsElements(el, 2);
+  
+  const blocks = els.map((el) => {
+    let block = 'text';
+    const treeview = el.querySelector('.treeview');
+    if (treeview) {
+      block = 'tree-view';
+      console.log(el.outerHTML);
+      treeview.querySelectorAll('input').forEach((input) => {
+        input.remove();
+      });
+      el = treeview;
+    }
+    return WebImporter.DOMUtils.createTable([
+      [block],
+      [el],
+    ], document);
+  });
+  
+  return buildSectionMetadataLayoutGeneric(blocks, {
+    style: 'two-up, grid-template-columns-1-3, l spacing',
+  }, document);
+}

@@ -23,7 +23,6 @@ import { parseBreadcrumb } from './rules/breadcrumb.js';
 import {
   parseTwoUpLayoutsSectionMetadata,
   parseThreeUpLayoutsSectionMetadataGeneric,
-  parseTwoUpSectionMetadataWithTreeview,
 } from './rules/section-metadata.js';
 import { parseUnknown } from './rules/unknown.js';
 import { getElementByXpath } from './utils.js';
@@ -32,6 +31,8 @@ import {
   parse_seeWhatMakesItWork_Section,
   parseFragment_products_related_content_cards,
   parseFragment_fragment_products_request_demo_marquee,
+  parseTwoUpSectionMetadataWithTreeview,
+} from './rules/bacom.js';
 
 
 /*
