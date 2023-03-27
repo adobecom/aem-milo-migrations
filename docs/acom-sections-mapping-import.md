@@ -4,7 +4,7 @@ adobe.com Sections Mapping Import
 ## Requirements
 
 * [franklin-bulk](https://github.com/catalan-adobe/franklin-bulk-cli) CLI
-* [acom-franklin-import-sections-mapping]([https://github.com/catalan-adobe/franklin-importer-service/tree/main/apps/acom-sections-mapping](https://github.com/catalan-adobe/acom-franklin-import-sections-mapping) CLI
+* [acom-franklin-import-sections-mapping](https://github.com/catalan-adobe/franklin-importer-service/tree/main/apps/acom-sections-mapping) CLI
 
 
 
