@@ -28,7 +28,10 @@ import {
 import { parseUnknown } from './rules/unknown.js';
 import { getElementByXpath } from './utils.js';
 import { parseMedia } from './rules/media.js';
-import { parse_seeWhatMakesItWork_Section } from './rules/bacom.js';
+import {
+  parse_seeWhatMakesItWork_Section,
+  parseFragment_products_related_content_cards,
+  parseFragment_fragment_products_request_demo_marquee,
 
 
 /*
@@ -48,6 +51,8 @@ const sectionsRulesMap = {
   'three-up': parseThreeUpLayoutsSectionMetadataGeneric,
   'see-what-makes-it-work': parse_seeWhatMakesItWork_Section,
   'caas': parseCAASContent,
+  'fragment-products-related-content-cards': parseFragment_products_related_content_cards,
+  'fragment-products-request-demo-marquee': parseFragment_fragment_products_request_demo_marquee,
 };
 
 const sectionsToReport = [
