@@ -8,8 +8,6 @@ export function parseMedia(el, document, section) {
 
   let els = getNSiblingsElements(el, (c) => c >= 2);
 
-  console.log(els);
-
   // get image
   let imgIdx = -1;
   let imgEl = null;
