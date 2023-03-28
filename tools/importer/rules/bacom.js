@@ -151,4 +151,77 @@ export function parseTwoUpSectionMetadataWithTreeview(el, document, section) {
 
   return container;
 }
+
+
+export async function parse_marquee_with_treeview(el, document, section) {
+  const container = document.createElement('div');
+  container.append(document.createElement('hr'));
+
+  /*
+  * background
+  */
+
+  let background =  WebImporter.DOMUtils.getImgFromBackground(el, document)
+
+  // strategy 2
+  if (!background) {
+    el.querySelectorAll('div').forEach(d => {
+      const bg = document.defaultView.getComputedStyle(d).getPropertyValue('background-image');
+      if (bg !== '') {
+        background = WebImporter.DOMUtils.getImgFromBackground(d, document);
+      }
+    });
+  }
+
+  /*
+  * tree-view
+  */
+
+  container.append(parseTreeView(el, document));
+
+  /*
+  * texts
+  */
+
+  const textElements = document.createElement('div');
+
+  const title = el.querySelector('.title');
+  if (title) {
+    textElements.append(title);
+  }
+
+  const text = el.querySelector('.text');
+  if (text) {
+    textElements.append(text);
+  }
+
+  const cta = el.querySelector('.cta');
+  if (cta) {
+    const link = cta.querySelector('a');
+    if (link.href.indexOf('#watch-now') < 0) {
+      const str = document.createElement('B');
+      str.append(cta);
+      textElements.append(str); 
+    }
+  }
+  container.append(textElements);
+
+  /*
+   * section metadata block with background image
+   */
+
+  const smOptions = {
+    style: 'two up, grid-width-12, no-spacing',
+    layout: '1 | 3',
+  };
+
+  if (background) {
+    smOptions.background = background;
+  }
+  const sm = buildSectionMetadata(smOptions, document);
+  container.append(sm);
+
+  container.append(document.createElement('hr'));
+
+  return container;
 }

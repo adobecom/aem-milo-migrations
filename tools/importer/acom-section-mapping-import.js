@@ -34,6 +34,7 @@ import {
   parseFragment_products_related_content_cards,
   parseFragment_fragment_products_request_demo_marquee,
   parseTwoUpSectionMetadataWithTreeview,
+  parse_marquee_with_treeview,
 } from './rules/bacom.js';
 
 
@@ -58,6 +59,7 @@ const sectionsRulesMap = {
   'card-hor-two-up-section': parseTwoUpLayoutsSectionMetadataWithCardHor,
   'fragment-products-related-content-cards': parseFragment_products_related_content_cards,
   'fragment-products-request-demo-marquee': parseFragment_fragment_products_request_demo_marquee,
+  'marquee-with-treeview': parse_marquee_with_treeview,
 };
 
 const sectionsToReport = [
