@@ -124,6 +124,13 @@ export default {
       var section = sectionsData[i];
       if (section.block.type !== 'na') {
         const el = getElementByXpath(document, '/' + section.xpath);
+
+        // remove elements
+        if (section.block.type === 'to-remove') {
+          elsToRemove.push(el);
+          continue;
+        }
+
         WebImporter.DOMUtils.remove(el, [
           '.dexter-Spacer',
         ]);
