@@ -1,5 +1,7 @@
 import { getBGColor, getNSiblingsElements } from './utils.js';
 import { buildSectionMetadata, buildSectionMetadataLayoutGeneric } from './section-metadata.js';
+import { parseAccordion } from './accordion.js';
+import { parseTreeView } from './tree-view.js';
 
 
 
@@ -111,28 +113,42 @@ export async function parseFragment_fragment_products_request_demo_marquee(el, d
 
 
 export function parseTwoUpSectionMetadataWithTreeview(el, document, section) {
-  const els = getNSiblingsElements(el, 2);
-  
-  const blocks = els.map((el) => {
-    let block = 'text';
-    const treeview = el.querySelector('.treeview');
-    if (treeview) {
-      block = 'tree-view';
-      console.log(el.outerHTML);
-      treeview.querySelectorAll('input, label.on').forEach((input) => {
-        input.remove();
-      });
-      el = treeview;
+  const els = getNSiblingsElements(el, (n) => n >= 2);
+  const container = document.createElement('div');
+
+  // there is an extra element in the list, consider it a title to add before the section
+  if (els.length > 2) {
+    container.append(els.shift());
+  }
+
+  const blocks = [];
+  for (var i = 0; i < els.length; i += 1) {
+    let el = els[i];
+
+    let blockType = 'text';
+
+    if (el.querySelector('.treeview, .treeView')) {
+      const treeview = parseTreeView(el, document);
+      blocks.push(treeview);
+      continue;
+    } else if (el.querySelector('.accordion')) {
+      const accordion = parseAccordion(el, document);
+      blocks.push(accordion);
+      continue;
     }
-    return WebImporter.DOMUtils.createTable([
-      [block],
+
+    blocks.push(WebImporter.DOMUtils.createTable([
+      [blockType],
       [el],
-    ], document);
-  });
-  
-  return buildSectionMetadataLayoutGeneric(blocks, {
+    ], document));
+  }
+
+  container.append(buildSectionMetadataLayoutGeneric(blocks, {
     style: 'XXL spacing, two up, grid-width-12, xxxl-gap',
     background: '#f5f5f5',
     layout: '1 | 3',
-  }, document);
+  }, document));
+
+  return container;
+}
 }
