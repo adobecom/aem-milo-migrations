@@ -10,40 +10,62 @@ const createImage = (document, url)  => {
 export async function parseMarquee(el, document, section, backgroundColor = '') {
   let marqueeDoc = el
   let els = getNSiblingsElements(el, (c) => c == 2)
-  
-  // handle empty / hidden divs
-  let emptyNodeIndx = -1
-  for (var i = 0; i < els.length; i++) {
-    if (!els[i].hasChildNodes()) {
-      emptyNodeIndx = i
-      break
-    }
-  }
-  if (emptyNodeIndx >= 0) {
-    const targetInd = emptyNodeIndx == 0 ? emptyNodeIndx + 1 : emptyNodeIndx - 1
-    els = getNSiblingsElements(els[targetInd], (c) => c >= 2)
-  }
 
   const container = document.createElement('div')
+  if (els) {
+    // handle empty / hidden divs
+    let emptyNodeIndx = -1
+    for (var i = 0; i < els.length; i++) {
+      if (!els[i].hasChildNodes()) {
+        emptyNodeIndx = i
+        break
+      }
+    }
+    if (emptyNodeIndx >= 0) {
+      const targetInd = emptyNodeIndx == 0 ? emptyNodeIndx + 1 : emptyNodeIndx - 1
+      els = getNSiblingsElements(els[targetInd], (c) => c >= 2)
+    }
 
-  /*
-  * texts
-  */
-  for (var i = 0; i < els.length; i++) {
-    const tmpel = els[i];
-    const img = tmpel.querySelector('img')
-    const video = tmpel.querySelector('video.video-desktop')
-    if (!img && !video) {
-      container.append(tmpel)
+    /*
+    * texts
+    */
+    for (var i = 0; i < els.length; i++) {
+      const tmpel = els[i];
+      const img = tmpel.querySelector('img')
+      const video = tmpel.querySelector('video.video-desktop')
+      if (!img && !video) {
+        container.append(tmpel)
+      }
+    }
+
+    // sanitize links inside ul/li
+    container.querySelectorAll('ol li a, ul li a').forEach((a) => {
+      const t = a.textContent;
+      a.querySelectorAll('*').forEach((n) => n.remove());
+      a.textContent = t;
+    });
+  } else {
+    // strategy 2
+    const title = marqueeDoc.querySelector('.title');
+    if (title) {
+      container.append(title)
+    }
+  
+    const text = marqueeDoc.querySelector('.text');
+    if (text) {
+      container.append(text)
+    }
+  
+    const cta = marqueeDoc.querySelector('.cta');
+    if (cta) {
+      const link = cta.querySelector('a');
+      if (link.href.indexOf('#watch-now') < 0) {
+        const str = document.createElement('B');
+        str.append(cta);
+        container.append(str)
+      }
     }
   }
-
-  // sanitize links inside ul/li
-  container.querySelectorAll('ol li a, ul li a').forEach((a) => {
-    const t = a.textContent;
-    a.querySelectorAll('*').forEach((n) => n.remove());
-    a.textContent = t;
-  });
 
   /*
   * background
