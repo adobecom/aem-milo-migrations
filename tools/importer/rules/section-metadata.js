@@ -35,10 +35,15 @@ export function parseThreeUpLayoutsSectionMetadataGeneric(el, document, section)
 export function parseTwoUpLayoutsSectionMetadata(el, document, section) {
   let els = getNSiblingsElements(el, (n) => n >= 2);
 
-  let postLayoutEl = null;
+  let titleLayoutEl = null;
+  let isPost = false
   if (els.length === 2 && els[1].textContent.replaceAll('\n','').trim().length < 100) {
-    postLayoutEl = els[1];
+    titleLayoutEl = els[1];
     els = getNSiblingsElements(els[0], (n) => n >= 2);
+    isPost = true
+  } else if(els.length === 2 && els[0].textContent.replaceAll('\n','').trim().length < 100) {
+    titleLayoutEl = els[0];
+    els = getNSiblingsElements(els[1], (n) => n >= 2);
   }
 
   const blocks = els.map(e => {
@@ -57,11 +62,17 @@ export function parseTwoUpLayoutsSectionMetadata(el, document, section) {
     style: 'XL spacing, two up, grid-width-12',
   }, document);
 
-  if (postLayoutEl) {
-    layoutEl.append(WebImporter.DOMUtils.createTable([
+  if (titleLayoutEl) {
+    const titleTable = WebImporter.DOMUtils.createTable([
       ['text (center, xs spacing)'],
-      [postLayoutEl],
-    ], document));
+      [titleLayoutEl],
+    ], document)
+
+    if(isPost){
+      layoutEl.append(titleTable)
+    } else {
+      layoutEl.prepend(titleTable)
+    }
   }
 
   return layoutEl;
