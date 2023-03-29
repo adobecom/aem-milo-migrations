@@ -113,8 +113,13 @@ export async function parseFragment_fragment_products_request_demo_marquee(el, d
 
 
 export function parseTwoUpSectionMetadataWithTreeview(el, document, section) {
-  const els = getNSiblingsElements(el, (n) => n >= 2);
+  let els = getNSiblingsElements(el, (n) => n >= 2);
   const container = document.createElement('div');
+
+  // remove all empty elements from els
+  els = els.filter((el) => {
+    return el.textContent.replaceAll(/\s+/gm, '').trim() !== '';
+  });
 
   // there is an extra element in the list, consider it a title to add before the section
   if (els.length > 2) {

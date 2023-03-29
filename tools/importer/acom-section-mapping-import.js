@@ -135,6 +135,7 @@ export default {
 
         WebImporter.DOMUtils.remove(el, [
           '.dexter-Spacer',
+          'style',
         ]);
 
         // report special sections
