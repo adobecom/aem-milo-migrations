@@ -101,8 +101,8 @@ export default {
     const elsToRemove = [];
 
     // init sections report
-    const sectionsReport = {};
-    sectionsToReport.forEach((section) => { sectionsReport[section + '-blocks'] = 0; });
+    const IMPORT_REPORT = {};
+    sectionsToReport.forEach((section) => { IMPORT_REPORT[section + '-blocks'] = 0; });
 
     // get sections data
     const sectionsData = await getSectionsData(params.originalURL);
@@ -139,7 +139,7 @@ export default {
 
         // report special sections
         if (sectionsToReport.includes(section.block.type)) {
-          sectionsReport[section.block.type + '-blocks']++;
+          IMPORT_REPORT[section.block.type + '-blocks']++;
         }
 
         if (sectionsRulesMap[section.block.type]) {
@@ -180,6 +180,7 @@ export default {
     }
 
     
+    
     /*
      * global changes
      */
@@ -202,21 +203,23 @@ export default {
      */
     
     main.append(parseMetadata(document));
-    main.append(parseCardMetadata(document));
-
-
-
+    const { block, tagsConverted } = parseCardMetadata(document);
+    IMPORT_REPORT['tags converted?'] = tagsConverted.toString();
+    main.append(block);
 
 
 
     /*
-     * return + custom report
-     */
+    * return + custom report
+    */
+   
+    // make every report value a string
+    Object.keys(IMPORT_REPORT).map(k => (IMPORT_REPORT[k] = '' + IMPORT_REPORT[k]));
 
     return [{
       element: main,
       path: generateDocumentPath({ document, url: params.originalURL }),
-      report: sectionsReport,
+      report: IMPORT_REPORT,
     }];
 
   },
