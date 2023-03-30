@@ -16,9 +16,11 @@ import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue } from '
 import { parseCardMetadata } from '../rules/metadata.js';
 import { getBGColor, getNSiblingsElements } from '../rules/utils.js';
 
-async function delay(t, v) {
-  return new Promise(resolve => setTimeout(resolve, t, v));
-}
+const createImage = (document, url)  => {
+  const img = document.createElement('img');
+  img.src = url;
+  return img;
+};
 
 const createMarquee = (main, document) => {
   const el = document.querySelector('.dexter-FlexContainer') || document.querySelector('.dexter-Position');
@@ -116,7 +118,7 @@ const createMarquee = (main, document) => {
   }
 
   if (!background) {
-    background = backgroundColor;
+    background = '';
   }
 
   /*
