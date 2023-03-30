@@ -12,6 +12,7 @@
 /* eslint-disable no-console, class-methods-use-this */
 
 import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
+import { parseCardMetadata } from '../rules/metadata.js';
 import { cleanupHeadings, setGlobals, findPaths, getJSONValues, getMetadataValue, getRecommendedArticles } from '../utils.js';
 
 const createMetadata = (main, document) => {
@@ -41,21 +42,6 @@ const createImage = (document, url)  => {
   const img = document.createElement('img');
   img.src = url;
   return img;
-};
-
-const createCardMetadata = (main, document) => {  
-  const cqTags = getJSONValues(window.jcrContent, 'cq:tags');
-
-  const cells = [
-    ['Card Metadata'],
-    ['cardTitle', getMetadataValue(document, 'cardTitle')],
-    ['cardImagePath', createImage(document,`https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`)],
-    ['CardDescription', getMetadataValue(document, 'cardDesc')],
-    ['primaryTag', `caas:content-type/${getMetadataValue(document, 'caas:content-type')}`],
-    ['tags', cqTags.length ? cqTags.join(', ') : ''],
-  ];
-  const table = WebImporter.DOMUtils.createTable(cells, document);
-  return table;
 };
 
 const createMarquee = (main, document, originalURL) => {
@@ -347,7 +333,8 @@ export default {
     
     // if robots doesn't have noindex include Card Metadata;
     if (!getMetadataValue(document, 'robots')?.toLowerCase()?.includes('noindex')) {
-      main.append(createCardMetadata(main, document));
+      const { block, tagsConverted } = parseCardMetadata(document, params.originalURL);
+      main.append(block);
     }
     
     return main;
