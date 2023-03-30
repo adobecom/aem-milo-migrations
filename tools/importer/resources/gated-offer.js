@@ -13,25 +13,162 @@
 
 import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
 import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue } from '../utils.js';
+import { parseCardMetadata } from '../rules/metadata.js';
+import { getBGColor, getNSiblingsElements } from '../rules/utils.js';
 
 async function delay(t, v) {
   return new Promise(resolve => setTimeout(resolve, t, v));
 }
 
 const createMarquee = (main, document) => {
-  const marqueeDoc = document.querySelector('.dexter-FlexContainer') || document.querySelector('.dexter-Position');
-  const eyebrow = marqueeDoc.querySelector('p')?.textContent?.toUpperCase().trim() || 'REPORT';
-  const title = marqueeDoc.querySelector('h1')?.textContent;
-  const subTitle = marqueeDoc.querySelector('h3')?.textContent;
-  const img = marqueeDoc.querySelector('img') || '';
+  const el = document.querySelector('.dexter-FlexContainer') || document.querySelector('.dexter-Position');
+  let marqueeDoc = el
+  let els = getNSiblingsElements(el, (c) => c == 2)
+
+  const container = document.createElement('div')
+  if (els) {
+    // handle empty / hidden divs
+    let emptyNodeIndx = -1
+    for (var i = 0; i < els.length; i++) {
+      if (!els[i].hasChildNodes()) {
+        emptyNodeIndx = i
+        break
+      }
+    }
+    if (emptyNodeIndx >= 0) {
+      const targetInd = emptyNodeIndx == 0 ? emptyNodeIndx + 1 : emptyNodeIndx - 1
+      els = getNSiblingsElements(els[targetInd], (c) => c >= 2)
+    }
+
+    /*
+    * texts
+    */
+    for (var i = 0; i < els.length; i++) {
+      const tmpel = els[i];
+      const img = tmpel.querySelector('img')
+      const video = tmpel.querySelector('video.video-desktop')
+      if (!img && !video) {
+        container.append(tmpel)
+      }
+    }
+
+    // sanitize links inside ul/li
+    container.querySelectorAll('ol li a, ul li a').forEach((a) => {
+      const t = a.textContent;
+      a.querySelectorAll('*').forEach((n) => n.remove());
+      a.textContent = t;
+    });
+  } else {
+    // strategy 2
+    const title = marqueeDoc.querySelector('.title');
+    if (title) {
+      container.append(title)
+    }
+  
+    const text = marqueeDoc.querySelector('.text');
+    if (text) {
+      container.append(text)
+    }
+  
+    const cta = marqueeDoc.querySelector('.cta');
+    if (cta) {
+      const link = cta.querySelector('a');
+      if (link.href.indexOf('#watch-now') < 0) {
+        const str = document.createElement('B');
+        str.append(cta);
+        container.append(str)
+      }
+    }
+  }
+
+  /*
+  * background
+  */
+
+  let background =  WebImporter.DOMUtils.getImgFromBackground(marqueeDoc, document)
+  console.log('background', background);
+
+  // strategy 2
+  if (!background) {
+
+    marqueeDoc.querySelectorAll('div').forEach(d => {
+      const bg = document.defaultView.getComputedStyle(d).getPropertyValue('background-image');
+      if (bg !== '') {
+        background = WebImporter.DOMUtils.getImgFromBackground(d, document);
+      }
+      // console.log('bg', bg);
+    });
+
+    // const innerDivs = [...marqueeDoc.querySelectorAll('div')];
+    // const found = innerDivs.find(d => document.defaultView.getComputedStyle(d).getPropertyValue('background-image') !== '');
+    // console.log('found');
+    // console.log(found);
+    // console.log('found', document.defaultView.getComputedStyle(found).getPropertyValue('background-image'));
+  }
+
+  // strategy 3: get background color
+  
+  if (!background) {
+    const bgColor = getBGColor(el, document);
+    if (bgColor) {
+      background = bgColor
+    }
+  }
+
+  if (!background) {
+    background = backgroundColor;
+  }
+
+  /*
+  * image + resource
+  */
+
+  let resource = null;
+
+  const image = marqueeDoc.querySelector('.image');
+
+  if (image) {
+    let img = image.querySelector('img');
+    if (img) {
+      resource = createImage(document, img.src);
+    }
+    
+    const link = image.querySelector('a');
+    if (link) {
+      if (link.href.indexOf('#watch-now') > -1) {
+        const watchNowEl = document.querySelector('#watch-now');
+        if (watchNowEl) {
+          const videoIframe = watchNowEl.querySelector('iframe');
+          if (videoIframe) {
+            resource = videoIframe.src || videoIframe.dataset.videoSrc;
+          }
+        }
+      }
+    }
+  }
+
+  const video = marqueeDoc.querySelector('video.video-desktop');
+  if (video) {
+    const source = video.querySelector('source');
+    // const l = document.createElement('a');
+    // l.textContent = source.src;
+    // l.href = source.src;
+    resource = source.src;
+    console.log("Resource: " + JSON.stringify(resource))
+  }
+
+  /*
+  * create table
+  */
+
   const cells = [
-    ['marquee (small, light)'],
-    ['#f5f5f5'],
-    [`<h6>${eyebrow}</h6><h1>${title}</h1>${subTitle ? `<p>${subTitle}</p>` : ''}`, img],
+    ['marquee (medium, light)'],
+    [background],
+    [container, (resource || '')],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
-  document.querySelector('h1')?.remove();
-  marqueeDoc.remove();
+  // document.querySelector('h1')?.remove();
+  // marqueeDoc.remove();
   return table;
 };
 
@@ -81,24 +218,6 @@ const createMetadata = (main, document) => {
   return block;
 };
 
-const createCardMetadata = (main, document) => {
-  const img = document.createElement('img');
-  img.src = `https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`
-  
-  const cqTags = getJSONValues(window.jcrContent, 'cq:tags');
-
-  const cells = [
-    ['Card Metadata'],
-    ['cardTitle', getMetadataValue(document, 'cardTitle')],
-    ['cardImage', img],
-    ['CardDescription', getMetadataValue(document, 'cardDescription')],
-    ['primaryTag', `caas:content-type/${getMetadataValue(document, 'caas:content-type')}`],
-    ['Tags', cqTags.length ? cqTags.join(', ') : ''],
-  ];
-  const table = WebImporter.DOMUtils.createTable(cells, document);
-  return table;
-};
-
 const getFormLink = async (document, faasTitleSelector, originalURL) => {
   const formContainer = document.querySelector('.marketoForm');
   if (formContainer) {
@@ -146,7 +265,7 @@ export default {
    * @param {HTMLDocument} document The document
    * @returns {HTMLElement} The root element
    */
-  transformDOM: async ({ document, params }) => {
+  transform: async ({ document, params }) => {
     await setGlobals(params.originalURL);
     
     const faasTitleSelector = '.cmp-text.mobile-padding-top-48.mobile-padding-right-48.mobile-padding-left-48';
@@ -177,8 +296,11 @@ export default {
     main.append(createMetadata(main, document));
     
     // if robots doesn't have noindex include Card Metadata;
-    if (!getMetadataValue(document, 'robots').toLowerCase().includes('noindex')) {
-      main.append(createCardMetadata(main, document));
+    let tagsConvertedString = 'false'
+    if (!getMetadataValue(document, 'robots')?.toLowerCase()?.includes('noindex')) {
+      const { block, tagsConverted } = parseCardMetadata(document, params.originalURL);
+      tagsConvertedString = tagsConverted.toString()
+      main.append(block);
     }
 
     cleanupParagraphs(main);
@@ -188,7 +310,14 @@ export default {
     'style',
     ]);
     
-    return main;
+    return [{
+      element: main,
+      path: generateDocumentPath({ document, url: params.originalURL }),
+      report: {
+        'tags converted?': tagsConvertedString,
+      },
+    }];
+
   },
 
   /**
@@ -202,3 +331,8 @@ export default {
     return WebImporter.FileUtils.sanitizePath(path);
   },
 };
+
+const generateDocumentPath = ({ document, url }) => {
+  const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '');
+  return WebImporter.FileUtils.sanitizePath(path);
+}
