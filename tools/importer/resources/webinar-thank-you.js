@@ -12,6 +12,7 @@
 /* eslint-disable no-console, class-methods-use-this */
 
 import { findPaths, getMetadataValue, setGlobals } from '../utils.js';
+import { parseCardMetadata } from '../rules/metadata.js';
 
 const createMetadata = (main, document) => {
   const meta = {};
@@ -203,15 +204,20 @@ export default {
       });
     }
 
-
-
     /*
      * metadata
      */
 
     main.append(createMetadata(main, document));
 
-
+    
+    // if robots doesn't have noindex include Card Metadata;
+    let tagsConvertedString = 'false'
+    if (!getMetadataValue(document, 'robots')?.toLowerCase()?.includes('noindex')) {
+      const { block, tagsConverted } = parseCardMetadata(document, params.originalURL);
+      tagsConvertedString = tagsConverted.toString()
+      main.append(block);
+    }
 
     /*
      * return + custom report
@@ -222,6 +228,7 @@ export default {
       path: generateDocumentPath({ document, url: params.originalURL }),
       report: {
         'breadcrumb type': breadcrumbType,
+        'tags converted?': tagsConvertedString,
         'found video': foundVideo ? 'true' : 'false',
       },
     }];

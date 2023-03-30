@@ -228,7 +228,7 @@ export default {
    * @param {HTMLDocument} document The document
    * @returns {HTMLElement} The root element
    */
-  transformDOM: async ({ document, params}) => {
+  transform: async ({ document, params}) => {
     await setGlobals(params.originalURL);
     // console.log(window.fetchUrl);
     const titleElement = document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-text');
@@ -332,12 +332,26 @@ export default {
     main.append(createMetadata(main, document));
     
     // if robots doesn't have noindex include Card Metadata;
+    let tagsConvertedString = 'false'
     if (!getMetadataValue(document, 'robots')?.toLowerCase()?.includes('noindex')) {
       const { block, tagsConverted } = parseCardMetadata(document, params.originalURL);
+      tagsConvertedString = tagsConverted.toString()
       main.append(block);
     }
-    
-    return main;
+
+    /*
+     * return + custom report
+     */
+
+    return [{
+      element: main,
+      path: generateDocumentPath({ document, url: params.originalURL }),
+      report: {
+        'breadcrumb type': breadcrumbType,
+        'tags converted?': tagsConvertedString,
+      },
+    }];
+
   },
 
   /**
@@ -346,13 +360,29 @@ export default {
    * @param {String} url The url of the document being transformed.
    * @param {HTMLDocument} document The document
    */
-  generateDocumentPath: ({ document, url }) => {
-    let { pathname } = new URL(url);
-    const localFromURL = pathname.split('/')[1];
-    if (!localFromURL.startsWith('resource')) {
-      pathname = pathname.replace(localFromURL, window.local);
-    }
-    pathname = pathname.replace('.html', '');
-    return WebImporter.FileUtils.sanitizePath(pathname);
-  },
+    generateDocumentPath: ({ document, url }) => {
+      let { pathname } = new URL(url);
+      const localFromURL = pathname.split('/')[1];
+      if (!localFromURL.startsWith('resource')) {
+        pathname = pathname.replace(localFromURL, window.local);
+      }
+      pathname = pathname.replace('.html', '');
+      return WebImporter.FileUtils.sanitizePath(pathname);
+    },
 };
+
+/**
+   * Return a path that describes the document being transformed (file name, nesting...).
+   * The path is then used to create the corresponding Word document.
+   * @param {String} url The url of the document being transformed.
+   * @param {HTMLDocument} document The document
+   */
+const generateDocumentPath = ({ document, url }) => {
+  let { pathname } = new URL(url);
+  const localFromURL = pathname.split('/')[1];
+  if (!localFromURL.startsWith('resource')) {
+    pathname = pathname.replace(localFromURL, window.local);
+  }
+  pathname = pathname.replace('.html', '');
+  return WebImporter.FileUtils.sanitizePath(pathname);
+}
