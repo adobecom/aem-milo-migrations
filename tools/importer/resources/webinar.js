@@ -244,13 +244,13 @@ export default {
    */
   transformDOM: async ({ document, params}) => {
     await setGlobals(params.originalURL);
-    console.log(window.fetchUrl);
+    // console.log(window.fetchUrl);
     const titleElement = document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-text');
     const formLink = handleFaasForm(document, document, titleElement);
     
     const [breadcrumbType, breadcrumb] = createBreadcrumbs(document);
 
-    console.log(breadcrumbType, breadcrumb.innerHTML, params.originalURL);
+    // console.log(breadcrumbType, breadcrumb.innerHTML, params.originalURL);
 
     WebImporter.DOMUtils.remove(document, [
       `header, footer, .faas-form-settings, .xf, style, northstar-card-collection, consonant-card-collection`,
@@ -293,10 +293,10 @@ export default {
       let content;
 
       [...document.querySelectorAll('.dexter-FlexContainer .text p')].some((p) => {
-        console.log('looking at',p.textContent.trim());
+        // console.log('looking at',p.textContent.trim());
         const str = p.textContent.trim().toLowerCase();
         if (str && !str.match(/\|.*\|/) && !str.match(/\/.*\//)) {
-          console.log('found',p.textContent);
+          // console.log('found',p.textContent);
           content = p.closest('.dexter-FlexContainer');
           return true;
         }
