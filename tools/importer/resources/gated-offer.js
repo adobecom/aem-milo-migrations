@@ -177,9 +177,10 @@ const createMarquee = (main, document) => {
 const createColumns = (main, document, formLink) => {
   const firstBodyImage = document.querySelector('img');
   const contentBody = document.querySelectorAll('.flex')[1];
-  if (document.querySelector('img')?.parentElement.nodeName === 'DIV') {
-    firstBodyImage.remove();
-  }
+  // if (document.querySelector('img')?.parentElement.nodeName === 'DIV') {
+  //   firstBodyImage.remove();
+  // }
+  firstBodyImage.remove();
   if (formLink[0].nodeName === 'A') {
     const cells = [
       ['Columns (contained)'],
