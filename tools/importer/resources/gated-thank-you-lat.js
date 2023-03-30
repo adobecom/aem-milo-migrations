@@ -12,6 +12,7 @@
 /* eslint-disable no-console, class-methods-use-this */
 
 import { setGlobals, getMetadataValue, getJSONValues, isRelative, findPaths, createElementFromHTML, getRecommendedArticles } from '../utils.js';
+import { parseCardMetadata } from '../rules/metadata.js';
 
 const createMetadata = (main, document) => {
   const meta = {};
@@ -36,21 +37,6 @@ const createImage = (document, url)  => {
   const img = document.createElement('img');
   img.src = url;
   return img;
-};
-
-const createCardMetadata = (document) => {  
-  const cqTags = getJSONValues(window.jcrContent, 'cq:tags');
-
-  const cells = [
-    ['Card Metadata'],
-    ['title', getMetadataValue(document, 'cardTitle')],
-    ['cardImagePath', getMetadataValue(document, 'cardImagePath') === '' ? '' : createImage(document,`https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`)],
-    ['CardDescription', getMetadataValue(document, 'cardDesc')],
-    ['primaryTag', `caas:content-type/${getMetadataValue(document, 'caas:content-type')}`],
-    ['tags', cqTags.length ? cqTags.join(', ') : ''],
-  ];
-  const table = WebImporter.DOMUtils.createTable(cells, document);
-  return table;
 };
 
 const getResource = (main, document, originalURL) => {
@@ -193,7 +179,9 @@ export default {
      */
 
     main.append(createMetadata(main, document));
-    main.append(createCardMetadata(document));
+
+    const { block, tagsConverted } = parseCardMetadata(document, params.originalURL);
+    main.append(block);
     
 
 
