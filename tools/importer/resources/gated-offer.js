@@ -175,12 +175,11 @@ const createMarquee = (main, document) => {
 };
 
 const createColumns = (main, document, formLink) => {
-  const firstBodyImage = document.querySelector('img');
-  const contentBody = document.querySelectorAll('.flex')[1];
-  // if (document.querySelector('img')?.parentElement.nodeName === 'DIV') {
-  //   firstBodyImage.remove();
-  // }
-  firstBodyImage.remove();
+  const el = document
+  if (el.querySelector('.dexter-FlexContainer')) {
+    el.querySelector('.dexter-FlexContainer').remove()
+  }
+  const contentBody = el.querySelectorAll('.flex')[1];
   if (formLink[0].nodeName === 'A') {
     const cells = [
       ['Columns (contained)'],
