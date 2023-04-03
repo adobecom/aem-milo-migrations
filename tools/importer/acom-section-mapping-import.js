@@ -186,6 +186,9 @@ export default {
      */
 
     // sanitize links
+    const getClosestLinkFormattingTagsToRemove = function(el) {
+      return el.closest('B, I, U, strong, em');
+    };
     document.querySelectorAll('a').forEach((a) => {
       // is a CTA => wrap it in a B or I to get it rendered as a button
       if (a.closest('.cta')) {
@@ -197,9 +200,12 @@ export default {
         a.before(w);
         w.append(a);
       // is a normal link, formated => remove the formatting!
-      } else if (a.closest('B, I, strong, em')) {
-        const wrapper = a.closest('B, I, strong, em');
-        wrapper.replaceWith(a);
+      } else if (getClosestLinkFormattingTagsToRemove(a)) {
+        let wrapper = getClosestLinkFormattingTagsToRemove(a);
+        while (wrapper) {
+          wrapper.replaceWith(a);
+          wrapper = getClosestLinkFormattingTagsToRemove(a);
+        }
       // another case of a normal link, formated => remove the formatting!
       } else {
         const t = a.textContent;
