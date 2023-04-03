@@ -9,7 +9,7 @@ const createImage = (document, url)  => {
 
 export async function parseMarquee(el, document, section, backgroundColor = '') {
   let marqueeDoc = el
-  let els = getNSiblingsElements(el, (c) => c == 2)
+  let els = getNSiblingsElements(el, (c) => c >= 2)
 
   const container = document.createElement('div')
   if (els) {
