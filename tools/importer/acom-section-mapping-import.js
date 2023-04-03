@@ -204,15 +204,22 @@ export default {
     
     main.append(parseMetadata(document));
     const { block, tagsConverted } = parseCardMetadata(document);
-    IMPORT_REPORT['tags converted?'] = tagsConverted.toString();
     main.append(block);
-
-
-
+    
+    
+    
     /*
-    * return + custom report
-    */
-   
+     * return + custom report
+     */
+
+    // MWPW-128596 - Enterprise tags swapping
+    IMPORT_REPORT['tags converted?'] = tagsConverted.toString();
+
+    // report raw content import
+    // meaning that no section was found in the page
+    // and the content got imported as is
+    IMPORT_REPORT['raw import?'] = sectionsData.length === 0 ? 'true' : false;
+
     // make every report value a string
     Object.keys(IMPORT_REPORT).map(k => (IMPORT_REPORT[k] = '' + IMPORT_REPORT[k]));
 
