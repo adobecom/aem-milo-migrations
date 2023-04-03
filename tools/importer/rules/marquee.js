@@ -70,8 +70,9 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
   /*
   * background
   */
+  let background
 
-  let background =  WebImporter.DOMUtils.getImgFromBackground(marqueeDoc, document)
+  background = WebImporter.DOMUtils.getImgFromBackground(marqueeDoc, document)
   console.log('background', background);
 
   // strategy 2
@@ -136,11 +137,9 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
   const video = marqueeDoc.querySelector('video.video-desktop');
   if (video) {
     const source = video.querySelector('source');
-    // const l = document.createElement('a');
-    // l.textContent = source.src;
-    // l.href = source.src;
-    resource = source.src;
-    console.log("Resource: " + JSON.stringify(resource))
+    resource = document.createElement('a');
+    resource.href = source.src
+    resource.innerHTML = source.src
   }
 
   /*

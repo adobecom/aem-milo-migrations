@@ -36,6 +36,9 @@ import {
   parseTwoUpSectionMetadataWithTreeview,
   parse_marquee_with_treeview,
 } from './rules/bacom.js';
+import { parse_faasForm } from './rules/form-link.js';
+import { waitForFaasForm } from './rules/handleFaasForm.js';
+
 
 
 /*
@@ -60,6 +63,7 @@ const sectionsRulesMap = {
   'fragment-products-related-content-cards': parseFragment_products_related_content_cards,
   'fragment-products-request-demo-marquee': parseFragment_fragment_products_request_demo_marquee,
   'marquee-with-treeview': parse_marquee_with_treeview,
+  'faas-form': parse_faasForm,
 };
 
 const sectionsToReport = [
@@ -86,6 +90,7 @@ export default {
         keyCode: 27,
       })
     );
+    await waitForFaasForm(document);
   },
 
   transform: async ({ document, params }) => {
