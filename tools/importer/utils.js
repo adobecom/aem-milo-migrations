@@ -240,14 +240,17 @@ export async function setGlobals(originalURL) {
   const importURL = new URL(originalURL);
   let { pathname } = importURL;
   const localFromURL = pathname.split('/')[1];
-  if (localFromURL.startsWith('resource')) {
-    pathname = `/us/en${pathname.replace('.html', '')}`;
+  pathname = pathname.replace('.html', '');
+
+  if (pathname.startsWith('/resource')) {
+    pathname = `dx/us/en${path}`;
+  } else if (pathname.startsWith('/content/experience-fragments')) {
+    pathname = pathname.replace('/content/', '');
   } else {
-    pathname = pathname.replace(localFromURL, localMap[localFromURL]);
-    pathname = pathname.replace('.html', '');
+    pathname = `dx/${pathname.replace(localFromURL, localMap[localFromURL])}`;
     window.local = localMap[localFromURL];
   }
-  const fetchUrl = `https://www-author.corp.adobe.com/content/dx${pathname}/jcr:content.infinity.json`;
+  const fetchUrl = `https://www-author.corp.adobe.com/content/${pathname}/jcr:content.infinity.json`;
   window.fetchUrl = fetchUrl;
   try {
     window.jcrContent = await getJSON(fetchUrl);
