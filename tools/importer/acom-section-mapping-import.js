@@ -196,14 +196,17 @@ export default {
     };
     document.querySelectorAll('a').forEach((a) => {
       // is a CTA => wrap it in a B or I to get it rendered as a button
-      if (a.closest('.cta')) {
-        let wrapper = 'B';
-        if (a.classList.toString().match(/-primary|-outline/)) {
-          wrapper = 'I';
+      if (a.closest('.cta') || a.classList.toString().match(/spectrum-link|spectrum-button/i)) {
+        // CTA rendered as a normal link
+        if (!a.classList.toString().match(/spectrum-link/i)) {
+          let wrapper = 'B';
+          if (a.classList.toString().match(/-primary|-outline/)) {
+            wrapper = 'I';
+          }
+          const w = document.createElement(wrapper);
+          a.before(w);
+          w.append(a);
         }
-        const w = document.createElement(wrapper);
-        a.before(w);
-        w.append(a);
       // is a normal link, formated => remove the formatting!
       } else if (getClosestLinkFormattingTagsToRemove(a)) {
         let wrapper = getClosestLinkFormattingTagsToRemove(a);
@@ -211,12 +214,12 @@ export default {
           wrapper.replaceWith(a);
           wrapper = getClosestLinkFormattingTagsToRemove(a);
         }
-      // another case of a normal link, formated => remove the formatting!
-      } else {
-        const t = a.textContent;
-        a.querySelectorAll('*').forEach((n) => n.remove());
-        a.textContent = t;
       }
+
+      // and in any case, remove any formatting done downstream the link
+      const t = a.textContent;
+      a.querySelectorAll('*').forEach((n) => n.remove());
+      a.textContent = t;
     });
 
 
