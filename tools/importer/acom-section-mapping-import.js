@@ -140,7 +140,6 @@ export default {
 
         WebImporter.DOMUtils.remove(el, [
           '.dexter-Spacer',
-          'style',
         ]);
 
         // report special sections
@@ -191,15 +190,33 @@ export default {
      * global changes
      */
 
-    // decorate links
-    document.querySelectorAll('.cta a').forEach((a) => {
-      let wrapper = 'B';
-      if (a.classList.toString().match(/-primary|-outline/)) {
-        wrapper = 'I';
+    // sanitize links
+    const getClosestLinkFormattingTagsToRemove = function(el) {
+      return el.closest('B, I, U, strong, em');
+    };
+    document.querySelectorAll('a').forEach((a) => {
+      // is a CTA => wrap it in a B or I to get it rendered as a button
+      if (a.closest('.cta')) {
+        let wrapper = 'B';
+        if (a.classList.toString().match(/-primary|-outline/)) {
+          wrapper = 'I';
+        }
+        const w = document.createElement(wrapper);
+        a.before(w);
+        w.append(a);
+      // is a normal link, formated => remove the formatting!
+      } else if (getClosestLinkFormattingTagsToRemove(a)) {
+        let wrapper = getClosestLinkFormattingTagsToRemove(a);
+        while (wrapper) {
+          wrapper.replaceWith(a);
+          wrapper = getClosestLinkFormattingTagsToRemove(a);
+        }
+      // another case of a normal link, formated => remove the formatting!
+      } else {
+        const t = a.textContent;
+        a.querySelectorAll('*').forEach((n) => n.remove());
+        a.textContent = t;
       }
-      const w = document.createElement(wrapper);
-      a.before(w);
-      w.append(a);
     });
 
 
@@ -210,15 +227,22 @@ export default {
     
     main.append(parseMetadata(document));
     const { block, tagsConverted } = parseCardMetadata(document);
-    IMPORT_REPORT['tags converted?'] = tagsConverted.toString();
     main.append(block);
-
-
-
+    
+    
+    
     /*
-    * return + custom report
-    */
-   
+     * return + custom report
+     */
+
+    // MWPW-128596 - Enterprise tags swapping
+    IMPORT_REPORT['tags converted?'] = tagsConverted.toString();
+
+    // report raw content import
+    // meaning that no section was found in the page
+    // and the content got imported as is
+    IMPORT_REPORT['raw import?'] = sectionsData.length === 0 ? 'true' : false;
+
     // make every report value a string
     Object.keys(IMPORT_REPORT).map(k => (IMPORT_REPORT[k] = '' + IMPORT_REPORT[k]));
 
