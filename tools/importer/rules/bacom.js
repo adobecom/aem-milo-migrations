@@ -230,3 +230,60 @@ export async function parse_marquee_with_treeview(el, document, section) {
 
   return container;
 }
+
+const BACOM_ICONS_CSS_PATTERNS = [
+  {
+    selector: '.text-greenCheckmark',
+    token: 'checkmark_green',
+  }
+];
+const BACOM_ICONS_URL_MAPPING = [
+  {
+    pattern: /.*Smock_Checkmark_18_N_green\.svg$/i,
+    token: 'checkmark_green',
+  },
+  {
+    pattern: /.*icon-notincluded.*/i,
+    token: 'not_included',
+  },
+  {
+    pattern: /.*icon-allfeatures\.svg$/i,
+    token: 'all_features',
+  },
+  {
+    pattern: /.*icon-somefeatures\.svg$/i,
+    token: 'some_features',
+  },  
+  {
+    pattern: /.*icon-contactsales\.svg$/i,
+    token: 'contact_sales',
+  },  
+];
+
+export function parseIcons(document) {
+  let foundIcons = false;
+
+  // check for url patterns
+  BACOM_ICONS_URL_MAPPING.forEach((mapping) => {
+    document.querySelectorAll('img').forEach((img) => {
+      if (mapping.pattern.test(img.src)) {
+        const tokenEl = document.createElement('span');
+        tokenEl.textContent = `:${mapping.token}:`;
+        img.replaceWith(tokenEl);
+        foundIcons = true;
+      }
+    });
+  });
+
+  // check for css patterns
+  BACOM_ICONS_CSS_PATTERNS.forEach((mapping) => {
+    document.querySelectorAll(mapping.selector).forEach((el) => {
+      const tokenEl = document.createElement('span');
+      tokenEl.textContent = `:${mapping.token}:`;
+      el.replaceWith(tokenEl);
+      foundIcons = true;
+    });
+  });
+
+  return foundIcons;
+}

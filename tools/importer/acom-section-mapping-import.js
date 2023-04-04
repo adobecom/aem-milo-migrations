@@ -35,6 +35,7 @@ import {
   parseFragment_fragment_products_request_demo_marquee,
   parseTwoUpSectionMetadataWithTreeview,
   parse_marquee_with_treeview,
+  parseIcons,
 } from './rules/bacom.js';
 import { parse_faasForm } from './rules/form-link.js';
 import { waitForFaasForm } from './rules/handleFaasForm.js';
@@ -222,6 +223,9 @@ export default {
       a.textContent = t;
     });
 
+    // parse icons
+    const foundIcons = parseIcons(document);
+
 
 
     /*
@@ -237,6 +241,9 @@ export default {
     /*
      * return + custom report
      */
+
+    // report icons
+    IMPORT_REPORT['icons'] = foundIcons.toString();
 
     // MWPW-128596 - Enterprise tags swapping
     IMPORT_REPORT['tags converted?'] = tagsConverted.toString();
