@@ -34,7 +34,7 @@ const handleFaasForm = (root, document, faasTitle) => {
   // TDOO: handle modal forms ?
   if (!faasFormElement || faasFormElement.closest('.modal')) return;
 
-  const faasSettingElement = faasFormElement.querySelector('.faas-form-settings');
+  const faasSettingElement = faasFormElement.parentElement.querySelector('.faas-form-settings');
   if (!faasSettingElement) {
     throw new Error('faas_form detected but no faas-form-settings element found - invalid form ?');
   }
