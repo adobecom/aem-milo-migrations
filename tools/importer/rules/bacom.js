@@ -241,23 +241,23 @@ const BACOM_ICONS_CSS_PATTERNS = [
 const BACOM_ICONS_URL_MAPPING = [
   {
     pattern: /.*Smock_Checkmark_18_N_green\.svg$/i,
-    token: 'checkmark_green',
+    token: 'checkmark-green',
   },
   {
     pattern: /.*icon-notincluded.*/i,
-    token: 'not_included',
+    token: 'not-included',
   },
   {
     pattern: /.*icon-allfeatures\.svg$/i,
-    token: 'all_features',
+    token: 'all-features',
   },
   {
     pattern: /.*icon-somefeatures\.svg$/i,
-    token: 'some_features',
+    token: 'some-features',
   },  
   {
     pattern: /.*icon-contactsales\.svg$/i,
-    token: 'contact_sales',
+    token: 'contact-sales',
   },  
 ];
 
@@ -310,7 +310,7 @@ export async function parseMultipleComparisonTable(el, document, section) {
         } else {
           const colspan = el.querySelector('tr').children.length;
           const blockHeaderEl = document.createElement('tr');
-          blockHeaderEl.innerHTML = `<th colspan=${colspan}>Comparison Table</th>`;
+          blockHeaderEl.innerHTML = `<th colspan=${colspan}>comparison</th>`;
           el.querySelector('tr').before(blockHeaderEl);
           container.append(el);
         }
@@ -332,7 +332,7 @@ export async function parseSingleComparisonTable(el, document, section) {
 
   const colspan = table.querySelector('tr').children.length;
   const blockHeaderEl = document.createElement('tr');
-  blockHeaderEl.innerHTML = `<th colspan=${colspan}>Comparison Table</th>`;
+  blockHeaderEl.innerHTML = `<th colspan=${colspan}>comparison</th>`;
   table.querySelector('tr').before(blockHeaderEl);
   container.append(table);
 
