@@ -23,6 +23,7 @@ import { parseBreadcrumb } from './rules/breadcrumb.js';
 import {
   parseTwoUpLayoutsSectionMetadata,
   parseThreeUpLayoutsSectionMetadataGeneric,
+  parseFourUpLayoutsSectionMetadataGeneric,
   parseTwoUpLayoutsSectionMetadataWithCardHor,
 } from './rules/section-metadata.js';
 import { parseUnknown } from './rules/unknown.js';
@@ -36,9 +37,12 @@ import {
   parseTwoUpSectionMetadataWithTreeview,
   parse_marquee_with_treeview,
   parseIcons,
+  parseSingleComparisonTable,
+  parseMultipleComparisonTable,
 } from './rules/bacom.js';
 import { parse_faasForm } from './rules/form-link.js';
 import { waitForFaasForm } from './rules/handleFaasForm.js';
+import { parseTableGeneric } from './rules/table.js';
 
 
 
@@ -65,6 +69,10 @@ const sectionsRulesMap = {
   'fragment-products-request-demo-marquee': parseFragment_fragment_products_request_demo_marquee,
   'marquee-with-treeview': parse_marquee_with_treeview,
   'faas-form': parse_faasForm,
+  'four-up': parseFourUpLayoutsSectionMetadataGeneric,
+  'table': parseTableGeneric,
+  'single-comparison-table': parseSingleComparisonTable,
+  'multiple-comparison-table': parseMultipleComparisonTable,
 };
 
 const sectionsToReport = [

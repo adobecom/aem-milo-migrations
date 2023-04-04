@@ -2,6 +2,7 @@ import { getBGColor, getNSiblingsElements } from './utils.js';
 import { buildSectionMetadata, buildSectionMetadataLayoutGeneric } from './section-metadata.js';
 import { parseAccordion } from './accordion.js';
 import { parseTreeView } from './tree-view.js';
+import { parseTableGeneric } from './table.js';
 
 
 
@@ -286,4 +287,67 @@ export function parseIcons(document) {
   });
 
   return foundIcons;
+}
+
+export async function parseMultipleComparisonTable(el, document, section) {
+  const container = document.createElement('div');
+
+  const elements = el.querySelectorAll('.title, table');
+
+  let prevElType = '';
+
+  for (var i = 0; i < elements.length; i += 1) {
+    const el = elements[i];
+    console.log(el.outerHTML);
+    if (!el.parentElement.closest('table')) {
+      if (el.classList.contains('title')) {
+        container.append(el);
+        prevElType = 'title';
+      } else if (el.tagName === 'TABLE') {
+        if (prevElType === 'table') {
+          const table = await parseTableGeneric(el.parentElement, document);
+          container.append(table);
+        } else {
+          const colspan = el.querySelector('tr').children.length;
+          const blockHeaderEl = document.createElement('tr');
+          blockHeaderEl.innerHTML = `<th colspan=${colspan}>Comparison Table</th>`;
+          el.querySelector('tr').before(blockHeaderEl);
+          container.append(el);
+        }
+        prevElType = 'table';
+      }
+
+    }
+  }
+
+  return container;
+}
+
+
+export async function parseSingleComparisonTable(el, document, section) {
+  const container = document.createElement('div');
+
+  // extract tables
+  const table = el.querySelector('table');
+
+  const colspan = table.querySelector('tr').children.length;
+  const blockHeaderEl = document.createElement('tr');
+  blockHeaderEl.innerHTML = `<th colspan=${colspan}>Comparison Table</th>`;
+  table.querySelector('tr').before(blockHeaderEl);
+  container.append(table);
+
+  // extract title
+  const titleEl = el.querySelector('.title');
+  if (titleEl && !titleEl.closest('table')) {
+    container.prepend(titleEl);
+  }
+
+  // extract remaining content
+  const sanitizedEl = el.cloneNode(true);
+  sanitizedEl.querySelectorAll('style, script').forEach((e) => e.remove());
+  if (sanitizedEl.textContent.replaceAll(/\s+/gm, '').trim() !== '') {
+    container.append(sanitizedEl);
+  }
+
+  return container;
 }
