@@ -32,6 +32,37 @@ export function parseThreeUpLayoutsSectionMetadataGeneric(el, document, section)
   return sectionMetadataEl;
 }
 
+export function parseFourUpLayoutsSectionMetadataGeneric(el, document, section) {
+  const els = getNSiblingsElements(el, (n) => n >= 4);
+
+  const blocks = els.map(e => {
+    const img = findImageFromCSS(e, document);
+    if (img) {
+      e.prepend(img);
+    }
+
+    return WebImporter.DOMUtils.createTable([
+      ['text'],
+      [e],
+    ], document);
+  });
+
+  const sectionMetadataEl = buildSectionMetadataLayoutGeneric(blocks, {
+    style: 'XL spacing, four up, grid-width-12',
+  }, document);
+
+  // look for possible title and text before the "columns" elements
+  const beforeLayoutText = el.querySelector('.title, .text');
+  if (beforeLayoutText) {
+    sectionMetadataEl.prepend(WebImporter.DOMUtils.createTable([
+      ['text (center, xs spacing)'],
+      [beforeLayoutText.parentElement],
+    ], document));
+  }
+
+  return sectionMetadataEl;
+}
+
 export function parseTwoUpLayoutsSectionMetadata(el, document, section) {
   let els = getNSiblingsElements(el, (n) => n >= 2);
 
