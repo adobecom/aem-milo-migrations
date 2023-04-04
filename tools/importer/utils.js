@@ -306,3 +306,18 @@ export function getXPathByElement(elm, addClass = false) {
   }
   return segs.length ? '/' + segs.join('/') : null;
 };
+
+
+// Not working with jsDOM
+// // export a function that checks the css display property is not none on an element and all its parents
+// export function isVisible(el, document) {
+//   while (el.parentElement) {
+//     // console.log(document.defaultView.getComputedStyle(el.parentElement).getPropertyValue('display'));
+//     console.log(el.parentElement.style.display);
+//     if (/.*none.*/i.test(document.defaultView.getComputedStyle(el.parentElement).getPropertyValue('display'))) {
+//       return false;
+//     }
+//     el = el.parentElement;
+//   }
+//   return true;
+// }
