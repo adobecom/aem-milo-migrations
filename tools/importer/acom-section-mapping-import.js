@@ -276,6 +276,24 @@ export default {
     const { block, tagsConverted } = parseCardMetadata(document);
     main.append(block);
     
+
+
+    /*
+     * cleanup to remove unwanted elements
+     */
+
+    WebImporter.DOMUtils.remove(main, [
+      'style',
+      'source',
+      'script',
+    ]);
+
+    main.querySelectorAll('div').forEach((el) => {
+      Object.keys(el.dataset).forEach((key) => delete el.dataset[key]);
+      for (let i = 0; i < el.attributes.length; i++) {
+          el.removeAttribute(el.attributes[i].name);
+      }
+    });
     
     
     /*
