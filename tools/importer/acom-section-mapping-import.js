@@ -246,6 +246,12 @@ export default {
         }
       }
 
+      // extract images from links. No real support for image+link in Milo
+      a.querySelectorAll('img').forEach((i) => {
+        a.before(i);
+        a.innerHTML = i.alt || i.title || a.src;
+      });
+
       // and in any case, remove any formatting done downstream the link
       const t = a.textContent;
       a.querySelectorAll('*').forEach((n) => n.remove());
