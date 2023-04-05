@@ -244,8 +244,16 @@ const BACOM_ICONS_URL_MAPPING = [
     token: 'checkmark-green',
   },
   {
+    pattern: /.*icon-checkmark.*png/i,
+    token: 'checkmark-blue',
+  },
+  {
     pattern: /.*icon-notincluded.*/i,
     token: 'not-included',
+  },
+  {
+    pattern: /.*icon-dollarsign.*png/i,
+    token: 'dollarsign',
   },
   {
     pattern: /.*icon-allfeatures\.svg$/i,
