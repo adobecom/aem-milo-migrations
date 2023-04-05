@@ -99,7 +99,23 @@ export default {
         keyCode: 27,
       })
     );
+
+    // handle faas form
     await waitForFaasForm(document);
+
+    // mark hidden divs + add bounding client rect data to all "visible" divs
+    document.querySelectorAll('div').forEach((div) => {
+      if (div && /none/i.test(window.getComputedStyle(div).display.trim())) {
+        div.setAttribute('data-hlx-imp-hidden-div', '');
+      } else {
+        var domRect = div.getBoundingClientRect().toJSON()
+        Object.keys(domRect).forEach(p => domRect[p] = Math.round(domRect[p]));
+        if (domRect.width > 0 && domRect.height > 0) {
+          div.setAttribute('data-hlx-imp-rect', JSON.stringify(domRect));
+        }
+      }
+    });
+    
   },
 
   transform: async ({ document, params }) => {
@@ -233,6 +249,11 @@ export default {
 
     // parse icons
     const foundIcons = parseIcons(document);
+
+    // remove hidden divs
+    document.querySelectorAll('[data-hlx-imp-hidden-div]').forEach((el) => {
+      el.remove();
+    });
 
 
 
