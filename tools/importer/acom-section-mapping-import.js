@@ -25,6 +25,7 @@ import {
   parseThreeUpLayoutsSectionMetadataGeneric,
   parseFourUpLayoutsSectionMetadataGeneric,
   parseTwoUpLayoutsSectionMetadataWithCardHor,
+  parseSectionMetadataGenericCentered,
 } from './rules/section-metadata.js';
 import { parseUnknown } from './rules/unknown.js';
 import { getElementByXpath } from './utils.js';
@@ -73,6 +74,7 @@ const sectionsRulesMap = {
   'table': parseTableGeneric,
   'single-comparison-table': parseSingleComparisonTable,
   'multiple-comparison-table': parseMultipleComparisonTable,
+  'section-center': parseSectionMetadataGenericCentered,
 };
 
 const sectionsToReport = [

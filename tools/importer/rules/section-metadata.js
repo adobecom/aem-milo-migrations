@@ -192,7 +192,6 @@ export function parseTwoUpLayoutsSectionMetadataWithCardHor(el, document, sectio
   return layoutEl;
 }
 
-
 export function buildSectionMetadataLayoutGeneric(els, options, document) {
   const container = document.createElement('div');
 
@@ -229,4 +228,13 @@ export function buildSectionMetadata(options, document) {
     });
   }
   return WebImporter.DOMUtils.createTable(cells, document);
+}
+
+export function parseSectionMetadataGenericCentered(el, document, section) {
+  el.querySelectorAll('hr, style').forEach((e) => e.remove());
+  const container = document.createElement('div');
+  container.innerHTML = el.outerHTML;
+  return buildSectionMetadataLayoutGeneric([container], {
+    style: 'XL spacing, center',
+  }, document);
 }
