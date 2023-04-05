@@ -13,7 +13,10 @@ export function parseMedia(el, document, section) {
   if (els.length === 2) {
     if (els[1].querySelectorAll('picture').length === 1) {
       container.append(els[0]);
-      els = getNSiblingsElements(els[1], (c) => c >= 2);
+      const subEls = getNSiblingsElements(els[1], (c) => c >= 2);
+      if (subEls) {
+        els = subEls;
+      }
     }
 
     mediaBlockCells.push(els.map((el) => {
