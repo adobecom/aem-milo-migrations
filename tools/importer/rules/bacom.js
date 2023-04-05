@@ -3,6 +3,7 @@ import { buildSectionMetadata, buildSectionMetadataLayoutGeneric } from './secti
 import { parseAccordion } from './accordion.js';
 import { parseTreeView } from './tree-view.js';
 import { parseTableGeneric } from './table.js';
+import { rgbToHex } from '../utils.js';
 
 
 
@@ -151,7 +152,7 @@ export function parseTwoUpSectionMetadataWithTreeview(el, document, section) {
 
   container.append(buildSectionMetadataLayoutGeneric(blocks, {
     style: 'XXL spacing, two up, grid-width-12, xxxl-gap',
-    background: '#f5f5f5',
+    background: extractBackground(el, document),
     layout: '1 | 3',
   }, document));
 
@@ -358,4 +359,56 @@ export async function parseSingleComparisonTable(el, document, section) {
   }
 
   return container;
+}
+
+export function extractBackground(el, document, defaultBackground = '') {
+  let background
+
+  background = WebImporter.DOMUtils.getImgFromBackground(el, document)
+  
+  // strategy 2
+  if (!background) {
+    el.querySelectorAll('div').forEach(d => {
+      const bg = document.defaultView.getComputedStyle(d).getPropertyValue('background-image');
+      if (bg !== '') {
+        background = WebImporter.DOMUtils.getImgFromBackground(d, document);
+      }
+    });
+  }
+  
+  // strategy 3 - use Helix Importer onLoad data marker 'data-hlx-background-image'
+  if (!background) {
+    const bgImage = el.querySelector('[data-hlx-background-image]')?.dataset?.hlxBackgroundImage;
+    if (bgImage) {
+      if (bgImage.trim().startsWith('url')) {
+        const url = WebImporter.DOMUtils.getImgFromBackground(el.querySelector('[data-hlx-background-image]'), document);
+        if (url && url.toLowerCase() !== 'none') {
+          const src = url.replace(/url\(/gm, '').replace(/'/gm, '').replace(/\)/gm, '');
+          img = document.createElement('img');
+          img.src = src;
+          background = img;
+        }
+      } else if (bgImage.trim().startsWith('linear-gradient')) {
+        let m;
+        if ((m = /(rgb\(\d+,\s*\d+,\s*\d+\))/.exec(bgImage)) !== null) {
+          background = rgbToHex(m[1]);
+        }
+      }
+    }
+  }
+
+  // strategy 4: get background color
+  if (!background) {
+    const bgColor = getBGColor(el, document);
+    if (bgColor) {
+      background = bgColor
+    }
+  }
+  
+  // fallback: use default
+  if (!background) {
+    background = defaultBackground;
+  }
+
+  return background;
 }

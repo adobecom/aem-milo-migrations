@@ -1,3 +1,4 @@
+import { extractBackground } from './bacom.js';
 import { getBGColor, getNSiblingsElements } from './utils.js';
 
 
@@ -68,45 +69,6 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
   }
 
   /*
-  * background
-  */
-  let background
-
-  background = WebImporter.DOMUtils.getImgFromBackground(marqueeDoc, document)
-  console.log('background', background);
-
-  // strategy 2
-  if (!background) {
-
-    marqueeDoc.querySelectorAll('div').forEach(d => {
-      const bg = document.defaultView.getComputedStyle(d).getPropertyValue('background-image');
-      if (bg !== '') {
-        background = WebImporter.DOMUtils.getImgFromBackground(d, document);
-      }
-      // console.log('bg', bg);
-    });
-
-    // const innerDivs = [...marqueeDoc.querySelectorAll('div')];
-    // const found = innerDivs.find(d => document.defaultView.getComputedStyle(d).getPropertyValue('background-image') !== '');
-    // console.log('found');
-    // console.log(found);
-    // console.log('found', document.defaultView.getComputedStyle(found).getPropertyValue('background-image'));
-  }
-
-  // strategy 3: get background color
-  
-  if (!background) {
-    const bgColor = getBGColor(el, document);
-    if (bgColor) {
-      background = bgColor
-    }
-  }
-
-  if (!background) {
-    background = backgroundColor;
-  }
-
-  /*
   * image + resource
   */
 
@@ -148,7 +110,7 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
 
   const cells = [
     ['marquee (medium, light)'],
-    [background],
+    [extractBackground(marqueeDoc, document)],
     [container, (resource || '')],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
