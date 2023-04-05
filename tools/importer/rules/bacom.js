@@ -307,7 +307,7 @@ export async function parseMultipleComparisonTable(el, document, section) {
   for (var i = 0; i < elements.length; i += 1) {
     const el = elements[i];
     console.log(el.outerHTML);
-    if (!el.parentElement.closest('table')) {
+    if (!el.parentElement.closest('table') && !el.closest('[data-hlx-imp-hidden-div]')) {
       if (el.classList.contains('title')) {
         container.append(el);
         prevElType = 'title';
