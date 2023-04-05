@@ -18,9 +18,11 @@ export async function parseZPattern(el, document, sectionsEls) {
   } else {
     titleEl = sections[0].querySelector('.title, .text');
   }
-  
+
   // remove potential horizontal rule sub sections
   sections = sections.filter((s) => {
+    // remove style elements
+    s.querySelectorAll('style').forEach((style) => style.remove());
     return s.textContent.replaceAll('\n', '').trim() !== '' ? true : s.querySelector('.horizontalRule') === null;
   });
 
