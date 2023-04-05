@@ -113,6 +113,11 @@ export default {
         if (domRect.width > 0 && domRect.height > 0) {
           div.setAttribute('data-hlx-imp-rect', JSON.stringify(domRect));
         }
+        const bgImage = window.getComputedStyle(div).getPropertyValue('background-image');
+        if (bgImage && bgImage !== 'none') {
+          div.setAttribute('data-hlx-background-image', bgImage);
+          console.log('bgImage', bgImage);
+        }
       }
     });
     
