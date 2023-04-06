@@ -82,6 +82,32 @@ export function findImageFromCSS(el, document) {
   return img;
 }
 
+export function flattenDomStructure(el) {
+  const container = document.createElement('div');
+
+  // Get all container div elements
+  const containers = el.querySelectorAll('div');
+
+  // Loop through each container div
+  containers.forEach(container => {
+    // Get the container's parent element
+    const parent = container.parentNode;
+
+    // Move all child nodes of the container into the parent
+    while (container.firstChild) {
+      parent.insertBefore(container.firstChild, container);
+    }
+
+    // Remove the container from the DOM
+    parent.removeChild(container);
+  });
+
+  el.getAttributeNames().filter(name => name.startsWith('data-')).forEach(attribute => {
+    el.removeAttribute(attribute);
+  });
+
+}
+
 // >>> CSS Display not properly supported by JSDOM <<<
 // // determine if the element is visible (via CSS)
 // export function isVisible(el, document) {

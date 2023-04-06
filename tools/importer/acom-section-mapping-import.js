@@ -26,6 +26,7 @@ import {
   parseFourUpLayoutsSectionMetadataGeneric,
   parseTwoUpLayoutsSectionMetadataWithCardHor,
   parseSectionMetadataGenericCentered,
+  parseMultipleSectionMetadataTwoUpGeneric,
 } from './rules/section-metadata.js';
 import { parseUnknown } from './rules/unknown.js';
 import { getElementByXpath } from './utils.js';
@@ -44,6 +45,7 @@ import {
 import { parse_faasForm } from './rules/form-link.js';
 import { waitForFaasForm } from './rules/handleFaasForm.js';
 import { parseTableGeneric } from './rules/table.js';
+import { parseBacomProductsPageTemplateKMultiBlocksSection } from './rules/bacom-products-template-k.js';
 
 
 
@@ -75,6 +77,8 @@ const sectionsRulesMap = {
   'single-comparison-table': parseSingleComparisonTable,
   'multiple-comparison-table': parseMultipleComparisonTable,
   'section-center': parseSectionMetadataGenericCentered,
+  'multiple-section-metadata': parseMultipleSectionMetadataTwoUpGeneric,
+  'products-pages-template-k-multi-block-section': parseBacomProductsPageTemplateKMultiBlocksSection,
 };
 
 const sectionsToReport = [

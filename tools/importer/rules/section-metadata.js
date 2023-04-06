@@ -1,3 +1,5 @@
+import { parseAccordion } from './accordion.js';
+import { parseTreeView } from './tree-view.js';
 import { findImageFromCSS, getNSiblingsElements } from './utils.js';
 
 
@@ -237,4 +239,35 @@ export function parseSectionMetadataGenericCentered(el, document, section) {
   return buildSectionMetadataLayoutGeneric([container], {
     style: 'XL spacing, center',
   }, document);
+}
+
+export function parseMultipleSectionMetadataTwoUpGeneric(el, document, section) {
+  let subSections = getNSiblingsElements(el, (n) => n > 2);
+  const sectionMetadata = document.createElement('div');
+
+  // remove empty sections
+  subSections = subSections.filter((e) => e.textContent.replace('\n', '').trim().length > 0);
+
+  for (var i = 0; i < subSections.length; i++) {
+    const subSection = subSections[i];
+
+    const els = getNSiblingsElements(subSection, (n) => n >= 2);
+    const blocks = els.map((s) => {
+      if (s.querySelector('.treeview, .treeView')) {
+        return parseTreeView(s, document);
+      } else if (s.querySelector('.accordion, .Accordion')) {
+        return parseAccordion(s, document);
+      } else {
+        return WebImporter.DOMUtils.createTable([
+          ['text'],
+          [s],
+        ], document);
+      }
+    });
+    sectionMetadata.append(buildSectionMetadataLayoutGeneric(blocks, {
+      style: 'XL spacing, two up',
+    }, document));
+  }
+
+  return sectionMetadata;
 }
