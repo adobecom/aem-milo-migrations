@@ -13,7 +13,9 @@
 
 import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
 import { parseCardMetadata } from '../rules/metadata.js';
-import { cleanupHeadings, setGlobals, findPaths, getJSONValues, getMetadataValue, getRecommendedArticles } from '../utils.js';
+import { cleanupHeadings, setGlobals, findPaths, getMetadataValue, getRecommendedArticles } from '../utils.js';
+import { getBGColor, getNSiblingsElements } from '../rules/utils.js';
+import { getXPathByElement } from '../utils.js';
 
 const createMetadata = (main, document) => {
   const meta = {};
@@ -116,6 +118,93 @@ const createEventSpeakers = (main, document) => {
   parent.remove();
   const table = WebImporter.DOMUtils.createTable(cells, document);
   return table;
+};
+
+const createEventSpeakersAltVersion = (main, document) => {
+  document.querySelectorAll('.horizontalRule').forEach(item => item.remove())
+  let els = getNSiblingsElements(document, (n) => n === 2)
+  if (!els || els.length == 0) {
+    return ''
+  }
+  // speaker div
+  els = getNSiblingsElements(els[0], (n) => n >= 2)
+  if (!els || els.length == 0) {
+    return ''
+  }
+  // title + event description
+  const texts = document.createElement('div')
+  els
+    .filter(item => !item.classList.contains('dexter-Spacer'))
+    .map(item => {
+      if(!item.classList.contains('text')) {
+        return null
+      }
+      return item.querySelector('.cmp-text')
+    })
+    .filter(item => item)
+    .forEach(item => {
+      texts.append(item)
+      texts.append(document.createElement('br'))
+    })
+  
+    // speakers
+  const speakers = els
+    .filter(item => !item.classList.contains('dexter-Spacer'))
+    .map(item => {
+      let images = item.querySelectorAll('img')
+      if(!images) {
+        return null
+      }
+      const tmpSpeakers = []
+      images.forEach((image) => {
+        if (!image.src) {
+          return
+        }
+        const speaker = [];
+        console.log(image.classList)
+        console.log(getXPathByElement(image))
+        speaker.push(image);
+        let nextEl = image.closest('.image')
+        while(nextEl) {
+          const texts = nextEl.querySelectorAll('.cmp-text')
+          if(texts && texts.length === 2){
+            speaker.push(`<p><strong>${texts[0].innerHTML}</strong></p><p>${texts[1]?.innerHTML}</p>`);
+          } else if(texts && texts.length === 1) {
+            speaker.push(texts[0].innerHTML)
+            // speaker.push('Read more')
+          }
+          nextEl = nextEl.nextElementSibling
+        }
+        if(speaker.length <= 2){
+          speaker.push('')
+        }
+        tmpSpeakers.push(speaker)
+      })
+      return tmpSpeakers
+    })
+    .filter(item => item)
+    .flat()
+
+    if (!speakers || speakers.length === 0) {
+      return '';
+    }
+    els.forEach(item => item.remove())
+
+    const container = document.createElement('div')
+    container.append(
+      WebImporter.DOMUtils.createTable([
+        ['Text (full width)'],
+        [texts]
+      ], document)
+    )
+    container.append(document.createElement('hr'))
+    container.append(
+      WebImporter.DOMUtils.createTable([
+        ['Event Speakers'],
+        ...speakers,
+      ], document)
+    )
+    return container
 };
 
 const createRelatedProducts = (main, document) => {
@@ -251,23 +340,27 @@ export default {
     const elementsToGo = [];
     elementsToGo.push(breadcrumb);
     elementsToGo.push(createMarquee(main, document, new URL(params.originalURL)));
-    const h2 = document.querySelector('.title h2');
-    if (h2) {
-      elementsToGo.push(h2);
-    }
+    // const h2 = document.querySelector('.title h2');
+    // if (h2) {
+    //   elementsToGo.push(
+    //     WebImporter.DOMUtils.createTable([
+    //       ['Text (full width)'],
+    //       [h2]
+    //     ], document)
+    //   );
+    // }
 
-    const eventSpeakers = createEventSpeakers(main, document);
+    // const eventSpeakers = createEventSpeakers(main, document);
+    const eventSpeakers = createEventSpeakersAltVersion(main, document);
     if (eventSpeakers) {
+      // elementsToGo.push(document.createElement('hr'));
+      elementsToGo.push(eventSpeakers);
+      // elementsToGo.push(createRelatedProducts(main, document));
       if (formLink) {
-        elementsToGo.push(document.createElement('hr'));
         const form = document.createElement('p');
         form.append(formLink);
         elementsToGo.push(form);
       }
-
-      elementsToGo.push(document.createElement('hr'));
-      elementsToGo.push(eventSpeakers);
-      elementsToGo.push(createRelatedProducts(main, document));
       elementsToGo.push(WebImporter.DOMUtils.createTable([
         ['Section Metadata'],
         ['style', 'Two-up'],
@@ -315,9 +408,9 @@ export default {
     appendBackward(elementsToGo, main);
     
     // All other content from page should be automatically added here //
-    const recommendedArticles = document.createElement('p');
-    recommendedArticles.append(await getRecommendedArticles(main, document));
-    main.append(recommendedArticles);
+    // const recommendedArticles = document.createElement('p');
+    // recommendedArticles.append(await getRecommendedArticles(main, document));
+    // main.append(recommendedArticles);
 
     document.querySelectorAll('.cta a').forEach(link => {link.href.includes('/resources/main') ? link.remove() : false});
     
