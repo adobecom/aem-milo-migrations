@@ -33,9 +33,7 @@ export function parseMedia(el, document, section) {
     let imgEl = null;
     for (var i = 0; i < els.length; i++) {
       const el = els[i];
-  
-      console.log('getBoundingClientRect', el.getBoundingClientRect());
-  
+
       const img = el.querySelector('img');
       if (img) {
         imgEl = img;

@@ -1,8 +1,8 @@
-import { getNSiblingsElements } from "./utils.js";
+import { flattenDomStructure, getNSiblingsElements } from "./utils.js";
 
 export function parseAccordion(el, document, section) {
   // strategy 1 - generic
-  let items = getNSiblingsElements(el, (n) => n >= 2);
+  let items = getNSiblingsElements(el, (n) => n > 2);
 
   // strategy 2 - spectrum
   if (!items) {
@@ -12,9 +12,9 @@ export function parseAccordion(el, document, section) {
   const cells = [['accordion']];
   items.forEach((item) => {
     const title = item.children[0]?.textContent || '';
-    const content = item.children[1] || '';
+    flattenDomStructure(item.children[1]);// || '';
     cells.push([title]);
-    cells.push([content]);
+    cells.push([item.children[1]]);
   });
 
   return WebImporter.DOMUtils.createTable(cells, document);
