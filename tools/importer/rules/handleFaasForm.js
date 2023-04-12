@@ -12,9 +12,15 @@
 /* eslint-disable no-console, class-methods-use-this */
 import { utf8ToB64 } from './utils.js';
 
-const waitForFaasForm = async (document) => {
-  if (document.querySelector('.faas_form') && document.querySelector('.faas_form').closest('.modal') === null) {
+const waitForFaasForm = async (document) => { 
+  if (document.querySelector('.faas_form')) {
     try {
+      document.querySelectorAll('a.spectrum-Button')
+        .forEach(item => {
+          if(item.href.includes('register-form')){
+            item.click()
+          }
+        })
       await WebImporter.Loader.waitForElement('.faas-form-settings', document, 10000);
     } catch (error) {
       console.error('faas form not added to the DOM after 10s.');
@@ -30,9 +36,8 @@ const waitForFaasForm = async (document) => {
  * @returns The link element or null if no form was found
  */
 const handleFaasForm = (root, document, faasTitle) => {
-  const faasFormElement = root.querySelector('.faas_form');
-  // TDOO: handle modal forms ?
-  if (!faasFormElement || faasFormElement.closest('.modal')) return;
+  const faasFormElement = root.querySelector('.faas_form')
+  if (!faasFormElement) return;
 
   const faasSettingElement = faasFormElement.parentElement.querySelector('.faas-form-settings');
   if (!faasSettingElement) {
