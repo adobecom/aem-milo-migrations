@@ -8,7 +8,11 @@ export function parseMedia(el, document, section) {
   
   const mediaBlockCells = [ ['media (large, light)'] ];
 
-  let els = getNSiblingsElements(el, (c) => c >= 2);
+  let els = getNSiblingsElements(el, (c) => c == 2);
+
+  if (!els) {
+    els = getNSiblingsElements(el, (c) => c >= 2);
+  }
 
   if (els.length === 2) {
     if (els[1].querySelectorAll('picture').length === 1) {
