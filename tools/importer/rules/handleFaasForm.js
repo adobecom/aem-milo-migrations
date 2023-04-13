@@ -17,8 +17,12 @@ const waitForFaasForm = async (document) => {
     try {
       const a = document.querySelector('[href="#register-form"]');
       if (a) {
-        a.target = '_blank';
+        const myframe = document.createElement('iframe');
+        myframe.name = 'foo'
+        a.parentElement.appendChild(myframe);
+        a.target = "foo";
         a.click();
+        myframe.remove();
       }
       await WebImporter.Loader.waitForElement('.faas-form-settings', document, 10000);
     } catch (error) {
