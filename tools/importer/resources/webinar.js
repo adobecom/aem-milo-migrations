@@ -46,11 +46,7 @@ const createImage = (document, url)  => {
   return img;
 };
 
-const createMarquee = (main, document, originalURL) => {
-  let marqueeDoc = document.querySelector('.dexter-FlexContainer');
-  if (!marqueeDoc.textContent.trim()) {
-    marqueeDoc = document.querySelectorAll('.dexter-FlexContainer')[1];
-  }
+const createMarquee = (marqueeDoc, document, originalURL) => {
   const title = marqueeDoc.querySelector('h1')?.textContent;
   const bgURL = marqueeDoc.style.backgroundImage?.slice(4, -1).replace(/"/g, "") || '';
   const priceElement = marqueeDoc.querySelectorAll('b')[0]?.parentElement;
@@ -62,9 +58,13 @@ const createMarquee = (main, document, originalURL) => {
   let { pathname } = originalURL;
   let path = pathname.replace('.html', '');
   let cta = marqueeDoc.querySelector('.dexter-Cta a');
-  if (cta) {
+  if(cta && cta.href.includes("register-form")) {
+    cta = null
+  }
+  else if (cta) {
     cta.href = `/fragments/resources/modal/forms/${path.split('/').at(-1)}#faas-form`;
   }
+  
   let bg = '#f5f5f5'
   if (bgURL) {
     bg = document.createElement('img');
@@ -81,7 +81,7 @@ const createMarquee = (main, document, originalURL) => {
     marqueeDoc.querySelector('img') || ''],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
-  document.querySelector('h1')?.remove();
+  marqueeDoc.querySelector('h1')?.remove();
   marqueeDoc.remove();
   return table;
 };
@@ -134,12 +134,9 @@ const createEventSpeakersAltVersion = (main, document) => {
   // title + event description
   const texts = document.createElement('div')
   els
-    .filter(item => !item.classList.contains('dexter-Spacer'))
+    .filter(item => !item.classList.contains('dexter-Spacer') && !item.querySelector('img'))
     .map(item => {
-      if(!item.classList.contains('text')) {
-        return null
-      }
-      return item.querySelector('.cmp-text')
+      return item.querySelector('.cmp-text') || item.querySelector('.cmp-title')
     })
     .filter(item => item)
     .forEach(item => {
@@ -307,7 +304,7 @@ const createBreadcrumbs = (document) => {
 
 
 export default {
-  onLoad: async ({ document }) => {
+  onLoad: async ({ document, url }) => {
     await waitForFaasForm(document);
   },
 
@@ -320,12 +317,15 @@ export default {
   transform: async ({ document, params}) => {
     await setGlobals(params.originalURL);
     // console.log(window.fetchUrl);
-    const titleElement = document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-text');
+    let titleElement = document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-text');
+    titleElement = titleElement || document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-title')
     const formLink = handleFaasForm(document, document, titleElement);
     
     const [breadcrumbType, breadcrumb] = createBreadcrumbs(document);
 
     // console.log(breadcrumbType, breadcrumb.innerHTML, params.originalURL);
+
+    const rec = await getRecommendedArticles(document, document)
 
     WebImporter.DOMUtils.remove(document, [
       `header, footer, .faas-form-settings, .xf, style, northstar-card-collection, consonant-card-collection`,
@@ -339,7 +339,7 @@ export default {
     // Top area
     const elementsToGo = [];
     elementsToGo.push(breadcrumb);
-    elementsToGo.push(createMarquee(main, document, new URL(params.originalURL)));
+    elementsToGo.push(createMarquee(document.querySelector('.dexter-FlexContainer'), document, new URL(params.originalURL)));
     // const h2 = document.querySelector('.title h2');
     // if (h2) {
     //   elementsToGo.push(
@@ -407,10 +407,11 @@ export default {
 
     appendBackward(elementsToGo, main);
     
+    // main.append(createRelatedProducts(main, document))
     // All other content from page should be automatically added here //
-    // const recommendedArticles = document.createElement('p');
-    // recommendedArticles.append(await getRecommendedArticles(main, document));
-    // main.append(recommendedArticles);
+    const recommendedArticles = document.createElement('p');
+    recommendedArticles.append(rec);
+    main.append(recommendedArticles);
 
     document.querySelectorAll('.cta a').forEach(link => {link.href.includes('/resources/main') ? link.remove() : false});
     

@@ -15,12 +15,11 @@ import { utf8ToB64 } from './utils.js';
 const waitForFaasForm = async (document) => { 
   if (document.querySelector('.faas_form')) {
     try {
-      document.querySelectorAll('a.spectrum-Button')
-        .forEach(item => {
-          if(item.href.includes('register-form')){
-            item.click()
-          }
-        })
+      const a = document.querySelector('[href="#register-form"]');
+      if (a) {
+        a.target = '_blank';
+        a.click();
+      }
       await WebImporter.Loader.waitForElement('.faas-form-settings', document, 10000);
     } catch (error) {
       console.error('faas form not added to the DOM after 10s.');
