@@ -61,6 +61,22 @@ export function getBGColor(el, document) {
   return bgcolor;
 }
 
+export function crawlColorFromCSS(el, document) {
+  let bgcolor = el.querySelector('div[data-color]')?.getAttribute('data-color');
+
+  // strategy 2
+  if (!bgcolor) {
+    el.querySelectorAll('div').forEach(d => {
+      const bg = document.defaultView.getComputedStyle(d).getPropertyValue('color');
+      if (bg != '') {
+        bgcolor = rgbToHex(bg);
+      }
+    });
+  }
+
+  return bgcolor;
+}
+
 export function findImageFromCSS(el, document) {
   let url = null;
   [...el.querySelectorAll('div')].some(d => {

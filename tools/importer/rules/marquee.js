@@ -1,5 +1,6 @@
+import { isLightColor } from '../utils.js';
 import { extractBackground } from './bacom.js';
-import { getBGColor, getNSiblingsElements } from './utils.js';
+import { getBGColor, crawlColorFromCSS, getNSiblingsElements } from './utils.js';
 
 
 const createImage = (document, url)  => {
@@ -9,6 +10,7 @@ const createImage = (document, url)  => {
 };
 
 export async function parseMarquee(el, document, section, backgroundColor = '') {
+
   let marqueeDoc = el
   let els = getNSiblingsElements(el, (c) => c >= 2)
 
@@ -104,12 +106,28 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
     resource.innerHTML = source.src
   }
 
+  
+
   /*
-  * create table
-  */
+   * theme
+   */
+
+  let theme = 'light'; // default, dark color + light background
+  const fontColor = crawlColorFromCSS(el, document);
+  if (fontColor) {
+    if (isLightColor(fontColor)) {
+      theme = 'dark'; // default, light color + dark background
+    }
+  }
+
+
+
+  /*
+   * create table
+   */
 
   const cells = [
-    ['marquee (medium, light)'],
+    [`marquee (medium, ${theme})`],
     [extractBackground(marqueeDoc, document)],
     [container, (resource || '')],
   ];

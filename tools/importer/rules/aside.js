@@ -1,9 +1,22 @@
 
-import { rgbToHex } from "../utils.js";
+import { isLightColor, rgbToHex } from "../utils.js";
+import { crawlColorFromCSS } from "./utils.js";
 
 /* global WebImporter */
 export function parseAside(el, document, section) {
-  const cells = [['aside (inline, xl spacing)']];
+  /*
+   * theme
+   */
+
+  let theme = 'light'; // default, dark color + light background
+  const fontColor = crawlColorFromCSS(el, document);
+  if (fontColor) {
+    if (isLightColor(fontColor)) {
+      theme = 'dark'; // default, light color + dark background
+    }
+  }
+
+  const cells = [[`aside (${theme}, inline, xl spacing)`]];
 
   // background color or background image
   let bgImage = el.querySelector('div[style]')?.getAttribute('style').split('"')[1];
