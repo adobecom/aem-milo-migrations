@@ -12,7 +12,7 @@
 /* eslint-disable no-console, class-methods-use-this */
 
 import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
-import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue } from '../utils.js';
+import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue, getRecommendedArticles } from '../utils.js';
 import { parseCardMetadata } from '../rules/metadata.js';
 import { getBGColor, getNSiblingsElements } from '../rules/utils.js';
 
@@ -49,8 +49,19 @@ const createMarquee = (main, document) => {
       const tmpel = els[i];
       const img = tmpel.querySelector('img')
       const video = tmpel.querySelector('video.video-desktop')
+
+      // don't add images and videos
+      // add only text and titles (there might ctas, those are links to forms that are handled by the faas-form logic)
       if (!img && !video) {
-        container.append(tmpel)
+        const title = tmpel.querySelector('.title');
+        if (title) {
+          container.append(title)
+        }
+      
+        const text = tmpel.querySelector('.text');
+        if (text) {
+          container.append(text)
+        }
       }
     }
 
@@ -269,11 +280,15 @@ export default {
    */
   transform: async ({ document, params }) => {
     await setGlobals(params.originalURL);
-    
-    const faasTitleSelector = '.cmp-text.mobile-padding-top-48.mobile-padding-right-48.mobile-padding-left-48';
-    const formLink = await getFormLink(document, faasTitleSelector, new URL(params.originalURL));
+
+    // get the form title from either the text or the title in the faas-form structure
+    let titleElement = document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-text');
+    titleElement = titleElement || document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-title')
+
+    const formLink = await getFormLink(document, titleElement, new URL(params.originalURL));
+
     WebImporter.DOMUtils.remove(document, [
-      `header, footer, .faas-form-settings, ${faasTitleSelector}, .xf`,
+      `header, footer, .faas-form-settings, .xf`,
     ]);
     const main = document.querySelector('main');
 
@@ -286,6 +301,8 @@ export default {
     appendBackward(elementsToGo, main);
 
     // All other content from page should be automatically added here //
+
+    main.append(await getRecommendedArticles(document, document));
 
     // Bottom area
     const cells = [
