@@ -120,6 +120,28 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
     }
   }
 
+  /*
+   * Handle modal videos 
+   */
+
+  const videoLink = container.querySelector('.cta a')
+  if (videoLink && videoLink.href) {
+    let href = videoLink.href
+    href = href.split(videoLink.baseURI)
+    href = href[href.length - 1]
+    const modal = document.querySelector(href)
+    const iframe = modal?.querySelector('iframe')
+    // check if element is in a modal
+    if (modal?.closest(".modal") && iframe && iframe.getAttribute('data-video-src')) {
+      if(!resource) {
+        console.log(iframe.getAttribute('data-video-src'))
+        resource = document.createElement('a');
+        resource.href = iframe.getAttribute('data-video-src')
+        resource.innerHTML = iframe.getAttribute('data-video-src')
+      }
+      videoLink.remove()
+    }
+  }
 
 
   /*
