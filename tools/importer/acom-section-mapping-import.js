@@ -187,8 +187,12 @@ export default {
           // z-pattern special case (multiple elements)
           if (section.block.type === 'z-pattern') {
             const zpatternElements = [ el ];
-            while (sectionsData[i+1] && sectionsData[i+1].block.type === 'z-pattern') {
+            while (sectionsData[i+1] && (sectionsData[i+1].block.type === 'z-pattern' || sectionsData[i+1].block.type === 'to-remove')) {
               i++;
+              if(sectionsData[i].block.type === 'to-remove') {
+                elsToRemove.push(el);
+                continue;
+              }
               zpatternElements.push(getElementByXpath(document, '/' + sectionsData[i].xpath));
             }
             const block = await sectionsRulesMap[section.block.type](el, document, zpatternElements);
