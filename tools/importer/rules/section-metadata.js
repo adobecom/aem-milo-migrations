@@ -7,6 +7,23 @@ export function parseThreeUpLayoutsSectionMetadataGeneric(el, document, section)
   const els = getNSiblingsElements(el, (n) => n >= 3);
 
   const blocks = els.map(e => {
+    if(!(e.querySelector('img') || findImageFromCSS(e, document))) {
+      return null
+    }
+    const innerEl = getNSiblingsElements(e, (n) => n >= 2);
+    if (innerEl && innerEl.length >= 2) {
+      return innerEl.map(item => {
+        const img = findImageFromCSS(item, document);
+        if (img) {
+          item.prepend(img);
+        }
+    
+        return WebImporter.DOMUtils.createTable([
+          ['text'],
+          [item],
+        ], document);
+      })
+    }
     const img = findImageFromCSS(e, document);
     if (img) {
       e.prepend(img);
@@ -16,18 +33,19 @@ export function parseThreeUpLayoutsSectionMetadataGeneric(el, document, section)
       ['text'],
       [e],
     ], document);
-  });
+  }).filter(item => item).flat();
 
   const sectionMetadataEl = buildSectionMetadataLayoutGeneric(blocks, {
     style: 'XL spacing, three up, grid-width-12',
   }, document);
 
   // look for possible title and text before the "columns" elements
-  const beforeLayoutText = el.querySelector('.title, .text');
+  let beforeLayoutText = el.querySelector('.title, .text');
+  beforeLayoutText = beforeLayoutText || el.querySelector('.cmp-title');
   if (beforeLayoutText) {
     sectionMetadataEl.prepend(WebImporter.DOMUtils.createTable([
       ['text (center, xs spacing)'],
-      [beforeLayoutText.parentElement],
+      [beforeLayoutText],
     ], document));
   }
 

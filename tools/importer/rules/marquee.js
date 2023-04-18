@@ -14,16 +14,18 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
   let marqueeDoc = el
   let els = getNSiblingsElements(el, (c) => c >= 2)
 
+  let background
+
   const container = document.createElement('div')
-  if (els) {
+  if (els && els.length >= 2) {
     // handle empty / hidden divs
     let emptyNodeIndx = -1
-    for (var i = 0; i < els.length; i++) {
-      if (!els[i].hasChildNodes()) {
-        emptyNodeIndx = i
-        break
-      }
-    }
+    // for (var i = 0; i < els.length; i++) {
+    //   if (!els[i].hasChildNodes() && els.length <= 2) {
+    //     emptyNodeIndx = i
+    //     break
+    //   }
+    // }
     if (emptyNodeIndx >= 0) {
       const targetInd = emptyNodeIndx == 0 ? emptyNodeIndx + 1 : emptyNodeIndx - 1
       els = getNSiblingsElements(els[targetInd], (c) => c >= 2)
@@ -36,6 +38,7 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
       const tmpel = els[i];
       const img = tmpel.querySelector('img')
       const video = tmpel.querySelector('video.video-desktop')
+      background = background || extractBackground(tmpel, document)
       if (!img && !video) {
         container.append(tmpel)
       }
@@ -152,7 +155,7 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
 
   const cells = [
     [`marquee (medium, ${theme})`],
-    [extractBackground(marqueeDoc, document)],
+    [background || extractBackground(marqueeDoc, document)],
     [container, (resource || '')],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);

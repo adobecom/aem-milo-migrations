@@ -36,8 +36,11 @@ export async function parseZPattern(el, document, sectionsEls) {
     }
 
     const rowEls = getNSiblingsElements(section, (c) => c >= 2);
+    if(!rowEls) {
+      return null
+    }
     return rowEls[0].querySelector('img') ? rowEls : rowEls.reverse();
-  });
+  }).filter(item => item)
 
   if (titleEl) {
     cells.push([titleEl]);
