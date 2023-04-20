@@ -80,9 +80,19 @@ const handleSpeaker = (el, document) => {
     const texts = document.createElement('div')
     els.filter(item => !item.classList.contains('dexter-Spacer') && !item.querySelector('img'))
       .map(item => {
-        return item.querySelector('.cmp-text') || item.querySelector('.cmp-title')
+        const arr = []
+        const tmptext = item.querySelectorAll('.cmp-text')
+        if (tmptext) {
+          arr.push(...tmptext)
+        }
+        const tmptitle = item.querySelectorAll('.cmp-title')
+        if (tmptitle) {
+          arr.push(...tmptitle)
+        }
+        return arr
       })
       .filter(item => item)
+      .flat()
       .forEach(item => {
         texts.append(item)
         texts.append(document.createElement('br'))
@@ -90,7 +100,7 @@ const handleSpeaker = (el, document) => {
     
       // speakers
     const speakers = els
-      .filter(item => !item.classList.contains('dexter-Spacer'))
+      .filter(item => !item.classList.contains('dexter-Spacer') && item.querySelector('img') && item.querySelector('p'))
       .map(item => {
         let images = item.querySelectorAll('img')
         if(!images) {
@@ -108,7 +118,8 @@ const handleSpeaker = (el, document) => {
           let nextEl = image.closest('.image')
           while(nextEl) {
             const texts = nextEl.querySelectorAll('.cmp-text')
-            if(texts && texts.length === 2){
+            console.log("T LENGTH: " + texts.length)
+            if(texts && texts.length >= 2){
               speaker.push(`<p><strong>${texts[0].innerHTML}</strong></p><p>${texts[1]?.innerHTML}</p>`);
             } else if(texts && texts.length === 1) {
               speaker.push(texts[0].innerHTML)
@@ -158,8 +169,7 @@ const parseRelatedProducts = (el, document) => {
     container.append(text)
 
     return WebImporter.DOMUtils.createTable([
-        ['Text (vertical)'],
-        ['#f5f5f5'],
+        ['Text (full-width)'],
         [container],
     ], document);
 };
