@@ -13,6 +13,7 @@
 
 import { findPaths, getMetadataValue, setGlobals } from '../utils.js';
 import { parseCardMetadata } from '../rules/metadata.js';
+import { parseMarquee } from '../rules/marquee.js';
 
 const createMetadata = (main, document) => {
   const meta = {};
@@ -148,6 +149,10 @@ const createBreadcrumbs = (document) => {
 
 export default {
 
+  // onLoad: async ({ document, url, params }) => {
+  //   await new Promise(resolve => setTimeout(resolve, 500));
+  // },
+
   /**
    * Apply DOM operations to the provided document and return
    * the root element to be then transformed to Markdown.
@@ -175,7 +180,7 @@ export default {
      * content
      */
 
-    const main = document.querySelector('main');
+    const main = document.createElement('div')
 
     main.append(breadcrumb);
 
@@ -191,10 +196,30 @@ export default {
 
     if (sections.length > 0) {
 
-      // consider first section a marquee
-      const marqueeEl = sections.shift();
-      const [ marquee, found ] = createMarquee(marqueeEl, document);
-      foundVideo = found;
+      console.log(sections.length)
+      console.log(sections)
+      let marquee
+      while(sections.length > 0) {
+        // const [ marquee, found ] = createMarquee(marqueeEl, document);
+        marquee = await parseMarquee(sections.shift(), document, null)
+        let isEmpty = true
+        let skip = true
+        marquee.querySelectorAll("tr").forEach(item => {
+          if (!skip) {
+            item.querySelectorAll("td > div").forEach(td => {
+              if (td.innerHTML.trim() !== "") {
+                isEmpty = false
+              }
+            })
+          }
+          skip = false
+        })
+        if (!isEmpty) {
+          break
+        }
+      }
+      
+      // foundVideo = found;
       main.append(marquee);
 
       sections.forEach((section, idx) => {

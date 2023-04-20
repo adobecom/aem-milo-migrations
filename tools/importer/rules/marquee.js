@@ -13,6 +13,7 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
 
   let marqueeDoc = el
   let els = getNSiblingsElements(el, (c) => c >= 2)
+  let videoElem = marqueeDoc
 
   let background
 
@@ -37,10 +38,17 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
     for (var i = 0; i < els.length; i++) {
       const tmpel = els[i];
       const img = tmpel.querySelector('img')
-      const video = tmpel.querySelector('video.video-desktop')
+      const video = tmpel.querySelector('video.video-desktop') || tmpel.querySelector('iframe')
       background = background || extractBackground(tmpel, document)
       if (!img && !video) {
+        let cta = tmpel.querySelector('.dexter-Cta a');
+        if(cta && cta.href.includes("register-form")) {
+          cta.remove()
+        }
         container.append(tmpel)
+      }
+      if (video){
+        videoElem = tmpel
       }
     }
 
@@ -63,9 +71,9 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
     }
   
     const cta = marqueeDoc.querySelector('.cta');
-    if (cta) {
+    if (cta && !cta.href.includes("register-form")) {
       const link = cta.querySelector('a');
-      if (link.href.indexOf('#watch-now') < 0) {
+      if (link && link.href.indexOf('#watch-now') < 0) {
         const str = document.createElement('B');
         str.append(cta);
         container.append(str)
@@ -101,7 +109,7 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
     }
   }
 
-  const video = marqueeDoc.querySelector('video.video-desktop');
+  let video = marqueeDoc.querySelector('video.video-desktop');
   if (video) {
     const source = video.querySelector('source');
     resource = document.createElement('a');
@@ -109,8 +117,15 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
     resource.innerHTML = source.src
   }
 
-  
+  // iframe handling
+  video = videoElem.querySelector('iframe');
+  if (!resource && video) {
+    resource = document.createElement('a');
+    resource.href = video.src || video.videoSrc
+    resource.innerHTML = video.src || video.videoSrc
+  }
 
+  
   /*
    * theme
    */
@@ -127,26 +142,28 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
    * Handle modal videos 
    */
 
-  const videoLink = container.querySelector('.cta a')
-  if (videoLink && videoLink.href) {
-    let href = videoLink.href
-    href = href.split(videoLink.baseURI)
-    href = href[href.length - 1]
-    if(href.startsWith("#")){
-      const modal = document.querySelector(href)
-      const iframe = modal?.querySelector('iframe')
-      // check if element is in a modal
-      if (modal?.closest(".modal") && iframe && iframe.getAttribute('data-video-src')) {
-        if(!resource) {
-          console.log(iframe.getAttribute('data-video-src'))
-          resource = document.createElement('a');
-          resource.href = iframe.getAttribute('data-video-src')
-          resource.innerHTML = iframe.getAttribute('data-video-src')
+  const videoLinks = container.querySelectorAll('.cta a')
+  videoLinks.forEach(videoLink => {
+    if (videoLink && videoLink.href) {
+      let href = videoLink.href
+      href = href.split(videoLink.baseURI)
+      href = href[href.length - 1]
+      if(href.startsWith("#")){
+        const modal = document.querySelector(href)
+        const iframe = modal?.querySelector('iframe')
+        // check if element is in a modal
+        if (modal?.closest(".modal") && iframe && iframe.getAttribute('data-video-src')) {
+          if(!resource) {
+            console.log(iframe.getAttribute('data-video-src'))
+            resource = document.createElement('a');
+            resource.href = iframe.getAttribute('data-video-src')
+            resource.innerHTML = iframe.getAttribute('data-video-src')
+          }
+          videoLink.remove()
         }
-        videoLink.remove()
       }
     }
-  }
+  })
 
 
   /*
