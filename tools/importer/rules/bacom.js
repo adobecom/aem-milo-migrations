@@ -1,5 +1,5 @@
 import { getBGColor, getNSiblingsElements } from './utils.js';
-import { buildSectionMetadata, buildSectionMetadataLayoutGeneric } from './section-metadata.js';
+import { buildSectionMetadata, buildSectionMetadataLayoutGeneric, parseSectionMetadataGenericCentered, parseThreeUpLayoutsSectionMetadataGeneric } from './section-metadata.js';
 import { parseAccordion } from './accordion.js';
 import { parseTreeView } from './tree-view.js';
 import { parseTableGeneric } from './table.js';
@@ -361,6 +361,28 @@ export async function parseSingleComparisonTable(el, document, section) {
   return container;
 }
 
+// bacom-digital-trends-three-up-charts
+export async function parseBacomDigitalTrendsThreeUpCharts(el, document, section) {
+  const container = document.createElement('div');
+  
+  // clean-up
+  el.querySelectorAll('[data-hlx-imp-hidden-div]').forEach((e) => e.remove());
+
+  const rows = getNSiblingsElements(el, 3);
+
+  // row 1 - three up charts
+  const threeUpCharts = parseThreeUpLayoutsSectionMetadataGeneric(rows[0], document);
+
+  // row 2 + 3 - centered texts
+  rows[0].remove();
+  const centeredTexts = parseSectionMetadataGenericCentered(el, document);
+
+  container.append(threeUpCharts);
+  container.append(centeredTexts);
+
+  return container;
+}
+
 export function extractBackground(el, document, defaultBackground = '') {
   let background
 
@@ -389,10 +411,12 @@ export function extractBackground(el, document, defaultBackground = '') {
           background = img;
         }
       } else if (bgImage.trim().startsWith('linear-gradient')) {
-        let m;
-        if ((m = /(rgb\(\d+,\s*\d+,\s*\d+\))/.exec(bgImage)) !== null) {
-          background = rgbToHex(m[1]);
-        }
+        background = bgImage.trim();
+        // let m;
+        // if ((m = /(rgb\(\d+,\s*\d+,\s*\d+\))/.exec(bgImage)) !== null) {
+        //   console.log('linear-gradient', m);
+        //   background = rgbToHex(m[1]);
+        // }
       }
     }
   }

@@ -58,22 +58,46 @@ export function getBGColor(el, document) {
     });
   }
 
+  // strategy 3
+  if (!bgcolor) {
+    const bgImage = el.querySelector('[data-hlx-background-image]')?.dataset?.hlxBackgroundImage;
+    if (bgImage && bgImage.trim().startsWith('linear-gradient')) {
+      let m;
+      if ((m = /(rgb\(\d+,\s*\d+,\s*\d+\))/.exec(bgImage)) !== null) {
+        console.log('linear-gradient', m);
+        bgcolor = rgbToHex(m[1]);
+      }
+    }
+  }
+
+
   return bgcolor;
 }
 
 export function crawlColorFromCSS(el, document) {
   let bgcolor = el.querySelector('div[data-color]')?.getAttribute('data-color');
 
+
   // strategy 2
+  if (!bgcolor) {
+    const color = el.querySelector('[data-hlx-imp-color]')?.dataset?.hlxImpColor;
+    console.log('color', '>>>', color, '<<<');
+    if (color) {
+      bgcolor = rgbToHex(color);
+    }
+  }  
+
+  // strategy 3
   if (!bgcolor) {
     el.querySelectorAll('div').forEach(d => {
       const bg = document.defaultView.getComputedStyle(d).getPropertyValue('color');
       if (bg != '') {
-        bgcolor = rgbToHex(bg);
+        bgcolor = rgbToHex(bg.trim());
       }
     });
   }
 
+  // console.log('bgcolor', bgcolor);
   return bgcolor;
 }
 

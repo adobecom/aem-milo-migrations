@@ -41,6 +41,7 @@ import {
   parseIcons,
   parseSingleComparisonTable,
   parseMultipleComparisonTable,
+  parseBacomDigitalTrendsThreeUpCharts,
 } from './rules/bacom.js';
 import { parse_faasForm } from './rules/form-link.js';
 import { waitForFaasForm } from './rules/handleFaasForm.js';
@@ -59,6 +60,7 @@ const sectionsRulesMap = {
   'text': parseText,
   'fragment': parseFragment,
   'z-pattern': parseZPattern,
+  'z-pattern-single': parseZPattern,
   'aside': parseAside,
   'tree-view-two-up-section': parseTwoUpSectionMetadataWithTreeview,
   'media': parseMedia,
@@ -79,6 +81,7 @@ const sectionsRulesMap = {
   'section-center': parseSectionMetadataGenericCentered,
   'multiple-section-metadata': parseMultipleSectionMetadataTwoUpGeneric,
   'products-pages-template-k-multi-block-section': parseBacomProductsPageTemplateKMultiBlocksSection,
+  'bacom-digital-trends-three-up-charts': parseBacomDigitalTrendsThreeUpCharts,
 };
 
 const sectionsToReport = [
@@ -123,6 +126,11 @@ export default {
         if (bgImage && bgImage !== 'none') {
           div.setAttribute('data-hlx-background-image', bgImage);
           console.log('bgImage', bgImage);
+        }
+        const color = window.getComputedStyle(div).getPropertyValue('color');
+        if (color && color !== 'rgb(0, 0, 0)') {
+          div.setAttribute('data-hlx-imp-color', color);
+          console.log('data-hlx-imp-color', color);
         }
       }
     });
@@ -200,6 +208,13 @@ export default {
             elsToRemove.push(el);
             continue;
           }
+          else if (section.block.type === 'z-pattern-single') {
+            const zpatternElements = [ el ];
+            const block = await sectionsRulesMap[section.block.type](el, document, zpatternElements);
+            elsToPush.push(block);
+            elsToRemove.push(el);
+            continue;
+          }
 
           const block = await sectionsRulesMap[section.block.type](el, document, section);
           elsToPush.push(block);
@@ -217,7 +232,9 @@ export default {
     }
 
     for (var i = 0; i < elsToRemove.length; i++) {
-      elsToRemove[i].remove();
+      if (elsToRemove[i]) {
+        elsToRemove[i].remove();
+      }
     }
 
     for (var i = 0; i < elsToPush.length; i++) {
@@ -229,6 +246,15 @@ export default {
     /*
      * global changes
      */
+
+    document.querySelectorAll('video').forEach((s) => {
+      // console.log('video source', s);
+      const source = s.querySelector('source');
+      const resource = document.createElement('a');
+      resource.href = source.src
+      resource.innerHTML = source.src
+      s.replaceWith(resource);
+    });
 
     // sanitize links
     const getClosestLinkFormattingTagsToRemove = function(el) {

@@ -9,6 +9,10 @@ export async function parseZPattern(el, document, sectionsEls) {
   
   let titleEl = null;
 
+  sections.forEach((s) => {
+    s.querySelectorAll('style, .dexter-Spacer').forEach((style) => style.remove());
+  });
+
   if (sections.length === 1) {
     sections = getNSiblingsElements(sections[0], (n) => n >= 2);
     
@@ -22,11 +26,11 @@ export async function parseZPattern(el, document, sectionsEls) {
   // remove potential horizontal rule sub sections
   sections = sections.filter((s) => {
     // remove style elements
-    s.querySelectorAll('style').forEach((style) => style.remove());
+    s.querySelectorAll('style, .dexter-Spacer').forEach((style) => style.remove());
     return s.textContent.replaceAll('\n', '').trim() !== '' ? true : s.querySelector('.horizontalRule') === null;
   });
 
-  const rowEls = sections.map(section => {
+  let rowEls = sections.map(section => {
     // remove horizontal rule elements
     section.querySelectorAll('.horizontalRule').forEach((hr) => hr.remove());
 
