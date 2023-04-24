@@ -45,6 +45,15 @@ const createMarquee = (main, document) => {
     /*
     * texts
     */
+
+    // The right marquee heading should follow the same template:
+    // detail + title + optional long text
+    // Unfortunately, both the detail and the text use the same class "text" so order matters
+
+    let detail = null;
+    let title = null;
+    let longtext = null;
+
     for (var i = 0; i < els.length; i++) {
       const tmpel = els[i];
       const img = tmpel.querySelector('img')
@@ -53,17 +62,28 @@ const createMarquee = (main, document) => {
       // don't add images and videos
       // add only text and titles (there might ctas, those are links to forms that are handled by the faas-form logic)
       if (!img && !video) {
-        const title = tmpel.querySelector('.title');
-        if (title) {
-          container.append(title)
+        const foundtitle = tmpel.querySelector('.title');
+        if (foundtitle) {
+          title = foundtitle;
         }
       
-        const text = tmpel.querySelector('.text');
-        if (text) {
-          container.append(text)
+        const texts = tmpel.querySelectorAll('.text');
+        // we expect one or two texts
+        if (texts.length > 2) {
+          console.error(`Found a case with more than two texts in marquee (${texts.length})`);
+        } else if (texts.length == 2) {
+          detail = texts[0];
+          longtext = texts[1];
+        } else {
+          detail = texts[0];
         }
       }
     }
+
+    container.append(detail);
+    container.append(title);
+    if (longtext)
+      container.append(longtext);
 
     // sanitize links inside ul/li
     container.querySelectorAll('ol li a, ul li a').forEach((a) => {
@@ -302,7 +322,8 @@ export default {
 
     // All other content from page should be automatically added here //
 
-    main.append(await getRecommendedArticles(document, document));
+    // BACOM doesn't want recommended articles for Gated Offers
+    // main.append(await getRecommendedArticles(document, document));
 
     // Bottom area
     const cells = [
@@ -329,11 +350,20 @@ export default {
     'style',
     ]);
     
+    /** 
+     * 
+     * Returns report plus target link to final Franklin URL
+     */
+
+    const onedrive_subfolder = 'drafts/acapt/import-MWPW-129315/gated-offer-fabiano'
+    const path = generateDocumentPath({ document, url: params.originalURL })
+
     return [{
       element: main,
-      path: generateDocumentPath({ document, url: params.originalURL }),
+      path: path,
       report: {
         'tags converted?': tagsConvertedString,
+        'franklin url': '=HYPERLINK("https://main--bacom--adobecom.hlx.page/' + onedrive_subfolder + path + '")'
       },
     }];
 
