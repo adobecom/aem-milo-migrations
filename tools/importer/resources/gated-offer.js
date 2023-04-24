@@ -12,8 +12,9 @@
 /* eslint-disable no-console, class-methods-use-this */
 
 import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
-import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue, getRecommendedArticles } from '../utils.js';
+import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue } from '../utils.js';
 import { parseCardMetadata } from '../rules/metadata.js';
+import { extractBackground } from '../rules/bacom.js';
 import { getBGColor, getNSiblingsElements } from '../rules/utils.js';
 
 const createImage = (document, url)  => {
@@ -118,39 +119,41 @@ const createMarquee = (main, document) => {
   * background
   */
 
-  let background =  WebImporter.DOMUtils.getImgFromBackground(marqueeDoc, document)
-  console.log('background', background);
+  // let background =  WebImporter.DOMUtils.getImgFromBackground(marqueeDoc, document)
+  // console.log('background', background);
 
-  // strategy 2
-  if (!background) {
+  // // strategy 2
+  // if (!background) {
 
-    marqueeDoc.querySelectorAll('div').forEach(d => {
-      const bg = document.defaultView.getComputedStyle(d).getPropertyValue('background-image');
-      if (bg !== '') {
-        background = WebImporter.DOMUtils.getImgFromBackground(d, document);
-      }
-      // console.log('bg', bg);
-    });
+  //   marqueeDoc.querySelectorAll('div').forEach(d => {
+  //     const bg = document.defaultView.getComputedStyle(d).getPropertyValue('background-image');
+  //     if (bg !== '') {
+  //       background = WebImporter.DOMUtils.getImgFromBackground(d, document);
+  //     }
+  //     // console.log('bg', bg);
+  //   });
 
-    // const innerDivs = [...marqueeDoc.querySelectorAll('div')];
-    // const found = innerDivs.find(d => document.defaultView.getComputedStyle(d).getPropertyValue('background-image') !== '');
-    // console.log('found');
-    // console.log(found);
-    // console.log('found', document.defaultView.getComputedStyle(found).getPropertyValue('background-image'));
-  }
+  //   // const innerDivs = [...marqueeDoc.querySelectorAll('div')];
+  //   // const found = innerDivs.find(d => document.defaultView.getComputedStyle(d).getPropertyValue('background-image') !== '');
+  //   // console.log('found');
+  //   // console.log(found);
+  //   // console.log('found', document.defaultView.getComputedStyle(found).getPropertyValue('background-image'));
+  // }
 
-  // strategy 3: get background color
+  // // strategy 3: get background color
   
-  if (!background) {
-    const bgColor = getBGColor(el, document);
-    if (bgColor) {
-      background = bgColor
-    }
-  }
+  // if (!background) {
+  //   const bgColor = getBGColor(el, document);
+  //   if (bgColor) {
+  //     background = bgColor
+  //   }
+  // }
 
-  if (!background) {
-    background = '';
-  }
+  // if (!background) {
+  //   background = '';
+  // }
+
+  let background = extractBackground(marqueeDoc, document);
 
   /*
   * image + resource
