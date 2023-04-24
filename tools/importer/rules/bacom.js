@@ -384,9 +384,7 @@ export async function parseBacomDigitalTrendsThreeUpCharts(el, document, section
 }
 
 export function extractBackground(el, document, defaultBackground = '') {
-  let background
-
-  background = WebImporter.DOMUtils.getImgFromBackground(el, document)
+  let background = WebImporter.DOMUtils.getImgFromBackground(el, document);
   
   // strategy 2
   if (!background) {
@@ -426,6 +424,17 @@ export function extractBackground(el, document, defaultBackground = '') {
     const bgColor = getBGColor(el, document);
     if (bgColor) {
       background = bgColor
+    }
+  }
+
+  // strategy 5: access parent's style property
+  // WARNING: this might end up looping into parent's search and pick up the wrong background
+  // WARNING: debug this function if you find unexpected results in background color's detection
+  if (!background) {
+    const parentEl = el.parentElement;
+    const parentBGColor = extractBackground(parentEl, document);
+    if (parentBGColor) {
+      background = parentBGColor;
     }
   }
   
