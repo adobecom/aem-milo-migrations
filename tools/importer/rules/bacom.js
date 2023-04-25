@@ -389,9 +389,12 @@ export function extractBackground(el, document, defaultBackground = '') {
   // strategy 2
   if (!background) {
     el.querySelectorAll('div').forEach(d => {
-      const bg = document.defaultView.getComputedStyle(d).getPropertyValue('background-image');
-      if (bg !== '') {
-        background = WebImporter.DOMUtils.getImgFromBackground(d, document);
+      // do not extract background image of a video
+      if (!d.querySelector('video')) {
+        const bg = document.defaultView.getComputedStyle(d).getPropertyValue('background-image');
+        if (bg !== '') {
+          background = WebImporter.DOMUtils.getImgFromBackground(d, document);
+        }
       }
     });
   }
@@ -402,7 +405,7 @@ export function extractBackground(el, document, defaultBackground = '') {
     if (bgImage) {
       if (bgImage.trim().startsWith('url')) {
         const url = WebImporter.DOMUtils.getImgFromBackground(el.querySelector('[data-hlx-background-image]'), document);
-        if (url && url.toLowerCase() !== 'none') {
+        if (url && typeof(url) == "string" && url.toLowerCase() !== 'none') {
           const src = url.replace(/url\(/gm, '').replace(/'/gm, '').replace(/\)/gm, '');
           img = document.createElement('img');
           img.src = src;
