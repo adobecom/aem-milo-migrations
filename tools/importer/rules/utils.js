@@ -107,14 +107,6 @@ export function crawlColorFromCSS(el, document) {
     });
   }
 
-  // strategy 4
-  if (!bgcolor) {
-    const bg = getBGColor(el, document);
-    if (bg != '') {
-      bgcolor = rgbToHex(bg.trim());
-    }
-  }
-
   // console.log('bgcolor', bgcolor);
   return bgcolor;
 }
