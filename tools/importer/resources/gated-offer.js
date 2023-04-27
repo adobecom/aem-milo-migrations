@@ -12,10 +12,10 @@
 /* eslint-disable no-console, class-methods-use-this */
 
 import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
-import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue } from '../utils.js';
+import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue, isLightColor } from '../utils.js';
 import { parseCardMetadata, parseMetadata } from '../rules/metadata.js';
 import { extractBackground } from '../rules/bacom.js';
-import { getNSiblingsElements } from '../rules/utils.js';
+import { getNSiblingsElements, crawlColorFromCSS } from '../rules/utils.js';
 
 const createImage = (document, url)  => {
   const img = document.createElement('img');
@@ -82,7 +82,13 @@ const createMarquee = (main, document) => {
     }
 
     container.append(detail);
-    container.append(title);
+    
+    if (title) {
+      const hTitle = document.createElement('H1')
+      hTitle.innerHTML = title;
+      container.append(hTitle);
+    }
+
     if (longtext)
       container.append(longtext);
 
@@ -101,12 +107,14 @@ const createMarquee = (main, document) => {
     // strategy 2
     // I found multiple titles in some example
     const titles = marqueeDoc.querySelectorAll('.title');
-    titles.forEach ( hTitle => { 
-      title += hTitle.textContent;
+    titles.forEach ( tTitle => { 
+      title += tTitle.textContent;
     })
 
     if (title) {
-      container.append(title);
+      const hTitle = document.createElement('H1')
+      hTitle.innerHTML = title;
+      container.append(hTitle);
     }
   
     const text = marqueeDoc.querySelector('.text');
@@ -129,41 +137,19 @@ const createMarquee = (main, document) => {
   * background
   */
 
-  // let background =  WebImporter.DOMUtils.getImgFromBackground(marqueeDoc, document)
-  // console.log('background', background);
-
-  // // strategy 2
-  // if (!background) {
-
-  //   marqueeDoc.querySelectorAll('div').forEach(d => {
-  //     const bg = document.defaultView.getComputedStyle(d).getPropertyValue('background-image');
-  //     if (bg !== '') {
-  //       background = WebImporter.DOMUtils.getImgFromBackground(d, document);
-  //     }
-  //     // console.log('bg', bg);
-  //   });
-
-  //   // const innerDivs = [...marqueeDoc.querySelectorAll('div')];
-  //   // const found = innerDivs.find(d => document.defaultView.getComputedStyle(d).getPropertyValue('background-image') !== '');
-  //   // console.log('found');
-  //   // console.log(found);
-  //   // console.log('found', document.defaultView.getComputedStyle(found).getPropertyValue('background-image'));
-  // }
-
-  // // strategy 3: get background color
-  
-  // if (!background) {
-  //   const bgColor = getBGColor(el, document);
-  //   if (bgColor) {
-  //     background = bgColor
-  //   }
-  // }
-
-  // if (!background) {
-  //   background = '';
-  // }
-
   let background = extractBackground(marqueeDoc, document);
+
+  /*
+  * theme
+  */
+
+  let theme = 'light'; // default, dark color + light background
+  const fontColor = crawlColorFromCSS(marqueeDoc, document);
+  if (fontColor) {
+    if (isLightColor(fontColor)) {
+      theme = 'dark'; // default, light color + dark background
+    }
+  }  
 
   /*
   * image + resource
@@ -203,12 +189,13 @@ const createMarquee = (main, document) => {
     console.log("Resource: " + JSON.stringify(resource))
   }
 
+
   /*
   * create table
   */
 
   const cells = [
-    ['marquee (medium, light)'],
+    [`marquee (small, ${theme})`],
     [background],
     [container, (resource || '')],
   ];
@@ -287,7 +274,7 @@ const getFormLink = async (document, faasTitleSelector, originalURL) => {
 
   const cells = [
     ['Section Metadata'],
-    ['style', 'container, xxl spacing, divider'],
+    ['style', 'container, xxl spacing'],
   ];
 
   const formLink = handleFaasForm(document, document, faasTitleSelector);
@@ -354,7 +341,7 @@ export default {
     // if (!getMetadataValue(document, 'robots')?.toLowerCase()?.includes('noindex')) {
       // const { block, tagsConverted } = parseCardMetadata(document, params.originalURL);
     let tagsConvertedString = tagsConverted.toString()
-      // main.append(block);
+    main.append(block);
     // }
 
     cleanupParagraphs(main);
