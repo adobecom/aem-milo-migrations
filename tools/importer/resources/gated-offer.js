@@ -13,9 +13,9 @@
 
 import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
 import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue } from '../utils.js';
-import { parseCardMetadata } from '../rules/metadata.js';
+import { parseCardMetadata, parseMetadata } from '../rules/metadata.js';
 import { extractBackground } from '../rules/bacom.js';
-import { getBGColor, getNSiblingsElements } from '../rules/utils.js';
+import { getNSiblingsElements } from '../rules/utils.js';
 
 const createImage = (document, url)  => {
   const img = document.createElement('img');
@@ -52,7 +52,7 @@ const createMarquee = (main, document) => {
     // Unfortunately, both the detail and the text use the same class "text" so order matters
 
     let detail = null;
-    let title = null;
+    let title = '';
     let longtext = null;
 
     for (var i = 0; i < els.length; i++) {
@@ -63,11 +63,11 @@ const createMarquee = (main, document) => {
       // don't add images and videos
       // add only text and titles (there might ctas, those are links to forms that are handled by the faas-form logic)
       if (!img && !video) {
-        const foundtitle = tmpel.querySelector('.title');
-        if (foundtitle) {
-          title = foundtitle;
-        }
-      
+        const titles = tmpel.querySelectorAll('.title');
+        titles.forEach ( hTitle => { 
+          title += hTitle.textContent;
+        })
+
         const texts = tmpel.querySelectorAll('.text');
         // we expect one or two texts
         if (texts.length > 2) {
@@ -93,10 +93,20 @@ const createMarquee = (main, document) => {
       a.textContent = t;
     });
   } else {
+    let detail = null;
+    let title = '';
+    let longtext = null;
+
+
     // strategy 2
-    const title = marqueeDoc.querySelector('.title');
+    // I found multiple titles in some example
+    const titles = marqueeDoc.querySelectorAll('.title');
+    titles.forEach ( hTitle => { 
+      title += hTitle.textContent;
+    })
+
     if (title) {
-      container.append(title)
+      container.append(title);
     }
   
     const text = marqueeDoc.querySelector('.text');
@@ -336,15 +346,16 @@ export default {
     const table = WebImporter.DOMUtils.createTable(cells, document);
     main.append(table);
     main.append('---');
-    main.append(createMetadata(main, document));
+    main.append(parseMetadata(document));
+    const { block, tagsConverted } = parseCardMetadata(document);
     
     // if robots doesn't have noindex include Card Metadata;
-    let tagsConvertedString = 'false'
-    if (!getMetadataValue(document, 'robots')?.toLowerCase()?.includes('noindex')) {
-      const { block, tagsConverted } = parseCardMetadata(document, params.originalURL);
-      tagsConvertedString = tagsConverted.toString()
-      main.append(block);
-    }
+    // let tagsConvertedString = 'false'
+    // if (!getMetadataValue(document, 'robots')?.toLowerCase()?.includes('noindex')) {
+      // const { block, tagsConverted } = parseCardMetadata(document, params.originalURL);
+    let tagsConvertedString = tagsConverted.toString()
+      // main.append(block);
+    // }
 
     cleanupParagraphs(main);
 
