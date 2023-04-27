@@ -70,13 +70,23 @@ export function getBGColor(el, document) {
     }
   }
 
+  // strategy 4: access parent's style property
+  // WARNING: this might end up looping into parent's search and pick up the wrong background
+  // WARNING: debug this function if you find unexpected results in background color's detection
+  if (!bgcolor) {
+    const parentEl = el.parentElement;
+    const parentBGColor = getBGColor(parentEl, document);
+    if (parentBGColor) {
+      bgcolor = parentBGColor;
+    }
+  }
+
 
   return bgcolor;
 }
 
 export function crawlColorFromCSS(el, document) {
   let bgcolor = el.querySelector('div[data-color]')?.getAttribute('data-color');
-
 
   // strategy 2
   if (!bgcolor) {
@@ -91,10 +101,18 @@ export function crawlColorFromCSS(el, document) {
   if (!bgcolor) {
     el.querySelectorAll('div').forEach(d => {
       const bg = document.defaultView.getComputedStyle(d).getPropertyValue('color');
-      if (bg != '') {
+      if (bg) {
         bgcolor = rgbToHex(bg.trim());
       }
     });
+  }
+
+  // strategy 4
+  if (!bgcolor) {
+    const bg = getBGColor(el, document);
+    if (bg != '') {
+      bgcolor = rgbToHex(bg.trim());
+    }
   }
 
   // console.log('bgcolor', bgcolor);
