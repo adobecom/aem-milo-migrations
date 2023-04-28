@@ -85,6 +85,24 @@ export function getBGColor(el, document) {
   return bgcolor;
 }
 
+/**
+ * Attempts to find the (text) color of an element by traversing (upwards) the inheritance tree
+ * @param {*} el 
+ * @param {*} document 
+ */
+export function textColorFromRecursiveCSS(el, document) {
+  if (!el) {
+    return undefined;
+  }
+
+  const color = document.defaultView.getComputedStyle(el).getPropertyValue('color');
+  if (color) {
+    return color;
+  } else {
+    return textColorFromRecursiveCSS(el.parentNode, document)
+  }
+}
+
 export function crawlColorFromCSS(el, document) {
   let bgcolor = el.querySelector('div[data-color]')?.getAttribute('data-color');
 
