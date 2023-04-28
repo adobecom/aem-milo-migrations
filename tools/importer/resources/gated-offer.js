@@ -15,7 +15,7 @@ import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
 import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue, isLightColor } from '../utils.js';
 import { parseCardMetadata, parseMetadata } from '../rules/metadata.js';
 import { extractBackground } from '../rules/bacom.js';
-import { getNSiblingsElements, crawlColorFromCSS } from '../rules/utils.js';
+import { getNSiblingsElements, textColorFromRecursiveCSS } from '../rules/utils.js';
 
 const createImage = (document, url)  => {
   const img = document.createElement('img');
@@ -143,11 +143,13 @@ const createMarquee = (main, document) => {
   * theme
   */
 
-  let theme = 'light'; // default, dark color + light background
-  const fontColor = crawlColorFromCSS(marqueeDoc, document);
-  if (fontColor) {
-    if (isLightColor(fontColor)) {
-      theme = 'dark'; // default, light color + dark background
+  // I check the color of the text. If it's "light" then I want a dark theme, if it's "dark" then the light one
+  let theme = 'light';
+  let titleColor = textColorFromRecursiveCSS(marqueeDoc.querySelector('.title'), document);
+  console.log(`Title color: ${titleColor}`);
+  if (titleColor) {
+    if (isLightColor(titleColor)) {
+      theme = 'dark'; 
     }
   }  
 
@@ -162,7 +164,7 @@ const createMarquee = (main, document) => {
   if (image) {
     let img = image.querySelector('img');
     if (img) {
-      resource = createImage(document, img.src);
+      resource = createImage(document, img.src);  
     }
     
     const link = image.querySelector('a');
@@ -211,6 +213,13 @@ const createColumns = (main, document, formLink) => {
     el.querySelector('.dexter-FlexContainer').remove()
   }
   const contentBody = el.querySelectorAll('.flex')[1];
+
+  // Remove Adobe logo from content
+  const adobelogo = contentBody.querySelector("img[src$='AdobeLogo.svg']");
+  if (adobelogo) {
+    adobelogo.remove();
+  }
+
   if (formLink[0].nodeName === 'A') {
     const cells = [
       ['Columns (contained)'],
@@ -369,7 +378,7 @@ export default {
     }];
 
   },
-
+  
   /**
    * Return a path that describes the document being transformed (file name, nesting...).
    * The path is then used to create the corresponding Word document.
@@ -377,12 +386,12 @@ export default {
    * @param {HTMLDocument} document The document
    */
   generateDocumentPath: ({ document, url }) => {
-    const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '');
+    const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '').replace('-', '_');
     return WebImporter.FileUtils.sanitizePath(path);
   },
 };
 
 const generateDocumentPath = ({ document, url }) => {
-  const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '');
+  const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '').replace('-', '_');
   return WebImporter.FileUtils.sanitizePath(path);
 }
