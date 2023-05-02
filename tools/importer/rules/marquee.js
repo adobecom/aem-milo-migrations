@@ -13,6 +13,7 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
 
   let marqueeDoc = el
   let els = getNSiblingsElements(el, (c) => c >= 2)
+  let videoElem = marqueeDoc
 
   const container = document.createElement('div')
   if (els) {
@@ -35,9 +36,21 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
     for (var i = 0; i < els.length; i++) {
       const tmpel = els[i];
       const img = tmpel.querySelector('img')
-      const video = tmpel.querySelector('video.video-desktop')
+      const video = tmpel.querySelector('video.video-desktop') || tmpel.querySelector('iframe')
       if (!img && !video) {
+        let cta = tmpel.querySelector('.cta');
+        if (cta) {
+          const link = cta.querySelector('a');
+          if (link.href.indexOf('#watch-now') < 0) {
+            const str = document.createElement('B');
+            str.append(cta);
+            tmpel.append(str)
+          }
+        }
         container.append(tmpel)
+      }
+      if (video){
+        videoElem = tmpel
       }
     }
 
@@ -74,7 +87,13 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
   * image + resource
   */
 
-  let resource = null;
+  let resource = document.createElement('div');
+  const videoText = videoElem.querySelector('.cmp-text')
+  if(videoText) {
+    const videoTextH3 = document.createElement('h3')
+    videoTextH3.append(videoText.textContent)
+    resource.append(videoTextH3)
+  }
 
   const image = marqueeDoc.querySelector('.image');
 
@@ -91,22 +110,31 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
         if (watchNowEl) {
           const videoIframe = watchNowEl.querySelector('iframe');
           if (videoIframe) {
-            resource = videoIframe.src || videoIframe.dataset.videoSrc;
+            resource.append(videoIframe.src || videoIframe.dataset.videoSrc)
           }
         }
       }
     }
   }
 
-  const video = marqueeDoc.querySelector('video.video-desktop');
+  let video = marqueeDoc.querySelector('video.video-desktop');
   if (video) {
     const source = video.querySelector('source');
-    resource = document.createElement('a');
-    resource.href = source.src
-    resource.innerHTML = source.src
+    const resourceLink = document.createElement('a');
+    resourceLink.href = source.src
+    resourceLink.innerHTML = source.src
+    resource.append(resourceLink)
   }
 
-  
+
+  // iframe handling
+  video = videoElem.querySelector('iframe');
+  if (video) {
+    const resourceLink = document.createElement('a');
+    resourceLink.href = video.src || video.videoSrc
+    resourceLink.innerHTML = video.src || video.videoSrc
+    resource.append(resourceLink)
+  }
 
   /*
    * theme
@@ -124,39 +152,32 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
    * Handle modal videos 
    */
 
-  const videoLink = container.querySelector('.cta a')
-  if (videoLink && videoLink.href) {
-    let href = videoLink.href
-    href = href.split(videoLink.baseURI)
-    href = href[href.length - 1]
-    if(href.startsWith("#")){
-      const modal = document.querySelector(href)
-      const iframe = modal?.querySelector('iframe')
-      // check if element is in a modal
-      if (modal?.closest(".modal") && iframe && iframe.getAttribute('data-video-src')) {
-        if(!resource) {
-          console.log(iframe.getAttribute('data-video-src'))
-          resource = document.createElement('a');
-          resource.href = iframe.getAttribute('data-video-src')
-          resource.innerHTML = iframe.getAttribute('data-video-src')
+  const videoLinks = container.querySelectorAll('.cta a')
+  videoLinks.forEach(videoLink => {
+    if (videoLink && videoLink.href) {
+      let href = videoLink.href
+      href = href.split(videoLink.baseURI)
+      href = href[href.length - 1]
+      if(href.startsWith("#")){
+        const modal = document.querySelector(href)
+        const iframe = modal?.querySelector('iframe')
+        // check if element is in a modal
+        if (modal?.closest(".modal") && iframe && iframe.getAttribute('data-video-src')) {
+          if(!resource) {
+            console.log(iframe.getAttribute('data-video-src'))
+            resource = document.createElement('a');
+            resource.href = iframe.getAttribute('data-video-src')
+            resource.innerHTML = iframe.getAttribute('data-video-src')
+          }
+          videoLink.remove()
         }
-        videoLink.remove()
       }
     }
-  }
+  })
 
-
-  /*
-   * create table
-   */
-
-  const cells = [
-    [`marquee (medium, ${theme})`],
+  return WebImporter.DOMUtils.createTable([
+    [`marquee (small, ${theme})`],
     [extractBackground(marqueeDoc, document)],
     [container, (resource || '')],
-  ];
-  const table = WebImporter.DOMUtils.createTable(cells, document);
-  // document.querySelector('h1')?.remove();
-  // marqueeDoc.remove();
-  return table;
+  ], document);
 }
