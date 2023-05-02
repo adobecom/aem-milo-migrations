@@ -309,8 +309,12 @@ export default {
     const formLink = await getFormLink(document, titleElement, new URL(params.originalURL));
 
     WebImporter.DOMUtils.remove(document, [
-      `header, footer, .faas-form-settings, .xf`,
-    ]);
+      `header, footer, .faas-form-settings, .xf`]);
+
+    // Once we retrieved it, we can remove it
+    // This prevents having duplicates in the main content area
+    titleElement.remove();
+
     const main = document.querySelector('main');
 
     // Top area
@@ -381,8 +385,11 @@ export default {
 };
 
 function generateDocumentPath({ document, url }) {
-  const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '').replace('-', '_');
-  return WebImporter.FileUtils.sanitizePath(path);
+  let { pathname } = new URL(url);
+  pathname = pathname.replace('.html', '')
+  const sanitized =  WebImporter.FileUtils.sanitizePath(pathname);
+  const localeFromURL = sanitized.split('/')[1];
+  return sanitized.replace(localeFromURL, localeFromURL.replace('-', '_'));
 }
 
 /**
@@ -428,7 +435,7 @@ function getFormTitleGatedOffers(document) {
 
   // If we still don't have a title, let's use an empty one as last resource
   if (!title) {
-    title = ''
+    title = '';
   }
 
   return title;
