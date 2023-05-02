@@ -157,7 +157,7 @@ export default {
    * @param {HTMLDocument} document The document
    */
   generateDocumentPath: ({ document, url }) => {
-    const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '');
+    const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '').replace('-', '_');
     return WebImporter.FileUtils.sanitizePath(path);
   },
 };
