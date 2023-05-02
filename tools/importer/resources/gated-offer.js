@@ -400,18 +400,39 @@ function generateDocumentPath({ document, url }) {
 function getFormTitleGatedOffers(document) {
   let element;
   const previous = document.querySelector('.faasform').previousElementSibling;
+  let title;
 
-  if (previous) {
+  // In some of the pages, the sibling is the "position" element. Ignore that one and use the parent
+  if (previous && !previous.classList.contains('position')) {
     element = previous;
   } else {
     element = document.querySelector('.faasform').parentElement;
   }
 
+  // Once we have access to the element look for cmp-text
   let innerElement = element.querySelector('.cmp-text');
+
+  // if it doesn't exist, then look at the cmp-text globally in the page
   if (!innerElement){
     innerElement = document.querySelector('.faasform').closest('.aem-Grid').querySelector('.cmp-text');
   }
 
-  const pars = innerElement.querySelectorAll('p');
-  return pars[pars.length - 1];
+  // if still cannot find it, look for a title and just pick that one (best guess)
+  if (!innerElement) {
+    innerElement = document.querySelector('.faasform').closest('.aem-Grid').querySelector('.cmp-title');
+    title = innerElement;
+  }
+
+  // if we didn't define it earlier but we have a valid inner element, then look for the last paragraph
+  if (!title && innerElement) {
+    const pars = innerElement.querySelectorAll('p');
+    title = pars[pars.length - 1];
+  }
+
+  // If we still don't have a title, let's use an empty one as last resource
+  if (!title) {
+    title = ''
+  }
+
+  return title;
 }
