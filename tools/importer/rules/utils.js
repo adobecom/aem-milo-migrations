@@ -70,13 +70,41 @@ export function getBGColor(el, document) {
     }
   }
 
+  // strategy 4: access parent's style property
+  // WARNING: this might end up looping into parent's search and pick up the wrong background
+  // WARNING: debug this function if you find unexpected results in background color's detection
+  if (!bgcolor) {
+    const parentEl = el.parentElement;
+    const parentBGColor = getBGColor(parentEl, document);
+    if (parentBGColor) {
+      bgcolor = parentBGColor;
+    }
+  }
+
 
   return bgcolor;
 }
 
+/**
+ * Attempts to find the (text) color of an element by traversing (upwards) the inheritance tree
+ * @param {*} el 
+ * @param {*} document 
+ */
+export function textColorFromRecursiveCSS(el, document) {
+  if (!el) {
+    return undefined;
+  }
+
+  const color = document.defaultView.getComputedStyle(el).getPropertyValue('color');
+  if (color) {
+    return color;
+  } else {
+    return textColorFromRecursiveCSS(el.parentNode, document)
+  }
+}
+
 export function crawlColorFromCSS(el, document) {
   let bgcolor = el.querySelector('div[data-color]')?.getAttribute('data-color');
-
 
   // strategy 2
   if (!bgcolor) {
@@ -91,7 +119,7 @@ export function crawlColorFromCSS(el, document) {
   if (!bgcolor) {
     el.querySelectorAll('div').forEach(d => {
       const bg = document.defaultView.getComputedStyle(d).getPropertyValue('color');
-      if (bg != '') {
+      if (bg) {
         bgcolor = rgbToHex(bg.trim());
       }
     });

@@ -429,17 +429,6 @@ export function extractBackground(el, document, defaultBackground = '') {
       background = bgColor
     }
   }
-
-  // strategy 5: access parent's style property
-  // WARNING: this might end up looping into parent's search and pick up the wrong background
-  // WARNING: debug this function if you find unexpected results in background color's detection
-  if (!background) {
-    const parentEl = el.parentElement;
-    const parentBGColor = extractBackground(parentEl, document);
-    if (parentBGColor) {
-      background = parentBGColor;
-    }
-  }
   
   // fallback: use default
   if (!background) {

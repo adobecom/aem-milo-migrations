@@ -455,13 +455,8 @@ export default {
    * @param {HTMLDocument} document The document
    */
     generateDocumentPath: ({ document, url }) => {
-      let { pathname } = new URL(url);
-      const localFromURL = pathname.split('/')[1];
-      if (!localFromURL.startsWith('resource')) {
-        pathname = pathname.replace(localFromURL, window.local);
-      }
-      pathname = pathname.replace('.html', '');
-      return WebImporter.FileUtils.sanitizePath(pathname);
+      const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '').replace('-', '_');
+      return WebImporter.FileUtils.sanitizePath(path);
     },
 };
 
@@ -472,11 +467,6 @@ export default {
    * @param {HTMLDocument} document The document
    */
 const generateDocumentPath = ({ document, url }) => {
-  let { pathname } = new URL(url);
-  const localFromURL = pathname.split('/')[1];
-  if (!localFromURL.startsWith('resource')) {
-    pathname = pathname.replace(localFromURL, window.local);
-  }
-  pathname = pathname.replace('.html', '');
-  return WebImporter.FileUtils.sanitizePath(pathname);
+  const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '').replace('-', '_');
+  return WebImporter.FileUtils.sanitizePath(path);
 }

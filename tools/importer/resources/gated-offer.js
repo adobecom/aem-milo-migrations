@@ -12,10 +12,10 @@
 /* eslint-disable no-console, class-methods-use-this */
 
 import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
-import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue } from '../utils.js';
-import { parseCardMetadata } from '../rules/metadata.js';
+import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue, isLightColor } from '../utils.js';
+import { parseCardMetadata, parseMetadata } from '../rules/metadata.js';
 import { extractBackground } from '../rules/bacom.js';
-import { getBGColor, getNSiblingsElements } from '../rules/utils.js';
+import { getNSiblingsElements, textColorFromRecursiveCSS } from '../rules/utils.js';
 
 const createImage = (document, url)  => {
   const img = document.createElement('img');
@@ -26,7 +26,11 @@ const createImage = (document, url)  => {
 const createMarquee = (main, document) => {
   const el = document.querySelector('.dexter-FlexContainer') || document.querySelector('.dexter-Position');
   let marqueeDoc = el
-  let els = getNSiblingsElements(el, (c) => c == 2)
+  let els = getNSiblingsElements(el, (c) => c === 2)
+
+  /*
+   * theme
+   */
 
   const container = document.createElement('div')
   if (els) {
@@ -39,7 +43,7 @@ const createMarquee = (main, document) => {
       }
     }
     if (emptyNodeIndx >= 0) {
-      const targetInd = emptyNodeIndx == 0 ? emptyNodeIndx + 1 : emptyNodeIndx - 1
+      const targetInd = emptyNodeIndx === 0 ? emptyNodeIndx + 1 : emptyNodeIndx - 1
       els = getNSiblingsElements(els[targetInd], (c) => c >= 2)
     }
 
@@ -52,7 +56,7 @@ const createMarquee = (main, document) => {
     // Unfortunately, both the detail and the text use the same class "text" so order matters
 
     let detail = null;
-    let title = null;
+    let title = '';
     let longtext = null;
 
     for (var i = 0; i < els.length; i++) {
@@ -63,16 +67,16 @@ const createMarquee = (main, document) => {
       // don't add images and videos
       // add only text and titles (there might ctas, those are links to forms that are handled by the faas-form logic)
       if (!img && !video) {
-        const foundtitle = tmpel.querySelector('.title');
-        if (foundtitle) {
-          title = foundtitle;
-        }
-      
+        const titles = tmpel.querySelectorAll('.title');
+        titles.forEach ( hTitle => { 
+          title += hTitle.textContent;
+        })
+
         const texts = tmpel.querySelectorAll('.text');
         // we expect one or two texts
         if (texts.length > 2) {
           console.error(`Found a case with more than two texts in marquee (${texts.length})`);
-        } else if (texts.length == 2) {
+        } else if (texts.length === 2) {
           detail = texts[0];
           longtext = texts[1];
         } else {
@@ -82,7 +86,13 @@ const createMarquee = (main, document) => {
     }
 
     container.append(detail);
-    container.append(title);
+    
+    if (title) {
+      const hTitle = document.createElement('H1')
+      hTitle.innerHTML = title;
+      container.append(hTitle);
+    }
+
     if (longtext)
       container.append(longtext);
 
@@ -93,10 +103,19 @@ const createMarquee = (main, document) => {
       a.textContent = t;
     });
   } else {
+    let title = '';
+
     // strategy 2
-    const title = marqueeDoc.querySelector('.title');
+    // I found multiple titles in some example
+    const titles = marqueeDoc.querySelectorAll('.title');
+    titles.forEach ( tTitle => { 
+      title += tTitle.textContent;
+    })
+
     if (title) {
-      container.append(title)
+      const hTitle = document.createElement('H1')
+      hTitle.innerHTML = title;
+      container.append(hTitle);
     }
   
     const text = marqueeDoc.querySelector('.text');
@@ -116,44 +135,12 @@ const createMarquee = (main, document) => {
   }
 
   /*
-  * background
+  * theme and background
   */
 
-  // let background =  WebImporter.DOMUtils.getImgFromBackground(marqueeDoc, document)
-  // console.log('background', background);
-
-  // // strategy 2
-  // if (!background) {
-
-  //   marqueeDoc.querySelectorAll('div').forEach(d => {
-  //     const bg = document.defaultView.getComputedStyle(d).getPropertyValue('background-image');
-  //     if (bg !== '') {
-  //       background = WebImporter.DOMUtils.getImgFromBackground(d, document);
-  //     }
-  //     // console.log('bg', bg);
-  //   });
-
-  //   // const innerDivs = [...marqueeDoc.querySelectorAll('div')];
-  //   // const found = innerDivs.find(d => document.defaultView.getComputedStyle(d).getPropertyValue('background-image') !== '');
-  //   // console.log('found');
-  //   // console.log(found);
-  //   // console.log('found', document.defaultView.getComputedStyle(found).getPropertyValue('background-image'));
-  // }
-
-  // // strategy 3: get background color
-  
-  // if (!background) {
-  //   const bgColor = getBGColor(el, document);
-  //   if (bgColor) {
-  //     background = bgColor
-  //   }
-  // }
-
-  // if (!background) {
-  //   background = '';
-  // }
-
-  let background = extractBackground(marqueeDoc, document);
+  // The theme is forced on light and background to f5f5f5 as per BACOM's instructions
+  let background = '#f5f5f5'
+  let theme = 'light';
 
   /*
   * image + resource
@@ -166,7 +153,7 @@ const createMarquee = (main, document) => {
   if (image) {
     let img = image.querySelector('img');
     if (img) {
-      resource = createImage(document, img.src);
+      resource = createImage(document, img.src);  
     }
     
     const link = image.querySelector('a');
@@ -193,12 +180,13 @@ const createMarquee = (main, document) => {
     console.log("Resource: " + JSON.stringify(resource))
   }
 
+
   /*
   * create table
   */
 
   const cells = [
-    ['marquee (medium, light)'],
+    [`marquee (small, ${theme})`],
     [background],
     [container, (resource || '')],
   ];
@@ -214,6 +202,13 @@ const createColumns = (main, document, formLink) => {
     el.querySelector('.dexter-FlexContainer').remove()
   }
   const contentBody = el.querySelectorAll('.flex')[1];
+
+  // Remove Adobe logo from content
+  const adobelogo = contentBody.querySelector("img[src$='AdobeLogo.svg']");
+  if (adobelogo) {
+    adobelogo.remove();
+  }
+
   if (formLink[0].nodeName === 'A') {
     const cells = [
       ['Columns (contained)'],
@@ -250,8 +245,7 @@ const createMetadata = (main, document) => {
   meta.tags = cqTags.length ? cqTags.join(', ') : '';
   meta['caas:content-type'] = getMetadataValue(document, 'caas:content-type');
 
-  const block = WebImporter.Blocks.getMetadataBlock(document, meta);
-  return block;
+  return WebImporter.Blocks.getMetadataBlock(document, meta);;
 };
 
 const getFormLink = async (document, faasTitleSelector, originalURL) => {
@@ -277,7 +271,7 @@ const getFormLink = async (document, faasTitleSelector, originalURL) => {
 
   const cells = [
     ['Section Metadata'],
-    ['style', 'container, xxl spacing, divider'],
+    ['style', 'container, xxl spacing'],
   ];
 
   const formLink = handleFaasForm(document, document, faasTitleSelector);
@@ -289,6 +283,8 @@ const appendBackward = (elements, main) => {
     main.prepend(elements[i]);
   }
 }
+
+
 
 export default {
   onLoad: async ({ document }) => {
@@ -305,8 +301,10 @@ export default {
     await setGlobals(params.originalURL);
 
     // get the form title from either the text or the title in the faas-form structure
-    let titleElement = document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-text');
-    titleElement = titleElement || document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-title')
+    // let titleElement = document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-text');
+    // titleElement = titleElement || document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-title')
+    const titleElement = getFormTitleGatedOffers(document);
+    console.log(`title element: ${titleElement.textContent}`);
 
     const formLink = await getFormLink(document, titleElement, new URL(params.originalURL));
 
@@ -336,15 +334,16 @@ export default {
     const table = WebImporter.DOMUtils.createTable(cells, document);
     main.append(table);
     main.append('---');
-    main.append(createMetadata(main, document));
+    main.append(parseMetadata(document));
+    const { block, tagsConverted } = parseCardMetadata(document);
     
     // if robots doesn't have noindex include Card Metadata;
-    let tagsConvertedString = 'false'
-    if (!getMetadataValue(document, 'robots')?.toLowerCase()?.includes('noindex')) {
-      const { block, tagsConverted } = parseCardMetadata(document, params.originalURL);
-      tagsConvertedString = tagsConverted.toString()
-      main.append(block);
-    }
+    // let tagsConvertedString = 'false'
+    // if (!getMetadataValue(document, 'robots')?.toLowerCase()?.includes('noindex')) {
+      // const { block, tagsConverted } = parseCardMetadata(document, params.originalURL);
+    let tagsConvertedString = tagsConverted.toString()
+    main.append(block);
+    // }
 
     cleanupParagraphs(main);
 
@@ -371,20 +370,45 @@ export default {
     }];
 
   },
-
+  
   /**
    * Return a path that describes the document being transformed (file name, nesting...).
    * The path is then used to create the corresponding Word document.
    * @param {String} url The url of the document being transformed.
    * @param {HTMLDocument} document The document
    */
-  generateDocumentPath: ({ document, url }) => {
-    const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '');
-    return WebImporter.FileUtils.sanitizePath(path);
-  },
+  generateDocumentPath: generateDocumentPath,
 };
 
-const generateDocumentPath = ({ document, url }) => {
-  const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '');
+function generateDocumentPath({ document, url }) {
+  const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '').replace('-', '_');
   return WebImporter.FileUtils.sanitizePath(path);
+}
+
+/**
+ * Get the form title for gated offers based on some heuristic
+ * First tries to find the sibling element, if exists
+ * If it doesn't goes to the parent and runs the same logic
+ *
+ * Logic being looking for a '.cmp-text' div and then the last of the paragraphs.
+ * If the last paragraph is empty, take the second-to-last
+ * @param document
+ */
+function getFormTitleGatedOffers(document) {
+  let element;
+  const previous = document.querySelector('.faasform').previousElementSibling;
+
+  if (previous) {
+    element = previous;
+  } else {
+    element = document.querySelector('.faasform').parentElement;
+  }
+
+  let innerElement = element.querySelector('.cmp-text');
+  if (!innerElement){
+    innerElement = document.querySelector('.faasform').closest('.aem-Grid').querySelector('.cmp-text');
+  }
+
+  const pars = innerElement.querySelectorAll('p');
+  return pars[pars.length - 1];
 }
