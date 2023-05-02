@@ -46,14 +46,23 @@ export function parseCardMetadata(document, originalURL) {
   if (caasContentType !== '') {
     caasPrimaryTag += convertedCaasPrimaryTag.tags[0];
   }
+  let date = getMetadataValue(document, 'cardDate')
+  let dateStr = ''
+  if (date && date !== '') {
+    date = new Date(Date.parse(date))
+    dateStr = date.toISOString().slice(0, 10);
+  }
 
   console.log('caas:content-type/' + caasContentType, " /// ", caasPrimaryTag);
 
   const cells = [
     ['Card Metadata'],
-    ['cardTitle', getMetadataValue(document, 'cardTitle')],
-    ['cardImagePath', getMetadataValue(document, 'cardImagePath') === '' ? '' : createImage(document,`https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`)],
+    ['title', getMetadataValue(document, 'cardTitle')],
     ['CardDescription', getMetadataValue(document, 'cardDescription')],
+    ['cardDate', dateStr],
+    ['altCardImageText', getMetadataValue(document, 'altCardImageText')],
+    ['cardImage', getMetadataValue(document, 'cardImagePath') === '' ? '' : createImage(document,`https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`)],
+    ['original_entity_id', getMetadataValue(document, 'entity_id')],
     ['primaryTag', caasPrimaryTag],
     ['Tags', caasTags.length ? caasTags.join(', ') : ''],
   ];
