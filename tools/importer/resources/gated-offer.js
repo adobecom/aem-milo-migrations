@@ -26,7 +26,11 @@ const createImage = (document, url)  => {
 const createMarquee = (main, document) => {
   const el = document.querySelector('.dexter-FlexContainer') || document.querySelector('.dexter-Position');
   let marqueeDoc = el
-  let els = getNSiblingsElements(el, (c) => c == 2)
+  let els = getNSiblingsElements(el, (c) => c === 2)
+
+  /*
+   * theme
+   */
 
   const container = document.createElement('div')
   if (els) {
@@ -39,7 +43,7 @@ const createMarquee = (main, document) => {
       }
     }
     if (emptyNodeIndx >= 0) {
-      const targetInd = emptyNodeIndx == 0 ? emptyNodeIndx + 1 : emptyNodeIndx - 1
+      const targetInd = emptyNodeIndx === 0 ? emptyNodeIndx + 1 : emptyNodeIndx - 1
       els = getNSiblingsElements(els[targetInd], (c) => c >= 2)
     }
 
@@ -72,7 +76,7 @@ const createMarquee = (main, document) => {
         // we expect one or two texts
         if (texts.length > 2) {
           console.error(`Found a case with more than two texts in marquee (${texts.length})`);
-        } else if (texts.length == 2) {
+        } else if (texts.length === 2) {
           detail = texts[0];
           longtext = texts[1];
         } else {
@@ -99,10 +103,7 @@ const createMarquee = (main, document) => {
       a.textContent = t;
     });
   } else {
-    let detail = null;
     let title = '';
-    let longtext = null;
-
 
     // strategy 2
     // I found multiple titles in some example
@@ -134,24 +135,12 @@ const createMarquee = (main, document) => {
   }
 
   /*
-  * background
+  * theme and background
   */
 
-  let background = extractBackground(marqueeDoc, document);
-
-  /*
-  * theme
-  */
-
-  // I check the color of the text. If it's "light" then I want a dark theme, if it's "dark" then the light one
+  // The theme is forced on light and background to f5f5f5 as per BACOM's instructions
+  let background = '#f5f5f5'
   let theme = 'light';
-  let titleColor = textColorFromRecursiveCSS(marqueeDoc.querySelector('.title'), document);
-  console.log(`Title color: ${titleColor}`);
-  if (titleColor) {
-    if (isLightColor(titleColor)) {
-      theme = 'dark'; 
-    }
-  }  
 
   /*
   * image + resource
@@ -256,8 +245,7 @@ const createMetadata = (main, document) => {
   meta.tags = cqTags.length ? cqTags.join(', ') : '';
   meta['caas:content-type'] = getMetadataValue(document, 'caas:content-type');
 
-  const block = WebImporter.Blocks.getMetadataBlock(document, meta);
-  return block;
+  return WebImporter.Blocks.getMetadataBlock(document, meta);;
 };
 
 const getFormLink = async (document, faasTitleSelector, originalURL) => {
@@ -296,6 +284,8 @@ const appendBackward = (elements, main) => {
   }
 }
 
+
+
 export default {
   onLoad: async ({ document }) => {
     await waitForFaasForm(document);
@@ -311,8 +301,10 @@ export default {
     await setGlobals(params.originalURL);
 
     // get the form title from either the text or the title in the faas-form structure
-    let titleElement = document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-text');
-    titleElement = titleElement || document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-title')
+    // let titleElement = document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-text');
+    // titleElement = titleElement || document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-title')
+    const titleElement = getFormTitleGatedOffers(document);
+    console.log(`title element: ${titleElement.textContent}`);
 
     const formLink = await getFormLink(document, titleElement, new URL(params.originalURL));
 
@@ -385,13 +377,41 @@ export default {
    * @param {String} url The url of the document being transformed.
    * @param {HTMLDocument} document The document
    */
-  generateDocumentPath: ({ document, url }) => {
-    const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '').replace('-', '_');
-    return WebImporter.FileUtils.sanitizePath(path);
-  },
+  generateDocumentPath: generateDocumentPath,
 };
 
-const generateDocumentPath = ({ document, url }) => {
-  const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '').replace('-', '_');
-  return WebImporter.FileUtils.sanitizePath(path);
+function generateDocumentPath({ document, url }) {
+  let { pathname } = new URL(url);
+  pathname = pathname.replace('.html', '')
+  const sanitized =  WebImporter.FileUtils.sanitizePath(pathname);
+  const localeFromURL = sanitized.split('/')[1];
+  return sanitized.replace(localeFromURL, localeFromURL.replace('-', '_'));
+}
+
+/**
+ * Get the form title for gated offers based on some heuristic
+ * First tries to find the sibling element, if exists
+ * If it doesn't goes to the parent and runs the same logic
+ *
+ * Logic being looking for a '.cmp-text' div and then the last of the paragraphs.
+ * If the last paragraph is empty, take the second-to-last
+ * @param document
+ */
+function getFormTitleGatedOffers(document) {
+  let element;
+  const previous = document.querySelector('.faasform').previousElementSibling;
+
+  if (previous) {
+    element = previous;
+  } else {
+    element = document.querySelector('.faasform').parentElement;
+  }
+
+  let innerElement = element.querySelector('.cmp-text');
+  if (!innerElement){
+    innerElement = document.querySelector('.faasform').closest('.aem-Grid').querySelector('.cmp-text');
+  }
+
+  const pars = innerElement.querySelectorAll('p');
+  return pars[pars.length - 1];
 }
