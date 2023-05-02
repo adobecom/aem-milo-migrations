@@ -381,11 +381,8 @@ export default {
 };
 
 function generateDocumentPath({ document, url }) {
-  let { pathname } = new URL(url);
-  pathname = pathname.replace('.html', '')
-  const sanitized =  WebImporter.FileUtils.sanitizePath(pathname);
-  const localeFromURL = sanitized.split('/')[1];
-  return sanitized.replace(localeFromURL, localeFromURL.replace('-', '_'));
+  const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '').replace('-', '_');
+  return WebImporter.FileUtils.sanitizePath(path);
 }
 
 /**
