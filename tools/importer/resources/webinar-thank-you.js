@@ -11,7 +11,7 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { findPaths, getMetadataValue, setGlobals } from '../utils.js';
+import { findPaths, generateDocumentPath, getMetadataValue, setGlobals } from '../utils.js';
 import { parseCardMetadata } from '../rules/metadata.js';
 import { isLightColor } from '../utils.js';
 import { extractBackground } from '../rules/bacom.js';
@@ -430,14 +430,6 @@ export default {
    * @param {String} url The url of the document being transformed.
    * @param {HTMLDocument} document The document
    */
-  generateDocumentPath: ({ document, url }) => {
-    const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '').replace('-', '_');
-    return WebImporter.FileUtils.sanitizePath(path);
-  },
+  generateDocumentPath: generateDocumentPath,
 
-};
-
-const generateDocumentPath = ({ document, url }) => {
-  const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '').replace('-', '_');
-  return WebImporter.FileUtils.sanitizePath(path);
 };

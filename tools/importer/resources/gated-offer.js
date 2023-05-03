@@ -12,10 +12,9 @@
 /* eslint-disable no-console, class-methods-use-this */
 
 import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
-import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue, isLightColor } from '../utils.js';
+import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue, generateDocumentPath } from '../utils.js';
 import { parseCardMetadata, parseMetadata } from '../rules/metadata.js';
-import { extractBackground } from '../rules/bacom.js';
-import { getNSiblingsElements, textColorFromRecursiveCSS } from '../rules/utils.js';
+import { getNSiblingsElements } from '../rules/utils.js';
 
 const createImage = (document, url)  => {
   const img = document.createElement('img');
@@ -93,8 +92,9 @@ const createMarquee = (main, document) => {
       container.append(hTitle);
     }
 
-    if (longtext)
+    if (longtext) {
       container.append(longtext);
+    }
 
     // sanitize links inside ul/li
     container.querySelectorAll('ol li a, ul li a').forEach((a) => {
@@ -309,8 +309,14 @@ export default {
     const formLink = await getFormLink(document, titleElement, new URL(params.originalURL));
 
     WebImporter.DOMUtils.remove(document, [
-      `header, footer, .faas-form-settings, .xf`,
-    ]);
+      `header, footer, .faas-form-settings, .xf`]);
+
+    // Once we retrieved it, we can remove it
+    // This prevents having duplicates in the main content area
+    if (titleElement) {
+      titleElement.remove();
+    }
+
     const main = document.querySelector('main');
 
     // Top area
@@ -380,11 +386,6 @@ export default {
   generateDocumentPath: generateDocumentPath,
 };
 
-function generateDocumentPath({ document, url }) {
-  const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '').replace('-', '_');
-  return WebImporter.FileUtils.sanitizePath(path);
-}
-
 /**
  * Get the form title for gated offers based on some heuristic
  * First tries to find the sibling element, if exists
@@ -428,7 +429,7 @@ function getFormTitleGatedOffers(document) {
 
   // If we still don't have a title, let's use an empty one as last resource
   if (!title) {
-    title = ''
+    title = '';
   }
 
   return title;

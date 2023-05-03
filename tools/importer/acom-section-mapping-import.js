@@ -18,7 +18,7 @@ import { parseCardMetadata, parseMetadata } from './rules/metadata.js';
 import { parseCAASContent } from './rules/caas.js';
 import { parseZPattern } from './rules/z-pattern.js';
 import { parseAside } from './rules/aside.js';
-import { setGlobals } from './utils.js';
+import { generateDocumentPath, setGlobals } from './utils.js';
 import { parseBreadcrumb } from './rules/breadcrumb.js';
 import {
   parseTwoUpLayoutsSectionMetadata,
@@ -367,8 +367,3 @@ export default {
   generateDocumentPath: generateDocumentPath,
 
 };
-
-function generateDocumentPath({ document, url }) {
-  const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '').replace('-', '_');
-  return WebImporter.FileUtils.sanitizePath(path);
-}
