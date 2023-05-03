@@ -14,7 +14,7 @@
 import { parseMarquee } from '../rules/marquee.js';
 import { parseCardMetadata, parseMetadata } from '../rules/metadata.js';
 import { parseCAASContent } from '../rules/caas.js';
-import { setGlobals, getXPathByElement } from '../utils.js';
+import { setGlobals, getXPathByElement, generateDocumentPath } from '../utils.js';
 import { getNSiblingsElements } from '../rules/utils.js';
 import { parseBreadcrumb } from '../rules/breadcrumb.js';
 import { waitForFaasForm } from '../rules/handleFaasForm.js';
@@ -199,8 +199,3 @@ export default {
   generateDocumentPath: generateDocumentPath,
 
 };
-
-function generateDocumentPath({ document, url }) {
-  const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '').replace('-', '_');
-  return WebImporter.FileUtils.sanitizePath(path);
-}

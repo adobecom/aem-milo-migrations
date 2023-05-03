@@ -11,7 +11,7 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { setGlobals, getMetadataValue, getJSONValues, isRelative, findPaths, createElementFromHTML, getRecommendedArticles } from '../utils.js';
+import { setGlobals, getMetadataValue, isRelative, findPaths, createElementFromHTML, getRecommendedArticles, generateDocumentPath } from '../utils.js';
 import { parseCardMetadata } from '../rules/metadata.js';
 
 const createMetadata = (main, document) => {
@@ -227,8 +227,5 @@ export default {
    * @param {String} url The url of the document being transformed.
    * @param {HTMLDocument} document The document
    */
-  generateDocumentPath: ({ document, url }) => {
-    const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '').replace('-', '_');
-    return WebImporter.FileUtils.sanitizePath(path);
-  },
+  generateDocumentPath: generateDocumentPath,
 };

@@ -12,10 +12,9 @@
 /* eslint-disable no-console, class-methods-use-this */
 
 import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
-import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue, isLightColor } from '../utils.js';
+import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue, generateDocumentPath } from '../utils.js';
 import { parseCardMetadata, parseMetadata } from '../rules/metadata.js';
-import { extractBackground } from '../rules/bacom.js';
-import { getNSiblingsElements, textColorFromRecursiveCSS } from '../rules/utils.js';
+import { getNSiblingsElements } from '../rules/utils.js';
 
 const createImage = (document, url)  => {
   const img = document.createElement('img');
@@ -93,8 +92,9 @@ const createMarquee = (main, document) => {
       container.append(hTitle);
     }
 
-    if (longtext)
+    if (longtext) {
       container.append(longtext);
+    }
 
     // sanitize links inside ul/li
     container.querySelectorAll('ol li a, ul li a').forEach((a) => {
@@ -313,7 +313,9 @@ export default {
 
     // Once we retrieved it, we can remove it
     // This prevents having duplicates in the main content area
-    titleElement.remove();
+    if (titleElement) {
+      titleElement.remove();
+    }
 
     const main = document.querySelector('main');
 
@@ -383,14 +385,6 @@ export default {
    */
   generateDocumentPath: generateDocumentPath,
 };
-
-function generateDocumentPath({ document, url }) {
-  let { pathname } = new URL(url);
-  pathname = pathname.replace('.html', '')
-  const sanitized =  WebImporter.FileUtils.sanitizePath(pathname);
-  const localeFromURL = sanitized.split('/')[1];
-  return sanitized.replace(localeFromURL, localeFromURL.replace('-', '_'));
-}
 
 /**
  * Get the form title for gated offers based on some heuristic
