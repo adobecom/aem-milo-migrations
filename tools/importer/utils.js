@@ -344,6 +344,14 @@ export function isLightColor(color) {
   return hsp > 127.5;
 }
 
+export function generateDocumentPath({ document, url }) {
+  let { pathname } = new URL(url);
+  pathname = pathname.replace('.html', '')
+  const sanitized =  WebImporter.FileUtils.sanitizePath(pathname);
+  const localeFromURL = sanitized.split('/')[1];
+  return sanitized.replace(localeFromURL, localeFromURL.replace('-', '_'));
+}
+
 // Not working with jsDOM
 // // export a function that checks the css display property is not none on an element and all its parents
 // export function isVisible(el, document) {

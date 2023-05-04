@@ -14,60 +14,30 @@
 import { parseMarquee } from '../rules/marquee.js';
 import { parseCardMetadata, parseMetadata } from '../rules/metadata.js';
 import { parseCAASContent } from '../rules/caas.js';
-import { setGlobals, getXPathByElement, generateDocumentPath } from '../utils.js';
-import { getNSiblingsElements } from '../rules/utils.js';
+import { setGlobals } from '../utils.js';
 import { parseBreadcrumb } from '../rules/breadcrumb.js';
 import { waitForFaasForm } from '../rules/handleFaasForm.js';
-import { parseEventSpeakerAndProduct, parseEventSpeakerAndFaas, parseWebinarTime } from '../rules/event-speaker-product.js';
+import { parseEventSpeakerAndProductWithoutFaas } from '../rules/event-speaker-product.js';
 import { handleFaasForm } from '../rules/handleFaasForm.js';
 
-async function layout1(sections, document, container) {
-  container.append(await parseMarquee(sections.shift(), document, null))
-  container.append(await parseEventSpeakerAndProduct(sections.shift(), document, null))
+async function layout1(sections, document, container, modalPath) {
+  const marqueeDoc = sections.shift()
+  // set register form link to modal fragment
+  const cta = marqueeDoc.querySelector('.cta');
+  if (cta) {
+    const link = marqueeDoc.querySelector('a');
+    if (link.href.indexOf('#register-form') >= 0) {
+      link.href = "https://main--bacom--adobecom.hlx.page/drafts/acapt/fragments" + modalPath + "#faas-form"
+    }
+  }
+  container.append(await parseMarquee(marqueeDoc, document, null))
+  container.append(await parseEventSpeakerAndProductWithoutFaas(sections.shift(), document, null))
   container.append(await parseCAASContent(sections.shift(), document, null))
   container.append(await parseMarquee(sections.shift(), document, null))
 
   return container
 }
 
-async function layout2(sections, document, container) {
-  container.append(await parseMarquee(sections.shift(), document, null))
-  container.append(await parseWebinarTime(sections.shift(), document, null))
-  container.append(await parseEventSpeakerAndFaas(sections.shift(), document, null))
-
-  return container
-}
-
-async function layout3(sections, document, container) {
-  container.append(await parseMarquee(sections.shift(), document, null))
-
-  // handle text + form
-  let els = getNSiblingsElements(sections.shift(), (n) => n === 2)
-  container.append(document.createElement('hr'))
-  container.append(
-    WebImporter.DOMUtils.createTable([
-      ['text (intro)'],
-      [els[0]],
-    ], document)
-  )
-  // faas
-  let titleElement = document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-text');
-  titleElement = titleElement || document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-title')
-  const formLink = handleFaasForm(document, document, titleElement);
-  const form = document.createElement('p');
-  form.append(formLink);
-  
-  container.append(form)
-  container.append(
-      WebImporter.DOMUtils.createTable([
-          ['Section Metadata'],
-          ['style', 'Two-up'],
-      ], document)
-  )
-  container.append(document.createElement('hr'))
-
-  return container
-}
 
 export default {
 
@@ -125,6 +95,19 @@ export default {
 
     await setGlobals(params.originalURL);
 
+    // FAAS modal
+    let titleElement = document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-text');
+    titleElement = titleElement || document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-title')
+    const formLink = handleFaasForm(document, document, titleElement);
+    const form = document.createElement('p');
+    form.append(formLink);
+    const modalContainer = document.createElement('div')
+    modalContainer.append(form)
+
+    const faasModalPath = "/modal/forms" + generateDocumentPath({ document, url: params.originalURL })
+
+    // webinar page
+    
     const [breadcrumbType, breadcrumb] = parseBreadcrumb(document);
 
     let main = document.createElement('div')
@@ -132,8 +115,7 @@ export default {
 
     WebImporter.DOMUtils.remove(document, [
       '.globalnavheader',
-      '.globalnavfooter',
-      '.dexter-Spacer'
+      '.globalnavfooter'
     ]);
 
     const layouts = [
@@ -142,16 +124,6 @@ export default {
         minSections: 4,
         process: layout1
       },
-      {
-        section: '.root > div > div',
-        minSections: 3,
-        process: layout2
-      },
-      {
-        section: '.content > div > div',
-        minSections: 2,
-        process: layout3
-      }
     ]
 
     let layoutContainer
@@ -160,7 +132,7 @@ export default {
       let sections = [...document.querySelectorAll(item.section)];
       console.log("L: " + sections.length)
       if (sections.length >= item.minSections) {
-        layoutContainer = await item.process(sections, document, main)
+        layoutContainer = await item.process(sections, document, main, faasModalPath)
         if (layoutContainer) {
           break;
         }
@@ -180,14 +152,20 @@ export default {
     const { block, tagsConverted } = parseCardMetadata(document);
     main.append(block);
 
-    return [{
-      element: main,
-      path: generateDocumentPath({ document, url: params.originalURL }),
-      report: {
-        'breadcrumb type': breadcrumbType,
-        'tags converted?': tagsConverted.toString(),
+    return [
+      {
+        element: main,
+        path: generateDocumentPath({ document, url: params.originalURL }),
+        report: {
+          'breadcrumb type': breadcrumbType,
+          'tags converted?': tagsConverted.toString(),
+        },
       },
-    }];
+      {
+        element: modalContainer,
+        path: faasModalPath,
+      },
+    ]
 
   },
 
@@ -200,3 +178,9 @@ export default {
   generateDocumentPath: generateDocumentPath,
 
 };
+
+function generateDocumentPath({ document, url }) {
+  let { pathname } = new URL(url);
+  pathname = pathname.replace('.html', '');
+  return WebImporter.FileUtils.sanitizePath(pathname);
+}

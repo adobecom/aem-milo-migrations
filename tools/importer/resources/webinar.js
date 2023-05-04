@@ -13,8 +13,8 @@
 
 import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
 import { parseCardMetadata } from '../rules/metadata.js';
-import { cleanupHeadings, setGlobals, findPaths, getMetadataValue, getRecommendedArticles } from '../utils.js';
-import { getBGColor, getNSiblingsElements } from '../rules/utils.js';
+import { cleanupHeadings, setGlobals, findPaths, getMetadataValue, getRecommendedArticles, generateDocumentPath } from '../utils.js';
+import { getNSiblingsElements } from '../rules/utils.js';
 import { getXPathByElement } from '../utils.js';
 
 const createMetadata = (main, document) => {
@@ -454,19 +454,5 @@ export default {
    * @param {String} url The url of the document being transformed.
    * @param {HTMLDocument} document The document
    */
-    generateDocumentPath: ({ document, url }) => {
-      const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '').replace('-', '_');
-      return WebImporter.FileUtils.sanitizePath(path);
-    },
+    generateDocumentPath: generateDocumentPath,
 };
-
-/**
-   * Return a path that describes the document being transformed (file name, nesting...).
-   * The path is then used to create the corresponding Word document.
-   * @param {String} url The url of the document being transformed.
-   * @param {HTMLDocument} document The document
-   */
-const generateDocumentPath = ({ document, url }) => {
-  const path = new URL(url).pathname.replace(/\/$/, '').replace('.html', '').replace('-', '_');
-  return WebImporter.FileUtils.sanitizePath(path);
-}
