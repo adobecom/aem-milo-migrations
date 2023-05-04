@@ -79,8 +79,8 @@ const handleFaasForm = (root, document, faasTitle) => {
   }
   faasConfig.cleabitStyle = '';
   faasConfig.title_size = 'p';
+  faasConfig.title_align = 'left';
   if (data.faasPrepopulated.includes('clearbit') && data.faasType === '2847') {
-    faasConfig.title_align = 'left';
     faasConfig.cleabitStyle = 'Cleabit Style'
   }
 
