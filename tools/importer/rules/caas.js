@@ -11,6 +11,10 @@ export async function parseCAASContent(el, document, section) {
   const container = document.createElement('div')
   container.append(title);
   container.append(recommendedArticles);
-
+  container.append(WebImporter.DOMUtils.createTable([
+    ['Section Metadata'],
+    ['style', 'L spacing, center'],
+  ], document))
+  container.append(document.createElement('hr'))
   return container;
 }

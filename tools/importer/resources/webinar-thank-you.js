@@ -311,6 +311,80 @@ const createBreadcrumbs = (document) => {
 };
 
 
+function layout1(sections, document, main) {
+  if (sections.length > 0) {
+
+    let marquee
+    while(sections.length > 0) {
+      marquee = parseMarquee(sections.shift(), document, null)
+      let isEmpty = true
+      let skip = true
+      marquee.querySelectorAll("tr").forEach(item => {
+        if (!skip) {
+          item.querySelectorAll("td > div").forEach(td => {
+            if (td.innerHTML.trim() !== "") {
+              isEmpty = false
+            }
+          })
+        }
+        skip = false
+      })
+      if (!isEmpty) {
+        break
+      }
+    }
+    
+    main.append(marquee);
+
+    sections.forEach((section, idx) => {
+      section.querySelectorAll('.text, .flex').forEach((el) => {
+        main.append(el);
+      });
+    });
+  }
+}
+
+function layout2(sections, document, main) {
+  sections.shift()
+  const el = sections.shift()
+  const titleList = Array.from(el.querySelectorAll(".cta a")).filter(item => !item.innerHTML.includes("Watch now"))
+  if (!titleList || titleList.length === 0){
+    return
+  }
+  const title = document.createElement('h1')
+  title.append(titleList[0].textContent)
+
+  let resource
+  if (titleList[0] && titleList[0].href) {
+    let href = titleList[0].href
+    href = href.split(titleList[0].baseURI)
+    href = href[href.length - 1]
+    if(href.startsWith("#")){
+      const modal = document.querySelector(href)
+      const iframe = modal?.querySelector('iframe')
+      // check if element is in a modal
+      if (modal?.closest(".modal") && iframe && iframe.getAttribute('data-video-src')) {
+        if(!resource) {
+          console.log(iframe.getAttribute('data-video-src'))
+          resource = document.createElement('a');
+          resource.href = iframe.getAttribute('data-video-src')
+          resource.innerHTML = iframe.getAttribute('data-video-src')
+        }
+      }
+    }
+  }
+    
+  main.append(WebImporter.DOMUtils.createTable([
+    [`Text (large)`],
+    [title],
+  ], document))
+  main.append(resource)
+  main.append(WebImporter.DOMUtils.createTable([
+    ['Section Metadata'],
+    ['style', 'L spacing, container'],
+  ], document))
+  main.append(document.createElement('hr'))
+}
 
 export default {
 
@@ -330,6 +404,8 @@ export default {
     await setGlobals(params.originalURL);
 
     const [breadcrumbType, breadcrumb] = createBreadcrumbs(document);
+
+    const isLayout2 = document.body.innerHTML.includes("adobe-logo")
 
     /*
      * clean
@@ -357,40 +433,10 @@ export default {
 
     const sections = [...document.querySelectorAll(`${sectionsRootElSelector} > div > div`)];
     
-    let foundVideo = false;
-
-    if (sections.length > 0) {
-
-      console.log(sections.length)
-      console.log(sections)
-      let marquee
-      while(sections.length > 0) {
-        marquee = parseMarquee(sections.shift(), document, null)
-        let isEmpty = true
-        let skip = true
-        marquee.querySelectorAll("tr").forEach(item => {
-          if (!skip) {
-            item.querySelectorAll("td > div").forEach(td => {
-              if (td.innerHTML.trim() !== "") {
-                isEmpty = false
-              }
-            })
-          }
-          skip = false
-        })
-        if (!isEmpty) {
-          break
-        }
-      }
-      
-      // foundVideo = found;
-      main.append(marquee);
-
-      sections.forEach((section, idx) => {
-        section.querySelectorAll('.text, .flex').forEach((el) => {
-          main.append(el);
-        });
-      });
+    if (isLayout2) {
+      layout2(sections, document, main)
+    } else {
+      layout1(sections, document, main)
     }
 
     /*
@@ -418,7 +464,6 @@ export default {
       report: {
         'breadcrumb type': breadcrumbType,
         'tags converted?': tagsConvertedString,
-        'found video': foundVideo ? 'true' : 'false',
       },
     }];
 

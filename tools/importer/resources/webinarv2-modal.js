@@ -14,7 +14,7 @@
 import { parseMarquee } from '../rules/marquee.js';
 import { parseCardMetadata, parseMetadata } from '../rules/metadata.js';
 import { parseCAASContent } from '../rules/caas.js';
-import { setGlobals } from '../utils.js';
+import { setGlobals, generateDocumentPath } from '../utils.js';
 import { parseBreadcrumb } from '../rules/breadcrumb.js';
 import { waitForFaasForm } from '../rules/handleFaasForm.js';
 import { parseEventSpeakerAndProductWithoutFaas } from '../rules/event-speaker-product.js';
@@ -27,13 +27,17 @@ async function layout1(sections, document, container, modalPath) {
   if (cta) {
     const link = marqueeDoc.querySelector('a');
     if (link.href.indexOf('#register-form') >= 0) {
-      link.href = "https://main--bacom--adobecom.hlx.page/drafts/acapt/fragments" + modalPath + "#faas-form"
+      link.href = "https://main--bacom--adobecom.hlx.page" + modalPath + "#faas-form"
     }
   }
   container.append(await parseMarquee(marqueeDoc, document, null))
   container.append(await parseEventSpeakerAndProductWithoutFaas(sections.shift(), document, null))
   container.append(await parseCAASContent(sections.shift(), document, null))
-  container.append(await parseMarquee(sections.shift(), document, null))
+  // bottom marquee fragment
+  const resource = document.createElement('a')
+  resource.href = "https://main--bacom--adobecom.hlx.page/fragments/customer-success-stories/contact-footer"
+  resource.innerHTML = "https://main--bacom--adobecom.hlx.page/fragments/customer-success-stories/contact-footer"
+  container.append(resource)
 
   return container
 }
@@ -104,7 +108,7 @@ export default {
     const modalContainer = document.createElement('div')
     modalContainer.append(form)
 
-    const faasModalPath = "/modal/forms" + generateDocumentPath({ document, url: params.originalURL })
+    const faasModalPath = "/fragments/resources/modal/forms/webinars" + generateDocumentPath({ document, url: params.originalURL })
 
     // webinar page
     
@@ -178,9 +182,3 @@ export default {
   generateDocumentPath: generateDocumentPath,
 
 };
-
-function generateDocumentPath({ document, url }) {
-  let { pathname } = new URL(url);
-  pathname = pathname.replace('.html', '');
-  return WebImporter.FileUtils.sanitizePath(pathname);
-}
