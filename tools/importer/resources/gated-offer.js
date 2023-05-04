@@ -305,7 +305,6 @@ export default {
     ];
 
     elementsToGo.push(WebImporter.DOMUtils.createTable(mainContentCells, document));
-    elementsToGo.push('---');
 
     appendBackward(elementsToGo, main);
 
