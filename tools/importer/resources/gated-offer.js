@@ -12,7 +12,7 @@
 /* eslint-disable no-console, class-methods-use-this */
 
 import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
-import { setGlobals, cleanupParagraphs, getJSONValues, getMetadataValue, generateDocumentPath } from '../utils.js';
+import { setGlobals, cleanupParagraphs, getJSONValues, generateDocumentPath } from '../utils.js';
 import { parseCardMetadata, parseMetadata } from '../rules/metadata.js';
 import { getNSiblingsElements } from '../rules/utils.js';
 
@@ -196,7 +196,7 @@ const createMarquee = (main, document) => {
   return table;
 };
 
-const createColumns = (main, document, formLink) => {
+const createMainContent = (main, document) => {
   const el = document
   if (el.querySelector('.dexter-FlexContainer')) {
     el.querySelector('.dexter-FlexContainer').remove()
@@ -209,44 +209,17 @@ const createColumns = (main, document, formLink) => {
     adobelogo.remove();
   }
 
-  if (formLink[0].nodeName === 'A') {
-    const cells = [
-      ['Columns (contained)'],
-      [contentBody, formLink[0] || ''],
-    ];
-    const table = WebImporter.DOMUtils.createTable(cells, document);
-    return [table, formLink[1]];
-  } else {
-    return [contentBody, ...formLink || ''];
-  }
-  
-};
+  return contentBody;
+}
 
-const createMetadata = (main, document) => {
-  const meta = {};
-
-  const title = document.querySelector('title');
-  if (title) {
-    meta.Title = title.innerHTML.replace(/[\n\t]/gm, '');
-  }
-  meta.robots = getMetadataValue(document, 'robots');
-  meta.Description = getMetadataValue(document, 'og:description');
-  meta.keywords = getMetadataValue(document, 'keywords');
-  meta['serp-content-type'] = getMetadataValue(document, 'serp-content-type');
-  meta.pageCreatedAt = getMetadataValue(document, 'pageCreatedAt');
-  meta.translated = getMetadataValue(document, 'translated');
-  meta.publishDate = getMetadataValue(document, 'publishDate');
-  meta.productJcrID = getMetadataValue(document, 'productJcrID');
-  meta.primaryProductName = getMetadataValue(document, 'primaryProductName');
-  const img = document.createElement('img');
-  img.src = `https://business.adobe.com${getMetadataValue(document, 'og:image')}`
-  meta.image = img;
-  const cqTags = getJSONValues(window.jcrContent, 'cq:tags');
-  meta.tags = cqTags.length ? cqTags.join(', ') : '';
-  meta['caas:content-type'] = getMetadataValue(document, 'caas:content-type');
-
-  return WebImporter.Blocks.getMetadataBlock(document, meta);;
-};
+const createFormTable = (main, document, linkToForm) => {
+  const cells = [
+    ['Text (mobile max width)'],
+    [linkToForm[0] || ''],
+  ];
+  const table = WebImporter.DOMUtils.createTable(cells, document);
+  return table;
+}
 
 const getFormLink = async (document, faasTitleSelector, originalURL) => {
   const formContainer = document.querySelector('.marketoForm');
@@ -304,7 +277,6 @@ export default {
     // let titleElement = document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-text');
     // titleElement = titleElement || document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-title')
     const titleElement = getFormTitleGatedOffers(document);
-    console.log(`title element: ${titleElement.textContent}`);
 
     const formLink = await getFormLink(document, titleElement, new URL(params.originalURL));
 
@@ -319,38 +291,30 @@ export default {
 
     const main = document.querySelector('main');
 
-    // Top area
+    // Let's bake the page here
     const elementsToGo = [];
     elementsToGo.push(createMarquee(main, document));
     elementsToGo.push('---');
-    createColumns(main, document, formLink).forEach((c) => {elementsToGo.push(c)});
-    elementsToGo.push('---');
+    elementsToGo.push(createMainContent(main, document));
+    elementsToGo.push(createFormTable(main, document, formLink));
+
+    // Now we add the "two up" section metadata table right after the form table
+    const mainContentCells = [
+      ['Section Metadata'],
+      ['style', 'xxl spacing, two up'],
+    ];
+
+    elementsToGo.push(WebImporter.DOMUtils.createTable(mainContentCells, document));
+
     appendBackward(elementsToGo, main);
 
-    // All other content from page should be automatically added here //
+    // Finally, let's add the Metadata table
 
-    // BACOM doesn't want recommended articles for Gated Offers
-    // main.append(await getRecommendedArticles(document, document));
-
-    // Bottom area
-    const cells = [
-      ['Section Metadata'],
-      ['style', 'm spacing'],
-    ];
-    const table = WebImporter.DOMUtils.createTable(cells, document);
-    main.append(table);
     main.append('---');
     main.append(parseMetadata(document));
     const { block, tagsConverted } = parseCardMetadata(document);
-    
-    // if robots doesn't have noindex include Card Metadata;
-    // let tagsConvertedString = 'false'
-    // if (!getMetadataValue(document, 'robots')?.toLowerCase()?.includes('noindex')) {
-      // const { block, tagsConverted } = parseCardMetadata(document, params.originalURL);
-    let tagsConvertedString = tagsConverted.toString()
     main.append(block);
-    // }
-
+    
     cleanupParagraphs(main);
 
     WebImporter.DOMUtils.remove(main, [
@@ -365,6 +329,7 @@ export default {
 
     const onedrive_subfolder = 'drafts/acapt/import-MWPW-129315/gated-offer-fabiano'
     const path = generateDocumentPath({ document, url: params.originalURL })
+    const tagsConvertedString = tagsConverted.toString();
 
     return [{
       element: main,
