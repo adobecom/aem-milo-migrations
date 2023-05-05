@@ -1,5 +1,5 @@
 import { handleFaasForm } from '../rules/handleFaasForm.js';
-import { getNSiblingsElements } from '../rules/utils.js';
+import { getNSiblingsElements, getBGColor } from './utils.js';
 import { getXPathByElement } from '../utils.js';
 
 export async function parseEventSpeakerAndProductWithoutFaas(el, document, section) {
@@ -57,15 +57,20 @@ export async function parseWebinarTime(el, document, section, backgroundColor = 
   if (!text) {
       return ''
   }
+  const bgColor = getBGColor(el, document, false);
+  if (bgColor) {
+    backgroundColor = bgColor
+  }
+
   const container = document.createElement('div')
 
   container.append(document.createElement('hr'))
   container.append(WebImporter.DOMUtils.createTable([
-      ['text (light, m-spacing-top, m-spacing-bottom)'],
+      ['Text (light, sm-spacing)'],
       [text]
   ], document))
   container.append(WebImporter.DOMUtils.createTable([
-      ['section-metadata'],
+      ['Section Metadata'],
       ['background', backgroundColor],
       ['style', 'dark'],
   ], document))
@@ -94,7 +99,7 @@ function parseEventSpeaker(el, document, section, handleProduct) {
     els[0].querySelectorAll('.cmp-text, .cmp-title').forEach(item => texts.append(item))
     container.append(
       WebImporter.DOMUtils.createTable([
-        ['Text'],
+        ['Text (l-spacing)'],
         [texts]
       ], document)
     )
@@ -107,8 +112,13 @@ function parseEventSpeaker(el, document, section, handleProduct) {
   if (formLink) {
       const form = document.createElement('p');
       form.append(formLink);
-      
-      container.append(form)
+      container.append(
+        WebImporter.DOMUtils.createTable([
+          ['Text'],
+          [form],
+        ], document)
+      )
+
       container.append(
           WebImporter.DOMUtils.createTable([
               ['Section Metadata'],
@@ -116,10 +126,25 @@ function parseEventSpeaker(el, document, section, handleProduct) {
           ], document)
       )
       container.append(document.createElement('hr'))
+  } else if(els[1].querySelector('.video') && els[1].querySelector('iframe')) {
+    // handle video
+    let video = els[1].querySelector('iframe');
+    const resourceLink = document.createElement('a');
+    resourceLink.href = video.src || video.videoSrc
+    resourceLink.innerHTML = video.src || video.videoSrc
+    container.append(resourceLink)
+
+    container.append(
+      WebImporter.DOMUtils.createTable([
+          ['Section Metadata'],
+          ['style', 'Two-up'],
+      ], document)
+  )
+  container.append(document.createElement('hr'))
   }
   
   // handle products
-  if (handleProduct) {
+  if (handleProduct && !(els[1].querySelector('.video') && els[1].querySelector('iframe'))) {
     container.append(parseRelatedProducts(els[1], document))
   }
 
@@ -166,10 +191,13 @@ const handleSpeaker = (el, document) => {
           console.log(image.classList)
           console.log(getXPathByElement(image))
           speaker.push(image);
-          let nextEl = image.closest('.image')
+          let nextEl = image.closest('.image')?.nextElementSibling
           while(nextEl) {
+            // edge case, where multiple speaker img + texts are all in the same div
+            if (speaker.length > 3 || nextEl.querySelector('img')) {
+              break
+            }
             const texts = nextEl.querySelectorAll('.cmp-text')
-            console.log("T LENGTH: " + texts.length)
             if(texts && texts.length >= 2){
               speaker.push(`<p><strong>${texts[0].innerHTML}</strong></p><p>${texts[1]?.innerHTML}</p>`);
             } else if(texts && texts.length === 1) {
@@ -190,7 +218,7 @@ const handleSpeaker = (el, document) => {
     const container = document.createElement('div')
     container.append(
         WebImporter.DOMUtils.createTable([
-            ['Text'],
+            ['Text (l-spacing)'],
             [texts]
         ], document)
     )
@@ -208,20 +236,20 @@ const handleSpeaker = (el, document) => {
 };
 
 const parseRelatedProducts = (el, document) => {
-    const title = el.querySelector('.cmp-title')
-    const text = el.querySelector('.cmp-text')
-    if (!title || !text) {
-        return ''
-    }
-    const container = document.createElement('div')
-    container.append(title)
-    container.append(document.createElement('br'))
-    container.append(text)
+  const title = el.querySelector('.cmp-title')
+  const text = el.querySelector('.cmp-text')
+  if (!title || !text) {
+      return ''
+  }
+  const container = document.createElement('div')
+  container.append(title)
+  container.append(document.createElement('br'))
+  container.append(text)
 
-    return WebImporter.DOMUtils.createTable([
-        ['Text (full-width)'],
-        [container],
-    ], document);
+  return WebImporter.DOMUtils.createTable([
+      ['Text (full-width)'],
+      [container],
+  ], document);
 };
 
 const parseRelatedProductsVertical = (el, document) => {

@@ -45,7 +45,7 @@ export function getNSiblingsElements(el, n) {
   return xpathGrouping[selectedXpathPattern];
 }
 
-export function getBGColor(el, document) {
+export function getBGColor(el, document, recurse=true) {
   let bgcolor = el.querySelector('div[data-bgcolor]')?.getAttribute('data-bgcolor');
 
   // strategy 2
@@ -73,7 +73,7 @@ export function getBGColor(el, document) {
   // strategy 4: access parent's style property
   // WARNING: this might end up looping into parent's search and pick up the wrong background
   // WARNING: debug this function if you find unexpected results in background color's detection
-  if (!bgcolor) {
+  if (!bgcolor && recurse) {
     const parentEl = el.parentElement;
     const parentBGColor = getBGColor(parentEl, document);
     if (parentBGColor) {

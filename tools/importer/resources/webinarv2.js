@@ -14,7 +14,7 @@
 import { parseMarquee } from '../rules/marquee.js';
 import { parseCardMetadata, parseMetadata } from '../rules/metadata.js';
 import { parseCAASContent } from '../rules/caas.js';
-import { setGlobals, getXPathByElement, generateDocumentPath } from '../utils.js';
+import { setGlobals, generateDocumentPath } from '../utils.js';
 import { getNSiblingsElements } from '../rules/utils.js';
 import { parseBreadcrumb } from '../rules/breadcrumb.js';
 import { waitForFaasForm } from '../rules/handleFaasForm.js';
@@ -23,6 +23,9 @@ import { handleFaasForm } from '../rules/handleFaasForm.js';
 
 async function layout1(sections, document, container) {
   container.append(await parseMarquee(sections.shift(), document, null))
+  if(sections.length > 3) {
+    container.append(await parseWebinarTime(sections.shift(), document, null))
+  }
   container.append(await parseEventSpeakerAndProduct(sections.shift(), document, null))
   container.append(await parseCAASContent(sections.shift(), document, null))
   container.append(await parseMarquee(sections.shift(), document, null))
@@ -40,32 +43,7 @@ async function layout2(sections, document, container) {
 
 async function layout3(sections, document, container) {
   container.append(await parseMarquee(sections.shift(), document, null))
-
-  // handle text + form
-  let els = getNSiblingsElements(sections.shift(), (n) => n === 2)
-  container.append(document.createElement('hr'))
-  container.append(
-    WebImporter.DOMUtils.createTable([
-      ['text (intro)'],
-      [els[0]],
-    ], document)
-  )
-  // faas
-  let titleElement = document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-text');
-  titleElement = titleElement || document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-title')
-  const formLink = handleFaasForm(document, document, titleElement);
-  const form = document.createElement('p');
-  form.append(formLink);
-  
-  container.append(form)
-  container.append(
-      WebImporter.DOMUtils.createTable([
-          ['Section Metadata'],
-          ['style', 'Two-up'],
-      ], document)
-  )
-  container.append(document.createElement('hr'))
-
+  container.append(await parseEventSpeakerAndFaas(sections.shift(), document, null))
   return container
 }
 
@@ -149,6 +127,16 @@ export default {
       },
       {
         section: '.content > div > div',
+        minSections: 3,
+        process: layout2
+      },
+      {
+        section: '.content > div > div',
+        minSections: 2,
+        process: layout3
+      },
+      {
+        section: '.root > div > div',
         minSections: 2,
         process: layout3
       }

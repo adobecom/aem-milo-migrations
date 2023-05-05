@@ -71,17 +71,18 @@ function parseMarquee(el, document, section, backgroundColor = '') {
     * texts
     */
     for (var i = 0; i < els.length; i++) {
-      const tmpel = els[i];
+      const tmpel = document.importNode(els[i], true)
       const img = tmpel.querySelector('img')
       const video = tmpel.querySelector('video.video-desktop') || tmpel.querySelector('iframe')
       if (!img && !video) {
-        let cta = tmpel.querySelector('.cta');
-        if (cta) {
-          const link = cta.querySelector('a');
-          if (link.href.indexOf('#watch-now') < 0) {
+        let link = tmpel.querySelector('a'); 
+        if (link) {
+          if (link.href.indexOf('#watch-now') < 0 && link.href.indexOf('#video') < 0) {
             const str = document.createElement('B');
             str.append(cta);
             tmpel.append(str)
+          } else {
+            link.remove()
           }
         }
         container.append(tmpel)
@@ -112,7 +113,7 @@ function parseMarquee(el, document, section, backgroundColor = '') {
     const cta = marqueeDoc.querySelector('.cta');
     if (cta) {
       const link = cta.querySelector('a');
-      if (link.href.indexOf('#watch-now') < 0) {
+      if (link.href.indexOf('#watch-now') < 0 && link.href.indexOf('#video') < 0) {
         const str = document.createElement('B');
         str.append(cta);
         container.append(str)
@@ -123,54 +124,35 @@ function parseMarquee(el, document, section, backgroundColor = '') {
   /*
   * image + resource
   */
+  let isVideo = false
 
   let resource = document.createElement('div');
   const videoText = videoElem.querySelector('.cmp-text')
-  if(videoText) {
+  if (videoElem != marqueeDoc && videoText) {
     const videoTextH3 = document.createElement('h3')
     videoTextH3.append(videoText.textContent)
     resource.append(videoTextH3)
   }
 
-  const image = marqueeDoc.querySelector('.image');
-
-  if (image) {
-    let img = image.querySelector('img');
-    if (img) {
-      resource = createImage(document, img.src);
-    }
-    
-    const link = image.querySelector('a');
-    if (link) {
-      if (link.href.indexOf('#watch-now') > -1) {
-        const watchNowEl = document.querySelector('#watch-now');
-        if (watchNowEl) {
-          const videoIframe = watchNowEl.querySelector('iframe');
-          if (videoIframe) {
-            resource.append(videoIframe.src || videoIframe.dataset.videoSrc)
-          }
-        }
-      }
-    }
+  // iframe handling
+  let video = videoElem.querySelector('iframe');
+  if (video) {
+    const resourceLink = document.createElement('a');
+    resourceLink.href = video.src || video.videoSrc
+    resourceLink.innerHTML = video.src || video.videoSrc
+    resource.append(resourceLink)
+    isVideo = true
   }
 
-  let video = marqueeDoc.querySelector('video.video-desktop');
+  // video handling
+  video = videoElem.querySelector('video.video-desktop');
   if (video) {
     const source = video.querySelector('source');
     const resourceLink = document.createElement('a');
     resourceLink.href = source.src
     resourceLink.innerHTML = source.src
     resource.append(resourceLink)
-  }
-
-
-  // iframe handling
-  video = videoElem.querySelector('iframe');
-  if (video) {
-    const resourceLink = document.createElement('a');
-    resourceLink.href = video.src || video.videoSrc
-    resourceLink.innerHTML = video.src || video.videoSrc
-    resource.append(resourceLink)
+    isVideo = true
   }
 
   /*
@@ -189,29 +171,42 @@ function parseMarquee(el, document, section, backgroundColor = '') {
    * Handle modal videos 
    */
 
-  const videoLinks = container.querySelectorAll('.cta a')
+  const videoLinks = marqueeDoc.querySelectorAll('a')
+  console.log("videoLinks")
+  console.log(videoLinks.length)
   videoLinks.forEach(videoLink => {
     if (videoLink && videoLink.href) {
       let href = videoLink.href
       href = href.split(videoLink.baseURI)
       href = href[href.length - 1]
-      if(href.startsWith("#")){
+      console.log(href)
+      if(!isVideo && href.indexOf("#watch-now") > -1 || href.indexOf("#video") > -1){
         const modal = document.querySelector(href)
         const iframe = modal?.querySelector('iframe')
         // check if element is in a modal
         if (modal?.closest(".modal") && iframe && iframe.getAttribute('data-video-src')) {
-          if(!resource) {
-            console.log(iframe.getAttribute('data-video-src'))
-            resource = document.createElement('a');
-            resource.href = iframe.getAttribute('data-video-src')
-            resource.innerHTML = iframe.getAttribute('data-video-src')
-          }
-          videoLink.remove()
+          console.log(iframe.getAttribute('data-video-src'))
+          const resourceLink = document.createElement('a');
+          resourceLink.href = iframe.getAttribute('data-video-src')
+          resourceLink.innerHTML = iframe.getAttribute('data-video-src')
+          resource.append(resourceLink)
+          isVideo = true
         }
+        videoLink.remove()
       }
     }
   })
 
+  // if no video check for image
+  if(!isVideo) {
+    const image = marqueeDoc.querySelector('.image');
+    if (image) {
+      let img = image.querySelector('img');
+      if (img) {
+        resource = createImage(document, img.src);
+      }
+    }
+  }
 
   /*
    * create table
@@ -412,7 +407,7 @@ export default {
      */
 
     WebImporter.DOMUtils.remove(document, [
-      `.globalnavheader, header, footer, .faas-form-settings, .xf, style, northstar-card-collection, consonant-card-collection`,
+      `.globalnavheader, header, footer, .faas-form-settings, .xf, northstar-card-collection, consonant-card-collection`,
     ]);
 
 
