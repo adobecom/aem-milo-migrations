@@ -105,6 +105,13 @@ function parseEventSpeaker(el, document, section, handleProduct) {
     )
   }
   
+  // remove webinar link
+  container.querySelectorAll('a').forEach(item => {
+    if(item.href.indexOf("resources/webinars.html") > 0) {
+      item.remove()
+    }
+  })
+  
   // handle form
   let titleElement = document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-text');
   titleElement = titleElement || document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-title')

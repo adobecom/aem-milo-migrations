@@ -15,11 +15,9 @@ import { parseMarquee } from '../rules/marquee.js';
 import { parseCardMetadata, parseMetadata } from '../rules/metadata.js';
 import { parseCAASContent } from '../rules/caas.js';
 import { setGlobals, generateDocumentPath } from '../utils.js';
-import { getNSiblingsElements } from '../rules/utils.js';
 import { parseBreadcrumb } from '../rules/breadcrumb.js';
 import { waitForFaasForm } from '../rules/handleFaasForm.js';
 import { parseEventSpeakerAndProduct, parseEventSpeakerAndFaas, parseWebinarTime } from '../rules/event-speaker-product.js';
-import { handleFaasForm } from '../rules/handleFaasForm.js';
 
 async function layout1(sections, document, container) {
   container.append(await parseMarquee(sections.shift(), document, null))
