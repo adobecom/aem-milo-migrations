@@ -24,8 +24,6 @@ export function parseMetadata(document) {
   meta.primaryProductName = getMetadataValue(document, 'primaryProductName');
   const imageMeta = getMetadataValue(document, 'og:image');
   meta.image = imageMeta === '' ? '' : createImage(document, `https://business.adobe.com${imageMeta}`);
-  const cqTags = getJSONValues(window.jcrContent, 'cq:tags');
-  meta.tags = cqTags.length ? cqTags.join(', ') : '';
   meta['caas:content-type'] = getMetadataValue(document, 'caas:content-type');
 
   const block = WebImporter.Blocks.getMetadataBlock(document, meta);
