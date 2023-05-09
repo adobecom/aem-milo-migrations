@@ -126,10 +126,10 @@ export default {
 
     const main = document.querySelector('main');
     const u = new URL(params.originalURL);
-    let eyebrow = u.pathname.split('/')[3];
-    if (eyebrow.length > 12) {
-      eyebrow = 'Guide';
-    }
+
+    const eyebrowEl = document.querySelector('.dexter-FlexContainer') || document.querySelector('.dexter-Position');
+    const eyebrowTextEl = eyebrowEl.querySelector('.cmp-text');
+    const eyebrow = eyebrowTextEl ? eyebrowTextEl.textContent : '';
 
     const titleEl = document.querySelector('.dexter-FlexContainer') || document.querySelector('.dexter-Position');
     const titleTextEl = titleEl.querySelector('.cmp-title') || titleEl.querySelector('.cmp-text');
