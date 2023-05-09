@@ -327,8 +327,8 @@ export default {
      * Returns report plus target link to final Franklin URL
      */
 
-    const onedrive_subfolder = 'drafts/acapt/import-MWPW-129315/gated-offer-fabiano'
-    const path = generateDocumentPath({ document, url: params.originalURL })
+    const onedrive_subfolder = 'drafts/acapt/import-MWPW-129315/gated-offer-fabiano';
+    const path = generateDocumentPath({ document, url: params.originalURL });
     const tagsConvertedString = tagsConverted.toString();
 
     return [{

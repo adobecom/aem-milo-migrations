@@ -211,12 +211,16 @@ export default {
      * return + custom report
      */
 
+    const onedrive_subfolder = 'drafts/acapt/import-MWPW-130452/gated-offers-ty';
+    const path = generateDocumentPath({ document, url: params.originalURL });
+    const resourceFound = resource ? 'true' : 'false';
+
     return [{
       element: main,
-      path: new URL(params.originalURL).pathname.replace(/\/$/, '').replace(/\.html$/, ''),
+      path: path,
       report: {
-        'found resource': resource ? 'true' : 'false',
-        'franklin url': 'https://main--bacom--adobecom.hlx.page/drafts/acapt/import-gatedoffer-ty' + new URL(params.originalURL).pathname.replace(/\/$/, '').replace(/\.html$/, ''),
+        'found resource': resourceFound,
+        'franklin url': '=HYPERLINK("https://main--bacom--adobecom.hlx.page/' + onedrive_subfolder + path + '")'
       },
     }];
   },
