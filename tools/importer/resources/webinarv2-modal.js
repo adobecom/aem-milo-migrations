@@ -20,7 +20,7 @@ import { waitForFaasForm } from '../rules/handleFaasForm.js';
 import { parseEventSpeakerAndProductWithoutFaas } from '../rules/event-speaker-product.js';
 import { handleFaasForm } from '../rules/handleFaasForm.js';
 
-async function layout1(sections, document, container, modalPath) {
+async function layout1(sections, document, container, modalPath, locale) {
   const marqueeDoc = sections.shift()
   // set register form link to modal fragment
   const cta = marqueeDoc.querySelector('.cta');
@@ -34,9 +34,11 @@ async function layout1(sections, document, container, modalPath) {
   container.append(await parseEventSpeakerAndProductWithoutFaas(sections.shift(), document, null))
   container.append(await parseCAASContent(sections.shift(), document, null))
   // bottom marquee fragment
+  let suffix = ['jp', 'lv', ''].includes(locale) ? '-number' : ''
+  suffix = ['kr'].includes(locale) ? '-ec' : suffix
   const resource = document.createElement('a')
-  resource.href = "https://main--bacom--adobecom.hlx.page/fragments/customer-success-stories/contact-footer"
-  resource.innerHTML = "https://main--bacom--adobecom.hlx.page/fragments/customer-success-stories/contact-footer"
+  resource.href = `https://main--bacom--adobecom.hlx.page/${locale}/fragments/customer-success-stories/contact-footer${suffix}`
+  resource.innerHTML = `https://main--bacom--adobecom.hlx.page/${locale}/fragments/customer-success-stories/contact-footer${suffix}`
   container.append(resource)
 
   return container
@@ -109,6 +111,8 @@ export default {
     modalContainer.append(form)
 
     const faasModalPath = "/fragments/resources/modal/forms/webinars" + generateDocumentPath({ document, url: params.originalURL })
+    const pagePath = generateDocumentPath({ document, url: params.originalURL })
+    const locale = pagePath.split('/')[1]
 
     // webinar page
     
@@ -136,7 +140,7 @@ export default {
       let sections = [...document.querySelectorAll(item.section)];
       console.log("L: " + sections.length)
       if (sections.length >= item.minSections) {
-        layoutContainer = await item.process(sections, document, main, faasModalPath)
+        layoutContainer = await item.process(sections, document, main, faasModalPath, locale)
         if (layoutContainer) {
           break;
         }
@@ -159,7 +163,7 @@ export default {
     return [
       {
         element: main,
-        path: generateDocumentPath({ document, url: params.originalURL }),
+        path: pagePath,
         report: {
           'breadcrumb type': breadcrumbType,
           'tags converted?': tagsConverted.toString(),

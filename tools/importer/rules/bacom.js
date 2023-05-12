@@ -3,9 +3,6 @@ import { buildSectionMetadata, buildSectionMetadataLayoutGeneric, parseSectionMe
 import { parseAccordion } from './accordion.js';
 import { parseTreeView } from './tree-view.js';
 import { parseTableGeneric } from './table.js';
-import { rgbToHex } from '../utils.js';
-
-
 
 export function parse_seeWhatMakesItWork_Section(el, document, section) {
   const defaultTitle = 'See what makes it work';
