@@ -126,10 +126,10 @@ export default {
 
     const main = document.querySelector('main');
     const u = new URL(params.originalURL);
-    let eyebrow = u.pathname.split('/')[3];
-    if (eyebrow.length > 12) {
-      eyebrow = 'Guide';
-    }
+
+    const eyebrowEl = document.querySelector('.dexter-FlexContainer') || document.querySelector('.dexter-Position');
+    const eyebrowTextEl = eyebrowEl.querySelector('.cmp-text');
+    const eyebrow = eyebrowTextEl ? eyebrowTextEl.textContent : '';
 
     const titleEl = document.querySelector('.dexter-FlexContainer') || document.querySelector('.dexter-Position');
     const titleTextEl = titleEl.querySelector('.cmp-title') || titleEl.querySelector('.cmp-text');
@@ -211,12 +211,16 @@ export default {
      * return + custom report
      */
 
+    const onedrive_subfolder = 'drafts/acapt/import-MWPW-130452/gated-offers-ty';
+    const path = generateDocumentPath({ document, url: params.originalURL });
+    const resourceFound = resource ? 'true' : 'false';
+
     return [{
       element: main,
-      path: new URL(params.originalURL).pathname.replace(/\/$/, '').replace(/\.html$/, ''),
+      path: path,
       report: {
-        'found resource': resource ? 'true' : 'false',
-        'franklin url': 'https://main--bacom--adobecom.hlx.page/drafts/acapt/import-gatedoffer-ty' + new URL(params.originalURL).pathname.replace(/\/$/, '').replace(/\.html$/, ''),
+        'found resource': resourceFound,
+        'franklin url': '=HYPERLINK("https://main--bacom--adobecom.hlx.page/' + onedrive_subfolder + path + '")'
       },
     }];
   },
