@@ -39,7 +39,7 @@ const createImage = (document, url)  => {
   return img;
 };
 
-const getResource = (main, document, originalURL) => {
+const getResource = (document, originalURL) => {
   // video
   const videoIframe = document.querySelector('.video iframe, .modal iframe');
   if (videoIframe) {
@@ -63,7 +63,7 @@ const getResource = (main, document, originalURL) => {
       // this method transforms the relative pdf link into a full url with helix-import-ui domain
     } else {
       // search for pdf link in the whole document
-      pdfLink = document.querySelector('a[href*=".pdf"], a[href*="gartner.com/"], a[href*="forrester.com/"]');
+      pdfLink = document.querySelector('a[href*=".pdf"]');
     }
   }
 
@@ -115,37 +115,42 @@ export default {
       '.globalnavfooter',
       'header',
       'footer',
-      '.xfreference',
+      // '.xfreference',
     ]);
 
 
 
+    const u = new URL(params.originalURL);
+    // Resource (pdf, video, etc.)
+    const resource = getResource(document, u);
     /*
      * title + resource link
      */
 
-    const main = document.querySelector('main');
-    const u = new URL(params.originalURL);
+    const main = document.createElement('div');
+    const flexContainers = document.querySelectorAll('.dexter-FlexContainer');
+    for (const item of flexContainers) {
+      if(item.querySelector('.cmp-title, .cmp-text, a')) {
+        const texts = document.createElement('div')
+        item.querySelectorAll('.cmp-title, .cmp-text').forEach(elem => texts.append(elem))
+        if (!resource) {
+          const button = document.querySelector('a[href*="gartner.com/"], a[href*="forrester.com/"]');
+          const str = document.createElement('B');
+          str.append(button);
+          texts.append(str)
+        }
+        main.append(WebImporter.DOMUtils.createTable([
+          ['text (large)'],
+          [texts],
+        ], document));
+        break;
+      }
+    }
 
-    const eyebrowEl = document.querySelector('.dexter-FlexContainer') || document.querySelector('.dexter-Position');
-    const eyebrowTextEl = eyebrowEl.querySelector('.cmp-text');
-    const eyebrow = eyebrowTextEl ? eyebrowTextEl.textContent : '';
-
-    const titleEl = document.querySelector('.dexter-FlexContainer') || document.querySelector('.dexter-Position');
-    const titleTextEl = titleEl.querySelector('.cmp-title') || titleEl.querySelector('.cmp-text');
-    const title = titleTextEl ? titleTextEl.textContent : '';
-    main.append(WebImporter.DOMUtils.createTable([
-      ['text (large)'],
-      [`${eyebrow.toUpperCase()}<h1>${title}</h1>`],
-    ], document));
-
-    // Resource (pdf, video, etc.)
-    const resource = getResource(main, document, u);
+    // Add Resource (pdf, video, etc.) to output
     if (resource) {
       main.append(resource);
     }
-
-    titleEl?.remove();
 
     main.append(WebImporter.DOMUtils.createTable([
       ['Section Metadata'],
@@ -171,8 +176,6 @@ export default {
       ['Section Metadata'],
       ['style', 'container, m spacing, center'],
     ], document));
-
-
 
     /*
      * metadata
@@ -210,8 +213,7 @@ export default {
     /*
      * return + custom report
      */
-
-    const onedrive_subfolder = 'drafts/acapt/import-MWPW-130452/gated-offers-ty';
+    const onedrive_subfolder = 'drafts/acapt/import-MWPW-126581-reactivate';
     const path = generateDocumentPath({ document, url: params.originalURL });
     const resourceFound = resource ? 'true' : 'false';
 
