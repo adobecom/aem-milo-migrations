@@ -214,7 +214,7 @@ const createMainContent = (main, document) => {
 
 const createFormTable = (main, document, linkToForm) => {
   const cells = [
-    ['Text (mobile max width)'],
+    ['Text'],
     [linkToForm[0] || ''],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
@@ -301,7 +301,7 @@ export default {
     // Now we add the "two up" section metadata table right after the form table
     const mainContentCells = [
       ['Section Metadata'],
-      ['style', 'xxl spacing, two up'],
+      ['style', 'container, xxl spacing, two-up, resource-form'],
     ];
 
     elementsToGo.push(WebImporter.DOMUtils.createTable(mainContentCells, document));
