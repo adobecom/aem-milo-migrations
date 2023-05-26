@@ -2,6 +2,15 @@ import os
 import tempfile
 from zipfile import ZipFile
 
+# Usage:
+# 1. Obtain the styles.xml from the docx file you want:
+#   - On a docx file, run the terminal command "unzip yourfile.docx" 
+#   - Copy/paste the styles.xml into this code project, update the relative path under "style_path" below.
+# 2. Create a docx_dir or change the path accordingly, and put all the unstyled docx files you want in that folder. 
+# 3. Run the command python inject_style_recursive.py. This script will update and replace your docx files with style embedded. 
+#    The script runs recursively, so if you have a child folder structure it will retain that. 
+# Now you can replace your original docx files with the new.
+
 # Path to custom style.xml file
 style_path = 'custom_style/styles.xml'
 
