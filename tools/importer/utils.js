@@ -212,7 +212,7 @@ export const getRecommendedArticles = async (main, document) => {
   let caasLink = await handleCaasCollection(document, document);
   if (!caasLink) {
     caasLink = document.createElement('a');
-    caasLink.href = 'https://milo.adobe.com/tools/caas#eyJhbmFseXRpY3NUcmFja0ltcHJlc3Npb24iOmZhbHNlLCJhbmFseXRpY3NDb2xsZWN0aW9uTmFtZSI6IiIsImFuZExvZ2ljVGFncyI6W10sImJvb2ttYXJrSWNvblNlbGVjdCI6IiIsImJvb2ttYXJrSWNvblVuc2VsZWN0IjoiIiwiY2FyZFN0eWxlIjoiMToyIiwiY29sbGVjdGlvbkJ0blN0eWxlIjoicHJpbWFyeSIsImNvbnRhaW5lciI6IjEyMDBNYXhXaWR0aCIsImNvdW50cnkiOiJjYWFzOmNvdW50cnkvdXMiLCJjb250ZW50VHlwZVRhZ3MiOlsiY2Fhczpjb250ZW50LXR5cGUvZWJvb2siLCJjYWFzOmNvbnRlbnQtdHlwZS9ndWlkZSIsImNhYXM6Y29udGVudC10eXBlL3JlcG9ydCIsImNhYXM6Y29udGVudC10eXBlL3dlYmluYXIiLCJjYWFzOmNvbnRlbnQtdHlwZS93aGl0ZS1wYXBlciJdLCJkaXNhYmxlQmFubmVycyI6ZmFsc2UsImRyYWZ0RGIiOmZhbHNlLCJlbnZpcm9ubWVudCI6IiIsImVuZHBvaW50Ijoid3d3LmFkb2JlLmNvbS9jaGltZXJhLWFwaS9jb2xsZWN0aW9uIiwiZXhjbHVkZVRhZ3MiOlsiY2Fhczpjb250ZW50LXR5cGUvY3VzdG9tZXItc3RvcnkiXSwiZXhjbHVkZWRDYXJkcyI6W3siY29udGVudElkIjoiIn1dLCJmYWxsYmFja0VuZHBvaW50IjoiIiwiZmVhdHVyZWRDYXJkcyI6W10sImZpbHRlckV2ZW50IjoiIiwiZmlsdGVyTG9jYXRpb24iOiJ0b3AiLCJmaWx0ZXJMb2dpYyI6Im9yIiwiZmlsdGVycyI6W3siZmlsdGVyVGFnIjpbImNhYXM6cHJvZHVjdHMiXSwib3BlbmVkT25Mb2FkIjoiIiwiaWNvbiI6IiIsImV4Y2x1ZGVUYWdzIjpbXX0seyJmaWx0ZXJUYWciOlsiY2FhczppbmR1c3RyeSJdLCJvcGVuZWRPbkxvYWQiOiIiLCJpY29uIjoiIiwiZXhjbHVkZVRhZ3MiOltdfSx7ImZpbHRlclRhZyI6WyJjYWFzOnRvcGljIl0sIm9wZW5lZE9uTG9hZCI6IiIsImljb24iOiIiLCJleGNsdWRlVGFncyI6W119XSwiZmlsdGVyc1Nob3dFbXB0eSI6ZmFsc2UsImd1dHRlciI6IjR4IiwiaW5jbHVkZVRhZ3MiOltdLCJsYW5ndWFnZSI6ImNhYXM6bGFuZ3VhZ2UvZW4iLCJsYXlvdXRUeXBlIjoiM3VwIiwibG9hZE1vcmVCdG5TdHlsZSI6InByaW1hcnkiLCJvbmx5U2hvd0Jvb2ttYXJrZWRDYXJkcyI6ZmFsc2UsIm9yTG9naWNUYWdzIjpbXSwicGFnaW5hdGlvbkFuaW1hdGlvblN0eWxlIjoicGFnZWQiLCJwYWdpbmF0aW9uRW5hYmxlZCI6ZmFsc2UsInBhZ2luYXRpb25RdWFudGl0eVNob3duIjpmYWxzZSwicGFnaW5hdGlvblVzZVRoZW1lMyI6ZmFsc2UsInBhZ2luYXRpb25UeXBlIjoicGFnaW5hdG9yIiwicGxhY2Vob2xkZXJVcmwiOiIiLCJyZXN1bHRzUGVyUGFnZSI6IjMiLCJzZWFyY2hGaWVsZHMiOlsiY29udGVudEFyZWEuZGVzY3JpcHRpb24iXSwic2V0Q2FyZEJvcmRlcnMiOnRydWUsInNob3dCb29rbWFya3NGaWx0ZXIiOmZhbHNlLCJzaG93Qm9va21hcmtzT25DYXJkcyI6ZmFsc2UsInNob3dGaWx0ZXJzIjpmYWxzZSwic2hvd1NlYXJjaCI6ZmFsc2UsInNob3dUb3RhbFJlc3VsdHMiOmZhbHNlLCJzb3J0RGVmYXVsdCI6InJhbmRvbSIsInNvcnRFbmFibGVQb3B1cCI6ZmFsc2UsInNvcnRFbmFibGVSYW5kb21TYW1wbGluZyI6ZmFsc2UsInNvcnRSZXNlcnZvaXJTYW1wbGUiOjMsInNvcnRSZXNlcnZvaXJQb29sIjoxMDAwLCJzb3VyY2UiOlsibm9ydGhzdGFyIl0sInRhZ3NVcmwiOiJ3d3cuYWRvYmUuY29tL2NoaW1lcmEtYXBpL3RhZ3MiLCJ0YXJnZXRBY3Rpdml0eSI6ImR4bmV4dF91YiIsInRhcmdldEVuYWJsZWQiOnRydWUsInRoZW1lIjoibGlnaHRlc3QiLCJ0b3RhbENhcmRzVG9TaG93IjoiMyIsInVzZUxpZ2h0VGV4dCI6ZmFsc2UsInVzZU92ZXJsYXlMaW5rcyI6ZmFsc2UsInVzZXJJbmZvIjpbXSwic2hvd0lkcyI6dHJ1ZSwiY29sbGVjdGlvblNpemUiOiIiLCJjb2xsZWN0aW9uTmFtZSI6IiIsImRvTm90TGF6eUxvYWQiOmZhbHNlfQ==';
+    caasLink.href = 'https://milo.adobe.com/tools/caas#ewogICJhbmFseXRpY3NUcmFja0ltcHJlc3Npb24iOiBmYWxzZSwKICAiYW5hbHl0aWNzQ29sbGVjdGlvbk5hbWUiOiAiIiwKICAiYW5kTG9naWNUYWdzIjogW10sCiAgImJvb2ttYXJrSWNvblNlbGVjdCI6ICIiLAogICJib29rbWFya0ljb25VbnNlbGVjdCI6ICIiLAogICJjYXJkU3R5bGUiOiAiMToyIiwKICAiY29sbGVjdGlvbkJ0blN0eWxlIjogInByaW1hcnkiLAogICJjb250YWluZXIiOiAiMTIwME1heFdpZHRoIiwKICAiY29udGVudFR5cGVUYWdzIjogWwogICAgImNhYXM6Y29udGVudC10eXBlL2Vib29rIiwKICAgICJjYWFzOmNvbnRlbnQtdHlwZS9ndWlkZSIsCiAgICAiY2Fhczpjb250ZW50LXR5cGUvcmVwb3J0IiwKICAgICJjYWFzOmNvbnRlbnQtdHlwZS93ZWJpbmFyIiwKICAgICJjYWFzOmNvbnRlbnQtdHlwZS93aGl0ZS1wYXBlciIKICBdLAogICJkaXNhYmxlQmFubmVycyI6IGZhbHNlLAogICJkcmFmdERiIjogZmFsc2UsCiAgImVudmlyb25tZW50IjogIiIsCiAgImVuZHBvaW50IjogInd3dy5hZG9iZS5jb20vY2hpbWVyYS1hcGkvY29sbGVjdGlvbiIsCiAgImV4Y2x1ZGVUYWdzIjogWwogICAgImNhYXM6Y29udGVudC10eXBlL2N1c3RvbWVyLXN0b3J5IgogIF0sCiAgImV4Y2x1ZGVkQ2FyZHMiOiBbCiAgICB7CiAgICAgICJjb250ZW50SWQiOiAiIgogICAgfQogIF0sCiAgImZhbGxiYWNrRW5kcG9pbnQiOiAiIiwKICAiZmVhdHVyZWRDYXJkcyI6IFtdLAogICJmaWx0ZXJFdmVudCI6ICIiLAogICJmaWx0ZXJMb2NhdGlvbiI6ICJ0b3AiLAogICJmaWx0ZXJMb2dpYyI6ICJvciIsCiAgImZpbHRlcnMiOiBbCiAgICB7CiAgICAgICJmaWx0ZXJUYWciOiBbCiAgICAgICAgImNhYXM6cHJvZHVjdHMiCiAgICAgIF0sCiAgICAgICJvcGVuZWRPbkxvYWQiOiAiIiwKICAgICAgImljb24iOiAiIiwKICAgICAgImV4Y2x1ZGVUYWdzIjogW10KICAgIH0sCiAgICB7CiAgICAgICJmaWx0ZXJUYWciOiBbCiAgICAgICAgImNhYXM6aW5kdXN0cnkiCiAgICAgIF0sCiAgICAgICJvcGVuZWRPbkxvYWQiOiAiIiwKICAgICAgImljb24iOiAiIiwKICAgICAgImV4Y2x1ZGVUYWdzIjogW10KICAgIH0sCiAgICB7CiAgICAgICJmaWx0ZXJUYWciOiBbCiAgICAgICAgImNhYXM6dG9waWMiCiAgICAgIF0sCiAgICAgICJvcGVuZWRPbkxvYWQiOiAiIiwKICAgICAgImljb24iOiAiIiwKICAgICAgImV4Y2x1ZGVUYWdzIjogW10KICAgIH0KICBdLAogICJmaWx0ZXJzU2hvd0VtcHR5IjogZmFsc2UsCiAgImd1dHRlciI6ICI0eCIsCiAgImluY2x1ZGVUYWdzIjogW10sCiAgImxheW91dFR5cGUiOiAiM3VwIiwKICAibG9hZE1vcmVCdG5TdHlsZSI6ICJwcmltYXJ5IiwKICAib25seVNob3dCb29rbWFya2VkQ2FyZHMiOiBmYWxzZSwKICAib3JMb2dpY1RhZ3MiOiBbXSwKICAicGFnaW5hdGlvbkFuaW1hdGlvblN0eWxlIjogInBhZ2VkIiwKICAicGFnaW5hdGlvbkVuYWJsZWQiOiBmYWxzZSwKICAicGFnaW5hdGlvblF1YW50aXR5U2hvd24iOiBmYWxzZSwKICAicGFnaW5hdGlvblVzZVRoZW1lMyI6IGZhbHNlLAogICJwYWdpbmF0aW9uVHlwZSI6ICJwYWdpbmF0b3IiLAogICJwbGFjZWhvbGRlclVybCI6ICIiLAogICJyZXN1bHRzUGVyUGFnZSI6ICIzIiwKICAic2VhcmNoRmllbGRzIjogWwogICAgImNvbnRlbnRBcmVhLmRlc2NyaXB0aW9uIgogIF0sCiAgInNldENhcmRCb3JkZXJzIjogdHJ1ZSwKICAic2hvd0Jvb2ttYXJrc0ZpbHRlciI6IGZhbHNlLAogICJzaG93Qm9va21hcmtzT25DYXJkcyI6IGZhbHNlLAogICJzaG93RmlsdGVycyI6IGZhbHNlLAogICJzaG93U2VhcmNoIjogZmFsc2UsCiAgInNob3dUb3RhbFJlc3VsdHMiOiBmYWxzZSwKICAic29ydERlZmF1bHQiOiAicmFuZG9tIiwKICAic29ydEVuYWJsZVBvcHVwIjogZmFsc2UsCiAgInNvcnRFbmFibGVSYW5kb21TYW1wbGluZyI6IGZhbHNlLAogICJzb3J0UmVzZXJ2b2lyU2FtcGxlIjogMywKICAic29ydFJlc2Vydm9pclBvb2wiOiAxMDAwLAogICJzb3VyY2UiOiBbCiAgICAibm9ydGhzdGFyIgogIF0sCiAgInRhZ3NVcmwiOiAid3d3LmFkb2JlLmNvbS9jaGltZXJhLWFwaS90YWdzIiwKICAidGFyZ2V0QWN0aXZpdHkiOiAiZHhuZXh0X3ViIiwKICAidGFyZ2V0RW5hYmxlZCI6IHRydWUsCiAgInRoZW1lIjogImxpZ2h0ZXN0IiwKICAidG90YWxDYXJkc1RvU2hvdyI6ICIzIiwKICAidXNlTGlnaHRUZXh0IjogZmFsc2UsCiAgInVzZU92ZXJsYXlMaW5rcyI6IGZhbHNlLAogICJ1c2VySW5mbyI6IFtdLAogICJzaG93SWRzIjogdHJ1ZSwKICAiY29sbGVjdGlvblNpemUiOiAiIiwKICAiY29sbGVjdGlvbk5hbWUiOiAiIiwKICAiZG9Ob3RMYXp5TG9hZCI6IGZhbHNlLAogICJhdXRvQ291bnRyeUxhbmciOiB0cnVlCn0K';
     caasLink.textContent = 'Content as a Service - Friday, November 4, 2022 at 09:34';
   }
   return caasLink;
@@ -240,7 +240,7 @@ export async function setGlobals(originalURL) {
   const importURL = new URL(originalURL);
   let { pathname } = importURL;
   const localFromURL = pathname.split('/')[1];
-  if (localFromURL.startsWith('resource')) {
+  if (localFromURL.startsWith('resource') || localFromURL.startsWith('products') || localFromURL.startsWith('solutions')) {
     pathname = `/us/en${pathname.replace('.html', '')}`;
   } else {
     pathname = pathname.replace(localFromURL, localMap[localFromURL]);
@@ -256,3 +256,112 @@ export async function setGlobals(originalURL) {
     window.jcrContent = {};
   }
 }
+
+export function getElementByXpath(doc, path) {
+  return doc.evaluate(path, doc, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+}
+
+export function rgbToHex(rgbString) {
+  let c = rgbString;
+  if (c.startsWith('rgb')) {
+    var arr=[]; c.replace(/[\d+\.]+/g, function(v) { arr.push(parseFloat(v)); });
+    c = "#" + arr.slice(0, 3).map(toHex).join("");
+  }
+
+  return c;
+}
+
+function toHex(int) {
+  var hex = int.toString(16);
+  return hex.length == 1 ? "0" + hex : hex;
+}
+
+export function getXPathByElement(elm, addClass = false) {
+  // var allNodes = document.getElementsByTagName('*');
+  for (var segs = []; elm && elm.nodeType == 1; elm = elm.parentNode) {
+    /*if (elm.hasAttribute('id')) {
+        var uniqueIdCount = 0;
+        for (var n=0;n < allNodes.length;n++) {
+            if (allNodes[n].hasAttribute('id') && allNodes[n].id == elm.id) uniqueIdCount++;
+            if (uniqueIdCount > 1) break;
+        };
+        if ( uniqueIdCount == 1) {
+            segs.unshift('id("' + elm.getAttribute('id') + '")');
+            return segs.join('/');
+        } else {
+            segs.unshift(elm.localName.toLowerCase() + '[@id="' + elm.getAttribute('id') + '"]');
+        }
+    } else if (elm.hasAttribute('class')) {
+        segs.unshift(elm.localName.toLowerCase() + '[@class="' + [...elm.classList].join(" ").trim() + '"]');
+    } else {*/
+    if (addClass && elm.hasAttribute('class')) {
+      segs.unshift(elm.localName.toLowerCase() + '[@class="' + [...elm.classList].join(" ").trim() + '"]');
+    } else {
+
+        for (var i = 1, sib = elm.previousSibling; sib; sib = sib.previousSibling) {
+            if (sib.localName == elm.localName) { i++; }
+        }
+        segs.unshift(elm.localName.toLowerCase() + '[' + i + ']');
+    }
+  }
+  return segs.length ? '/' + segs.join('/') : null;
+};
+
+// borrowed from https://codepen.io/andreaswik/pen/YjJqpK
+export function isLightColor(color) {
+  let r, g, b;
+
+  // Check the format of the color, HEX or RGB?
+  if (color.match(/^rgb/)) {
+
+    // If HEX --> store the red, green, blue values in separate variables
+    color = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+(?:\.\d+)?))?\)$/);
+
+    r = color[1];
+    g = color[2];
+    b = color[3];
+  } 
+  else {
+
+    // If RGB --> Convert it to HEX: http://gist.github.com/983661
+    color = +("0x" + color.slice(1).replace( 
+      color.length < 5 && /./g, '$&$&'
+    )
+             );
+
+    r = color >> 16;
+    g = color >> 8 & 255;
+    b = color & 255;
+  }
+
+  // HSP (Highly Sensitive Poo) equation from http://alienryderflex.com/hsp.html
+  const hsp = Math.sqrt(
+    0.299 * (r * r) +
+    0.587 * (g * g) +
+    0.114 * (b * b)
+  );
+
+  return hsp > 127.5;
+}
+
+export function generateDocumentPath({ document, url }) {
+  let { pathname } = new URL(url);
+  pathname = pathname.replace('.html', '')
+  const sanitized =  WebImporter.FileUtils.sanitizePath(pathname);
+  const localeFromURL = sanitized.split('/')[1];
+  return sanitized.replace(localeFromURL, localeFromURL.replace('-', '_'));
+}
+
+// Not working with jsDOM
+// // export a function that checks the css display property is not none on an element and all its parents
+// export function isVisible(el, document) {
+//   while (el.parentElement) {
+//     // console.log(document.defaultView.getComputedStyle(el.parentElement).getPropertyValue('display'));
+//     console.log(el.parentElement.style.display);
+//     if (/.*none.*/i.test(document.defaultView.getComputedStyle(el.parentElement).getPropertyValue('display'))) {
+//       return false;
+//     }
+//     el = el.parentElement;
+//   }
+//   return true;
+// }

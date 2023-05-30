@@ -12,9 +12,25 @@
 /* eslint-disable no-console, class-methods-use-this */
 import { utf8ToB64 } from './utils.js';
 
-const waitForFaasForm = async (document) => {
-  if (document.querySelector('.faas_form') && document.querySelector('.faas_form').closest('.modal') === null) {
-    try {
+const waitForFaasForm = async (document) => { 
+  if (document.querySelector('.faas_form')) {
+try {
+      // The form is hidden behind a "register form" button that must be clicked.
+      // Once clicked, the underlying JS will create the corresponding faas-form-settings which we need to extract the form.
+      // However, if we just simulate the click, it would induce the Franklin importer into thinking that there are
+      // more pages to import. We need a workaround.
+      // We create a fake iframe, we change the target for the click to be that iframe so that the form is loaded in there.
+      const a = document.querySelector('[href="#register-form"]');
+      if (a) {
+        const myframe = document.createElement('iframe');
+        myframe.name = 'foo'
+        a.parentElement.appendChild(myframe);
+        a.target = "foo";
+        a.click();
+
+        // We can now remove the iframe so not to poison the page
+        myframe.remove();
+      }
       await WebImporter.Loader.waitForElement('.faas-form-settings', document, 10000);
     } catch (error) {
       console.error('faas form not added to the DOM after 10s.');
@@ -30,11 +46,10 @@ const waitForFaasForm = async (document) => {
  * @returns The link element or null if no form was found
  */
 const handleFaasForm = (root, document, faasTitle) => {
-  const faasFormElement = root.querySelector('.faas_form');
-  // TDOO: handle modal forms ?
-  if (!faasFormElement || faasFormElement.closest('.modal')) return;
+  const faasFormElement = root.querySelector('.faas_form')
+  if (!faasFormElement) return;
 
-  const faasSettingElement = faasFormElement.querySelector('.faas-form-settings');
+  const faasSettingElement = faasFormElement.parentElement.querySelector('.faas-form-settings');
   if (!faasSettingElement) {
     throw new Error('faas_form detected but no faas-form-settings element found - invalid form ?');
   }
@@ -63,9 +78,9 @@ const handleFaasForm = (root, document, faasTitle) => {
     faasConfig.style_layout = 'column2';
   }
   faasConfig.cleabitStyle = '';
+  faasConfig.title_size = 'p';
+  faasConfig.title_align = 'left';
   if (data.faasPrepopulated.includes('clearbit') && data.faasType === '2847') {
-    faasConfig.title_size = 'p';
-    faasConfig.title_align = 'left';
     faasConfig.cleabitStyle = 'Cleabit Style'
   }
 

@@ -12,7 +12,10 @@
 /* eslint-disable no-console, class-methods-use-this */
 
 import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
-import { cleanupHeadings, setGlobals, findPaths, getJSONValues, getMetadataValue, getRecommendedArticles } from '../utils.js';
+import { parseCardMetadata } from '../rules/metadata.js';
+import { cleanupHeadings, setGlobals, findPaths, getMetadataValue, getRecommendedArticles, generateDocumentPath } from '../utils.js';
+import { getNSiblingsElements } from '../rules/utils.js';
+import { getXPathByElement } from '../utils.js';
 
 const createMetadata = (main, document) => {
   const meta = {};
@@ -43,26 +46,7 @@ const createImage = (document, url)  => {
   return img;
 };
 
-const createCardMetadata = (main, document) => {  
-  const cqTags = getJSONValues(window.jcrContent, 'cq:tags');
-
-  const cells = [
-    ['Card Metadata'],
-    ['cardTitle', getMetadataValue(document, 'cardTitle')],
-    ['cardImagePath', createImage(document,`https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`)],
-    ['CardDescription', getMetadataValue(document, 'cardDesc')],
-    ['primaryTag', `caas:content-type/${getMetadataValue(document, 'caas:content-type')}`],
-    ['tags', cqTags.length ? cqTags.join(', ') : ''],
-  ];
-  const table = WebImporter.DOMUtils.createTable(cells, document);
-  return table;
-};
-
-const createMarquee = (main, document, originalURL) => {
-  let marqueeDoc = document.querySelector('.dexter-FlexContainer');
-  if (!marqueeDoc.textContent.trim()) {
-    marqueeDoc = document.querySelectorAll('.dexter-FlexContainer')[1];
-  }
+const createMarquee = (marqueeDoc, document, originalURL) => {
   const title = marqueeDoc.querySelector('h1')?.textContent;
   const bgURL = marqueeDoc.style.backgroundImage?.slice(4, -1).replace(/"/g, "") || '';
   const priceElement = marqueeDoc.querySelectorAll('b')[0]?.parentElement;
@@ -74,9 +58,13 @@ const createMarquee = (main, document, originalURL) => {
   let { pathname } = originalURL;
   let path = pathname.replace('.html', '');
   let cta = marqueeDoc.querySelector('.dexter-Cta a');
-  if (cta) {
+  if(cta && cta.href.includes("register-form")) {
+    cta = null
+  }
+  else if (cta) {
     cta.href = `/fragments/resources/modal/forms/${path.split('/').at(-1)}#faas-form`;
   }
+  
   let bg = '#f5f5f5'
   if (bgURL) {
     bg = document.createElement('img');
@@ -93,7 +81,7 @@ const createMarquee = (main, document, originalURL) => {
     marqueeDoc.querySelector('img') || ''],
   ];
   const table = WebImporter.DOMUtils.createTable(cells, document);
-  document.querySelector('h1')?.remove();
+  marqueeDoc.querySelector('h1')?.remove();
   marqueeDoc.remove();
   return table;
 };
@@ -130,6 +118,90 @@ const createEventSpeakers = (main, document) => {
   parent.remove();
   const table = WebImporter.DOMUtils.createTable(cells, document);
   return table;
+};
+
+const createEventSpeakersAltVersion = (main, document) => {
+  document.querySelectorAll('.horizontalRule').forEach(item => item.remove())
+  let els = getNSiblingsElements(document, (n) => n === 2)
+  if (!els || els.length == 0) {
+    return ''
+  }
+  // speaker div
+  els = getNSiblingsElements(els[0], (n) => n >= 2)
+  if (!els || els.length == 0) {
+    return ''
+  }
+  // title + event description
+  const texts = document.createElement('div')
+  els
+    .filter(item => !item.classList.contains('dexter-Spacer') && !item.querySelector('img'))
+    .map(item => {
+      return item.querySelector('.cmp-text') || item.querySelector('.cmp-title')
+    })
+    .filter(item => item)
+    .forEach(item => {
+      texts.append(item)
+      texts.append(document.createElement('br'))
+    })
+  
+    // speakers
+  const speakers = els
+    .filter(item => !item.classList.contains('dexter-Spacer'))
+    .map(item => {
+      let images = item.querySelectorAll('img')
+      if(!images) {
+        return null
+      }
+      const tmpSpeakers = []
+      images.forEach((image) => {
+        if (!image.src) {
+          return
+        }
+        const speaker = [];
+        console.log(image.classList)
+        console.log(getXPathByElement(image))
+        speaker.push(image);
+        let nextEl = image.closest('.image')
+        while(nextEl) {
+          const texts = nextEl.querySelectorAll('.cmp-text')
+          if(texts && texts.length === 2){
+            speaker.push(`<p><strong>${texts[0].innerHTML}</strong></p><p>${texts[1]?.innerHTML}</p>`);
+          } else if(texts && texts.length === 1) {
+            speaker.push(texts[0].innerHTML)
+            // speaker.push('Read more')
+          }
+          nextEl = nextEl.nextElementSibling
+        }
+        if(speaker.length <= 2){
+          speaker.push('')
+        }
+        tmpSpeakers.push(speaker)
+      })
+      return tmpSpeakers
+    })
+    .filter(item => item)
+    .flat()
+
+    if (!speakers || speakers.length === 0) {
+      return '';
+    }
+    els.forEach(item => item.remove())
+
+    const container = document.createElement('div')
+    container.append(
+      WebImporter.DOMUtils.createTable([
+        ['Text (full width)'],
+        [texts]
+      ], document)
+    )
+    container.append(document.createElement('hr'))
+    container.append(
+      WebImporter.DOMUtils.createTable([
+        ['Event Speakers'],
+        ...speakers,
+      ], document)
+    )
+    return container
 };
 
 const createRelatedProducts = (main, document) => {
@@ -232,7 +304,7 @@ const createBreadcrumbs = (document) => {
 
 
 export default {
-  onLoad: async ({ document }) => {
+  onLoad: async ({ document, url }) => {
     await waitForFaasForm(document);
   },
 
@@ -242,15 +314,18 @@ export default {
    * @param {HTMLDocument} document The document
    * @returns {HTMLElement} The root element
    */
-  transformDOM: async ({ document, params}) => {
+  transform: async ({ document, params}) => {
     await setGlobals(params.originalURL);
-    console.log(window.fetchUrl);
-    const titleElement = document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-text');
+    // console.log(window.fetchUrl);
+    let titleElement = document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-text');
+    titleElement = titleElement || document.querySelector('.faasform')?.closest('.aem-Grid')?.querySelector('.cmp-title')
     const formLink = handleFaasForm(document, document, titleElement);
     
     const [breadcrumbType, breadcrumb] = createBreadcrumbs(document);
 
-    console.log(breadcrumbType, breadcrumb.innerHTML, params.originalURL);
+    // console.log(breadcrumbType, breadcrumb.innerHTML, params.originalURL);
+
+    const rec = await getRecommendedArticles(document, document)
 
     WebImporter.DOMUtils.remove(document, [
       `header, footer, .faas-form-settings, .xf, style, northstar-card-collection, consonant-card-collection`,
@@ -264,24 +339,28 @@ export default {
     // Top area
     const elementsToGo = [];
     elementsToGo.push(breadcrumb);
-    elementsToGo.push(createMarquee(main, document, new URL(params.originalURL)));
-    const h2 = document.querySelector('.title h2');
-    if (h2) {
-      elementsToGo.push(h2);
-    }
+    elementsToGo.push(createMarquee(document.querySelector('.dexter-FlexContainer'), document, new URL(params.originalURL)));
+    // const h2 = document.querySelector('.title h2');
+    // if (h2) {
+    //   elementsToGo.push(
+    //     WebImporter.DOMUtils.createTable([
+    //       ['Text (full width)'],
+    //       [h2]
+    //     ], document)
+    //   );
+    // }
 
-    const eventSpeakers = createEventSpeakers(main, document);
+    // const eventSpeakers = createEventSpeakers(main, document);
+    const eventSpeakers = createEventSpeakersAltVersion(main, document);
     if (eventSpeakers) {
+      // elementsToGo.push(document.createElement('hr'));
+      elementsToGo.push(eventSpeakers);
+      // elementsToGo.push(createRelatedProducts(main, document));
       if (formLink) {
-        elementsToGo.push(document.createElement('hr'));
         const form = document.createElement('p');
         form.append(formLink);
         elementsToGo.push(form);
       }
-
-      elementsToGo.push(document.createElement('hr'));
-      elementsToGo.push(eventSpeakers);
-      elementsToGo.push(createRelatedProducts(main, document));
       elementsToGo.push(WebImporter.DOMUtils.createTable([
         ['Section Metadata'],
         ['style', 'Two-up'],
@@ -293,10 +372,10 @@ export default {
       let content;
 
       [...document.querySelectorAll('.dexter-FlexContainer .text p')].some((p) => {
-        console.log('looking at',p.textContent.trim());
+        // console.log('looking at',p.textContent.trim());
         const str = p.textContent.trim().toLowerCase();
         if (str && !str.match(/\|.*\|/) && !str.match(/\/.*\//)) {
-          console.log('found',p.textContent);
+          // console.log('found',p.textContent);
           content = p.closest('.dexter-FlexContainer');
           return true;
         }
@@ -328,9 +407,10 @@ export default {
 
     appendBackward(elementsToGo, main);
     
+    // main.append(createRelatedProducts(main, document))
     // All other content from page should be automatically added here //
     const recommendedArticles = document.createElement('p');
-    recommendedArticles.append(await getRecommendedArticles(main, document));
+    recommendedArticles.append(rec);
     main.append(recommendedArticles);
 
     document.querySelectorAll('.cta a').forEach(link => {link.href.includes('/resources/main') ? link.remove() : false});
@@ -346,11 +426,26 @@ export default {
     main.append(createMetadata(main, document));
     
     // if robots doesn't have noindex include Card Metadata;
+    let tagsConvertedString = 'false'
     if (!getMetadataValue(document, 'robots')?.toLowerCase()?.includes('noindex')) {
-      main.append(createCardMetadata(main, document));
+      const { block, tagsConverted } = parseCardMetadata(document, params.originalURL);
+      tagsConvertedString = tagsConverted.toString()
+      main.append(block);
     }
-    
-    return main;
+
+    /*
+     * return + custom report
+     */
+
+    return [{
+      element: main,
+      path: generateDocumentPath({ document, url: params.originalURL }),
+      report: {
+        'breadcrumb type': breadcrumbType,
+        'tags converted?': tagsConvertedString,
+      },
+    }];
+
   },
 
   /**
@@ -359,13 +454,5 @@ export default {
    * @param {String} url The url of the document being transformed.
    * @param {HTMLDocument} document The document
    */
-  generateDocumentPath: ({ document, url }) => {
-    let { pathname } = new URL(url);
-    const localFromURL = pathname.split('/')[1];
-    if (!localFromURL.startsWith('resource')) {
-      pathname = pathname.replace(localFromURL, window.local);
-    }
-    pathname = pathname.replace('.html', '');
-    return WebImporter.FileUtils.sanitizePath(pathname);
-  },
+    generateDocumentPath: generateDocumentPath,
 };

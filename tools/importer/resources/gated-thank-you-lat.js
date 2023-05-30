@@ -11,7 +11,8 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { setGlobals, getMetadataValue, getJSONValues, isRelative, findPaths, createElementFromHTML, getRecommendedArticles } from '../utils.js';
+import { setGlobals, getMetadataValue, isRelative, findPaths, createElementFromHTML, getRecommendedArticles, generateDocumentPath } from '../utils.js';
+import { parseCardMetadata } from '../rules/metadata.js';
 
 const createMetadata = (main, document) => {
   const meta = {};
@@ -38,22 +39,7 @@ const createImage = (document, url)  => {
   return img;
 };
 
-const createCardMetadata = (document) => {  
-  const cqTags = getJSONValues(window.jcrContent, 'cq:tags');
-
-  const cells = [
-    ['Card Metadata'],
-    ['title', getMetadataValue(document, 'cardTitle')],
-    ['cardImagePath', getMetadataValue(document, 'cardImagePath') === '' ? '' : createImage(document,`https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`)],
-    ['CardDescription', getMetadataValue(document, 'cardDesc')],
-    ['primaryTag', `caas:content-type/${getMetadataValue(document, 'caas:content-type')}`],
-    ['tags', cqTags.length ? cqTags.join(', ') : ''],
-  ];
-  const table = WebImporter.DOMUtils.createTable(cells, document);
-  return table;
-};
-
-const getResource = (main, document, originalURL) => {
+const getResource = (document, originalURL) => {
   // video
   const videoIframe = document.querySelector('.video iframe, .modal iframe');
   if (videoIframe) {
@@ -77,7 +63,7 @@ const getResource = (main, document, originalURL) => {
       // this method transforms the relative pdf link into a full url with helix-import-ui domain
     } else {
       // search for pdf link in the whole document
-      pdfLink = document.querySelector('a[href*=".pdf"], a[href*="gartner.com/"], a[href*="forrester.com/"]');
+      pdfLink = document.querySelector('a[href*=".pdf"]');
     }
   }
 
@@ -105,6 +91,8 @@ const getResource = (main, document, originalURL) => {
 }
 
 export default {
+
+  REQUIRED_STYLES: ['background-image', 'background-color'],
   /**
    * Apply DOM operations to the provided document and return
    * the root element to be then transformed to Markdown.
@@ -129,37 +117,42 @@ export default {
       '.globalnavfooter',
       'header',
       'footer',
-      '.xfreference',
+      // '.xfreference',
     ]);
 
 
 
+    const u = new URL(params.originalURL);
+    // Resource (pdf, video, etc.)
+    const resource = getResource(document, u);
     /*
      * title + resource link
      */
 
-    const main = document.querySelector('main');
-    const u = new URL(params.originalURL);
-    let eyebrow = u.pathname.split('/')[3];
-    if (eyebrow.length > 12) {
-      eyebrow = 'Guide';
+    const main = document.createElement('div');
+    const flexContainers = document.querySelectorAll('.dexter-FlexContainer');
+    for (const item of flexContainers) {
+      if(item.querySelector('.cmp-title, .cmp-text, a')) {
+        const texts = document.createElement('div')
+        item.querySelectorAll('.cmp-title, .cmp-text').forEach(elem => texts.append(elem))
+        if (!resource) {
+          const button = document.querySelector('a[href*="gartner.com/"], a[href*="forrester.com/"]');
+          const str = document.createElement('B');
+          str.append(button);
+          texts.append(str)
+        }
+        main.append(WebImporter.DOMUtils.createTable([
+          ['text (large)'],
+          [texts],
+        ], document));
+        break;
+      }
     }
 
-    const titleEl = document.querySelector('.dexter-FlexContainer') || document.querySelector('.dexter-Position');
-    const titleTextEl = titleEl.querySelector('.cmp-title') || titleEl.querySelector('.cmp-text');
-    const title = titleTextEl ? titleTextEl.textContent : '';
-    main.append(WebImporter.DOMUtils.createTable([
-      ['text (large)'],
-      [`${eyebrow.toUpperCase()}<h1>${title}</h1>`],
-    ], document));
-
-    // Resource (pdf, video, etc.)
-    const resource = getResource(main, document, u);
+    // Add Resource (pdf, video, etc.) to output
     if (resource) {
       main.append(resource);
     }
-
-    titleEl?.remove();
 
     main.append(WebImporter.DOMUtils.createTable([
       ['Section Metadata'],
@@ -186,14 +179,14 @@ export default {
       ['style', 'container, m spacing, center'],
     ], document));
 
-
-
     /*
      * metadata
      */
 
     main.append(createMetadata(main, document));
-    main.append(createCardMetadata(document));
+
+    const { block, tagsConverted } = parseCardMetadata(document, params.originalURL);
+    main.append(block);
     
 
 
@@ -222,13 +215,16 @@ export default {
     /*
      * return + custom report
      */
+    const onedrive_subfolder = 'drafts/acapt/import-MWPW-129315/gated-offer-thank-you';
+    const path = generateDocumentPath({ document, url: params.originalURL });
+    const resourceFound = resource ? 'true' : 'false';
 
     return [{
       element: main,
-      path: new URL(params.originalURL).pathname.replace(/\/$/, '').replace(/\.html$/, ''),
+      path: path,
       report: {
-        'found resource': resource ? 'true' : 'false',
-        'franklin url': 'https://main--bacom--adobecom.hlx.page/drafts/acapt/import-gatedoffer-ty' + new URL(params.originalURL).pathname.replace(/\/$/, '').replace(/\.html$/, ''),
+        'found resource': resourceFound,
+        'franklin url': '=HYPERLINK("https://main--bacom--adobecom.hlx.page/' + onedrive_subfolder + path + '")'
       },
     }];
   },
@@ -239,9 +235,5 @@ export default {
    * @param {String} url The url of the document being transformed.
    * @param {HTMLDocument} document The document
    */
-  generateDocumentPath: ({ document, url }) => {
-    let { pathname } = new URL(url);
-    pathname = pathname.replace('.html', '');
-    return WebImporter.FileUtils.sanitizePath(pathname);
-  },
+  generateDocumentPath: generateDocumentPath,
 };
