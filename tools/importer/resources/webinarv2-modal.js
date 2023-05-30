@@ -47,6 +47,7 @@ async function layout1(sections, document, container, modalPath, locale) {
 
 export default {
 
+  REQUIRED_STYLES: ['background-image', 'background-color'],
   onLoad: async ({ document, url, params }) => {
     // send 'esc' keydown event to close the dialog
     document.dispatchEvent(
@@ -109,6 +110,11 @@ export default {
     form.append(formLink);
     const modalContainer = document.createElement('div')
     modalContainer.append(form)
+    modalContainer.append(WebImporter.DOMUtils.createTable([
+        ['Section Metadata'],
+        ['style', 'resource-form'],
+      ],document)
+    )
 
     const faasModalPath = "/fragments/resources/modal/forms/webinars" + generateDocumentPath({ document, url: params.originalURL })
     const pagePath = generateDocumentPath({ document, url: params.originalURL })

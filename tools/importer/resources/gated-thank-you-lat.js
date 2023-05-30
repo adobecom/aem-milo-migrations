@@ -91,6 +91,8 @@ const getResource = (document, originalURL) => {
 }
 
 export default {
+
+  REQUIRED_STYLES: ['background-image', 'background-color'],
   /**
    * Apply DOM operations to the provided document and return
    * the root element to be then transformed to Markdown.
@@ -213,7 +215,7 @@ export default {
     /*
      * return + custom report
      */
-    const onedrive_subfolder = 'drafts/acapt/import-MWPW-126581-reactivate';
+    const onedrive_subfolder = 'drafts/acapt/import-MWPW-129315/gated-offer-thank-you';
     const path = generateDocumentPath({ document, url: params.originalURL });
     const resourceFound = resource ? 'true' : 'false';
 
