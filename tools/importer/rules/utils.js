@@ -75,9 +75,11 @@ export function getBGColor(el, document, recurse=true) {
   // WARNING: debug this function if you find unexpected results in background color's detection
   if (!bgcolor && recurse) {
     const parentEl = el.parentElement;
-    const parentBGColor = getBGColor(parentEl, document);
-    if (parentBGColor) {
-      bgcolor = parentBGColor;
+    if (parentEl) {
+      const parentBGColor = getBGColor(parentEl, document);
+      if (parentBGColor) {
+        bgcolor = parentBGColor;
+      }
     }
   }
 

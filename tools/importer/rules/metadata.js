@@ -9,10 +9,10 @@ const createImage = (document, url)  => {
 export function parseMetadata(document) {
   const meta = {};
 
-  const title = document.querySelector('title');
-  if (title) {
-    meta.Title = title.innerHTML.replace(/[\n\t]/gm, '');
-  }
+  const title = getMetadataValue(document, 'title') || getMetadataValue(document, 'og:title')
+      || getMetadataValue(document, 'jcr:title') || '';
+
+  meta.Title = title;
   meta.robots = getMetadataValue(document, 'robots');
   meta.Description = getMetadataValue(document, 'og:description');
   meta.keywords = getMetadataValue(document, 'keywords');
@@ -31,6 +31,9 @@ export function parseMetadata(document) {
 }
 
 export function parseCardMetadata(document, originalURL) {
+  const title = getMetadataValue(document, 'cardTitle') || getMetadataValue(document, 'title') || getMetadataValue(document, 'og:title')
+      || getMetadataValue(document, 'jcr:title') || '';
+
   const cqTags = getJSONValues(window.jcrContent, 'cq:tags');
   const convertedTags = cqTags === '' ? '' : convertEnterpriseTags(cqTags, originalURL);
   let caasTags = '';
@@ -55,7 +58,7 @@ export function parseCardMetadata(document, originalURL) {
 
   const cells = [
     ['Card Metadata'],
-    ['title', getMetadataValue(document, 'cardTitle')],
+    ['title', title],
     ['CardDescription', getMetadataValue(document, 'cardDescription')],
     ['cardDate', dateStr],
     ['altCardImageText', getMetadataValue(document, 'altCardImageText')],
