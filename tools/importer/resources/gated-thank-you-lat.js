@@ -68,7 +68,11 @@ const getResource = (document, originalURL) => {
   }
 
   if (!pdfLink) {
-    console.warn('No pdf link found.');
+    console.warn('No pdf link found, fallback to whatever link we find');
+    const link = document.querySelector('.dexter-Cta a[href]');
+    if (link) {
+      return link;
+    }
     return null;
   }
 
