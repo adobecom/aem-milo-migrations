@@ -20,7 +20,7 @@ const handleCaasCollection = async (root, document) => {
   const consonantCaaS = root.querySelector('consonant-card-collection');
   if (!consonantCaaS) return;
   const caasLink = document.createElement('a');
-  const { getCaasConfigHash } = await import('https://c3-parsecaas--milo--adobecom.hlx.page/tools/caas-import/parseCaasConfig.js');
+  const { getCaasConfigHash } = await import('https://parsecaasupdate--milo--adobecom.hlx.page/tools/caas-import/parseCaasConfig.js');
   const config = JSON.parse(consonantCaaS.dataset.config);
   if (config?.collection?.endpoint?.startsWith('/')) {
     config.collection.endpoint = `https://business.adobe.com${config.collection.endpoint}`;
