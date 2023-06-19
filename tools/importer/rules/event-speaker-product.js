@@ -129,7 +129,7 @@ function parseEventSpeaker(el, document, section, handleProduct) {
       container.append(
           WebImporter.DOMUtils.createTable([
               ['Section Metadata'],
-              ['style', 'Two-up'],
+              ['style', 'Two-up, resource-form'],
           ], document)
       )
       container.append(document.createElement('hr'))
