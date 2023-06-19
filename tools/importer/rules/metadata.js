@@ -71,7 +71,8 @@ export function parseCardMetadata(document, originalURL) {
 
   return { 
     block, 
-    tagsConverted: convertedTags.updated || false
+    tagsConverted: convertedTags.updated || false,
+    hasPrimaryTag: caasPrimaryTag !== 'caas:content-type/',
   };
 }
 
