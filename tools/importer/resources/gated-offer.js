@@ -66,12 +66,12 @@ const createMarquee = (main, document) => {
       // don't add images and videos
       // add only text and titles (there might ctas, those are links to forms that are handled by the faas-form logic)
       if (!img && !video) {
-        const titles = tmpel.querySelectorAll('.title');
+        const titles = tmpel.classList.contains('title') ? [tmpel] : tmpel.querySelectorAll('.title');
         titles.forEach ( hTitle => { 
           title += hTitle.textContent;
         })
 
-        const texts = tmpel.querySelectorAll('.text');
+        const texts = tmpel.classList.contains('text') ? [tmpel] : tmpel.querySelectorAll('.text');
         // we expect one or two texts
         if (texts.length > 2) {
           console.error(`Found a case with more than two texts in marquee (${texts.length})`);
@@ -84,7 +84,16 @@ const createMarquee = (main, document) => {
       }
     }
 
-    container.append(detail);
+    if (!detail) {
+      const textEl = marqueeDoc.querySelector('.text');
+      if (textEl) {
+        detail = textEl;
+      }
+    }
+
+    if (detail) {
+      container.append(detail);
+    }
     
     if (title) {
       const hTitle = document.createElement('H1')
@@ -281,23 +290,18 @@ export default {
     const formLink = await getFormLink(document, titleElement, new URL(params.originalURL));
 
     WebImporter.DOMUtils.remove(document, [
-      `header, footer, .faas-form-settings, .xf`]);
-
-    // Once we retrieved it, we can remove it
-    // This prevents having duplicates in the main content area
-    if (titleElement) {
-      titleElement.remove();
-    }
-
+      `header, footer, .faas-form-settings, .xf`,
+    ]);
+    
     const main = document.querySelector('main');
-
+    
     // Let's bake the page here
     const elementsToGo = [];
     elementsToGo.push(createMarquee(main, document));
-    elementsToGo.push('---');
+    elementsToGo.push(document.createElement('hr'));
     elementsToGo.push(createMainContent(main, document));
     elementsToGo.push(createFormTable(main, document, formLink));
-
+    
     // Now we add the "two up" section metadata table right after the form table
     const mainContentCells = [
       ['Section Metadata'],
@@ -305,22 +309,28 @@ export default {
     ];
 
     elementsToGo.push(WebImporter.DOMUtils.createTable(mainContentCells, document));
-
+    elementsToGo.push(document.createElement('hr'));
+    
     appendBackward(elementsToGo, main);
-
+    
     // Finally, let's add the Metadata table
 
-    main.append('---');
     main.append(parseMetadata(document));
-    const { block, tagsConverted } = parseCardMetadata(document);
+    const { block, tagsConverted, hasPrimaryTag } = parseCardMetadata(document);
     main.append(block);
     
     cleanupParagraphs(main);
 
     WebImporter.DOMUtils.remove(main, [
-    '.faasform',
-    'style',
+      '.faasform',
+      'style',
     ]);
+
+    // Once we retrieved it, we can remove it
+    // This prevents having duplicates in the main content area
+    if (titleElement) {
+      titleElement.remove();
+    }
     
     /** 
      * 
@@ -335,6 +345,9 @@ export default {
       element: main,
       path: path,
       report: {
+        'form name': formLink[0].textContent || '',
+        'form link': formLink[0]?.href || '',
+        'has primary tag': hasPrimaryTag ? 'yes' : 'no',
         'tags converted?': tagsConvertedString,
         'franklin url': '=HYPERLINK("https://main--bacom--adobecom.hlx.page/' + onedrive_subfolder + path + '")'
       },
@@ -375,10 +388,11 @@ function getFormTitleGatedOffers(document) {
   // Once we have access to the element look for cmp-text
   let innerElement = element.querySelector('.cmp-text');
 
-  // if it doesn't exist, then look at the cmp-text globally in the page
-  if (!innerElement){
-    innerElement = document.querySelector('.faasform').closest('.aem-Grid').querySelector('.cmp-text');
-  }
+  // // if it doesn't exist, then look at the cmp-text globally in the page
+  // if (!innerElement){
+  //   innerElement = document.querySelector('.faasform').closest('.aem-Grid').querySelector('.cmp-text');
+  //   console.log("Inner element: " + innerElement.outerHTML);
+  // }
 
   // if still cannot find it, look for a title and just pick that one (best guess)
   if (!innerElement) {
