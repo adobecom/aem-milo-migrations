@@ -39,3 +39,9 @@ Use the existing project template https://github.com/adobecom/milo-college
 * https://main--milo--adobecom.hlx.page/docs/library/blocks/z-pattern
 * https://main--milo--adobecom.hlx.page/docs/library/blocks/carousel
 * https://main--milo--adobecom.hlx.page/docs/library/blocks/accordion
+
+
+
+## Resources
+
+* Consonant design system : https://consonant.adobe.com/1975e5ba1/p/2055d7-consonant
