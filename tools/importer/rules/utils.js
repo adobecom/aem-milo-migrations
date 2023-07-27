@@ -46,17 +46,22 @@ export function getNSiblingsElements(el, n) {
 }
 
 export function getBGColor(el, document, recurse=true) {
-  let bgcolor = el.querySelector('div[data-bgcolor]')?.getAttribute('data-bgcolor');
+  let bgcolor = el.querySelector('div[data-hlx-imp-bgcolor]')?.getAttribute('data-hlx-imp-bgcolor');
 
-  // strategy 2
-  if (!bgcolor) {
-    el.querySelectorAll('div').forEach(d => {
-      const bg = document.defaultView.getComputedStyle(d).getPropertyValue('background-color');
-      if (bg != '') {
-        bgcolor = rgbToHex(bg);
-      }
-    });
+  if (bgcolor) {
+    return rgbToHex(bgcolor);
   }
+
+  // jsdom doesn't support well getComputedStyle
+  // // strategy 2
+  // if (!bgcolor) {
+  //   el.querySelectorAll('div').forEach(d => {
+  //     const bg = document.defaultView.getComputedStyle(d).getPropertyValue('background-color');
+  //     if (bg != '') {
+  //       bgcolor = rgbToHex(bg);
+  //     }
+  //   });
+  // }
 
   // strategy 3
   if (!bgcolor) {
@@ -70,18 +75,18 @@ export function getBGColor(el, document, recurse=true) {
     }
   }
 
-  // strategy 4: access parent's style property
-  // WARNING: this might end up looping into parent's search and pick up the wrong background
-  // WARNING: debug this function if you find unexpected results in background color's detection
-  if (!bgcolor && recurse) {
-    const parentEl = el.parentElement;
-    if (parentEl) {
-      const parentBGColor = getBGColor(parentEl, document);
-      if (parentBGColor) {
-        bgcolor = parentBGColor;
-      }
-    }
-  }
+  // // strategy 4: access parent's style property
+  // // WARNING: this might end up looping into parent's search and pick up the wrong background
+  // // WARNING: debug this function if you find unexpected results in background color's detection
+  // if (!bgcolor && recurse) {
+  //   const parentEl = el.parentElement;
+  //   if (parentEl) {
+  //     const parentBGColor = getBGColor(parentEl, document);
+  //     if (parentBGColor) {
+  //       bgcolor = parentBGColor;
+  //     }
+  //   }
+  // }
 
 
   return bgcolor;

@@ -1,82 +1,132 @@
+import { isLightColor } from '../utils.js';
 import { parseAccordion } from './accordion.js';
+import { extractBackground } from './bacom.js';
 import { parseTreeView } from './tree-view.js';
-import { findImageFromCSS, getNSiblingsElements } from './utils.js';
+import { crawlColorFromCSS, findImageFromCSS, getNSiblingsElements } from './utils.js';
 
 
-export function parseThreeUpLayoutsSectionMetadataGeneric(el, document, section) {
-  const els = getNSiblingsElements(el, (n) => n >= 3);
+// export function parseThreeUpLayoutsSectionMetadataGeneric(el, document, section) {
+//   const els = getNSiblingsElements(el, (n) => n >= 3);
 
-  const blocks = els.map(e => {
-    const img = findImageFromCSS(e, document);
-    if (img) {
-      e.prepend(img);
-    }
+//   const blocks = els.map(e => {
+//     const img = findImageFromCSS(e, document);
+//     if (img) {
+//       e.prepend(img);
+//     }
 
-    return WebImporter.DOMUtils.createTable([
-      ['text'],
-      [e],
-    ], document);
-  });
+//     return WebImporter.DOMUtils.createTable([
+//       ['text'],
+//       [e],
+//     ], document);
+//   });
 
-  const sectionMetadataEl = buildSectionMetadataLayoutGeneric(blocks, {
-    style: 'XL spacing, three up, grid-width-12',
-  }, document);
+//   // theme
+//   let theme = 'light'; // default, dark color + light background
+//   const fontColor = crawlColorFromCSS(el, document);
+//   if (fontColor) {
+//     if (isLightColor(fontColor)) {
+//       theme = 'dark'; // default, light color + dark background
+//     }
+//   }
 
-  // look for possible title and text before the "columns" elements
-  const beforeLayoutText = el.querySelector('.title, .text');
-  if (beforeLayoutText) {
-    sectionMetadataEl.prepend(WebImporter.DOMUtils.createTable([
-      ['text (center, xs spacing)'],
-      [beforeLayoutText.parentElement],
-    ], document));
-  }
+//   const options = {
+//     style: `${theme}, XL spacing, three up, grid-width-12`,
+//   }
 
-  return sectionMetadataEl;
+//   const bg = extractBackground(el, document);
+//   if (bg) {
+//     options.background = bg;
+//   }
+
+//   const sectionMetadataEl = buildSectionMetadataLayoutGeneric(blocks, options, document);
+
+//   // look for possible title and text before the "columns" elements
+//   const beforeLayoutText = el.querySelector('.title, .text');
+//   if (beforeLayoutText) {
+//     sectionMetadataEl.prepend(WebImporter.DOMUtils.createTable([
+//       ['text (center, xs spacing)'],
+//       [beforeLayoutText.parentElement],
+//     ], document));
+//   }
+
+//   return sectionMetadataEl;
+// }
+
+// export function parseFourUpLayoutsSectionMetadataGeneric(el, document, section) {
+//   const els = getNSiblingsElements(el, (n) => n >= 4);
+
+//   const blocks = els.map(e => {
+//     const img = findImageFromCSS(e, document);
+//     if (img) {
+//       e.prepend(img);
+//     }
+
+//     return WebImporter.DOMUtils.createTable([
+//       ['text'],
+//       [e],
+//     ], document);
+//   });
+
+//   // theme
+//   let theme = 'light'; // default, dark color + light background
+//   const fontColor = crawlColorFromCSS(el, document);
+//   if (fontColor) {
+//     if (isLightColor(fontColor)) {
+//       theme = 'dark'; // default, light color + dark background
+//     }
+//   }
+
+//   const options = {
+//     style: `${theme}, XL spacing, four up, grid-width-12`,
+//   }
+
+//   const bg = extractBackground(el, document);
+//   if (bg) {
+//     options.background = bg;
+//   }
+
+//   const sectionMetadataEl = buildSectionMetadataLayoutGeneric(blocks, options, document);
+
+//   // look for possible title and text before the "columns" elements
+//   const beforeLayoutText = el.querySelector('.title, .text');
+//   if (beforeLayoutText) {
+//     sectionMetadataEl.prepend(WebImporter.DOMUtils.createTable([
+//       ['text (center, xs spacing)'],
+//       [beforeLayoutText.parentElement],
+//     ], document));
+//   }
+
+//   return sectionMetadataEl;
+// }
+
+export function parseTwoUpLayoutsSectionMetadata(el, document, section, elementType = 'text') {
+  return parseNUpLayoutsSectionMetadata(el, document, section, 2, elementType);
 }
 
-export function parseFourUpLayoutsSectionMetadataGeneric(el, document, section) {
-  const els = getNSiblingsElements(el, (n) => n >= 4);
-
-  const blocks = els.map(e => {
-    const img = findImageFromCSS(e, document);
-    if (img) {
-      e.prepend(img);
-    }
-
-    return WebImporter.DOMUtils.createTable([
-      ['text'],
-      [e],
-    ], document);
-  });
-
-  const sectionMetadataEl = buildSectionMetadataLayoutGeneric(blocks, {
-    style: 'XL spacing, four up, grid-width-12',
-  }, document);
-
-  // look for possible title and text before the "columns" elements
-  const beforeLayoutText = el.querySelector('.title, .text');
-  if (beforeLayoutText) {
-    sectionMetadataEl.prepend(WebImporter.DOMUtils.createTable([
-      ['text (center, xs spacing)'],
-      [beforeLayoutText.parentElement],
-    ], document));
-  }
-
-  return sectionMetadataEl;
+export function parseThreeUpLayoutsSectionMetadataGeneric(el, document, section, elementType = 'text') {
+  return parseNUpLayoutsSectionMetadata(el, document, section, 3, elementType);
 }
 
-export function parseTwoUpLayoutsSectionMetadata(el, document, section) {
-  let els = getNSiblingsElements(el, (n) => n >= 2);
+export function parseFourUpLayoutsSectionMetadataGeneric(el, document, section, elementType = 'text') {
+  return parseNUpLayoutsSectionMetadata(el, document, section, 4, elementType);
+}
+
+export function parseFiveUpLayoutsSectionMetadataGeneric(el, document, section, elementType = 'text') {
+  return parseNUpLayoutsSectionMetadata(el, document, section, 5, elementType);
+}
+
+export function parseNUpLayoutsSectionMetadata(el, document, section, elNum = 2, elementType = 'text') {
+    let els = getNSiblingsElements(el, (n) => n >= elNum);
 
   let titleLayoutEl = null;
   let isPost = false
-  if (els.length === 2 && els[1].textContent.replaceAll('\n','').trim().length < 100) {
+  if (els.length === elNum && els[1].textContent.replaceAll('\n','').trim().length < 100) {
     titleLayoutEl = els[1];
-    els = getNSiblingsElements(els[0], (n) => n >= 2);
+    els = getNSiblingsElements(els[0], (n) => n >= elNum);
     isPost = true
-  } else if(els.length === 2 && els[0].textContent.replaceAll('\n','').trim().length < 100) {
+  } else if(els.length === elNum && els[0].textContent.replaceAll('\n','').trim().length < 100) {
     titleLayoutEl = els[0];
-    els = getNSiblingsElements(els[1], (n) => n >= 2);
+    els = getNSiblingsElements(els[1], (n) => n >= elNum);
   }
 
   const blocks = els.map(e => {
@@ -86,14 +136,37 @@ export function parseTwoUpLayoutsSectionMetadata(el, document, section) {
     }
 
     return WebImporter.DOMUtils.createTable([
-      ['text'],
+      [elementType],
       [e],
     ], document);
   });
 
-  const layoutEl = buildSectionMetadataLayoutGeneric(blocks, {
-    style: 'XL spacing, two up, grid-width-12',
-  }, document);
+  // theme
+  let theme = 'light'; // default, dark color + light background
+  const fontColor = crawlColorFromCSS(el, document);
+  if (fontColor) {
+    if (isLightColor(fontColor)) {
+      theme = 'dark'; // default, light color + dark background
+    }
+  }
+
+  const nUpStylesMap = {
+    2: 'two up',
+    3: 'three up',
+    4: 'four up',
+    5: 'five up',
+  };
+
+  const options = {
+    style: `${theme}, XL spacing, ${nUpStylesMap[elNum]}, grid-width-12`,
+  }
+
+  const bg = extractBackground(el, document);
+  if (bg) {
+    options.background = bg;
+  }
+
+  const layoutEl = buildSectionMetadataLayoutGeneric(blocks, options, document);
 
   if (titleLayoutEl) {
     const titleTable = WebImporter.DOMUtils.createTable([
@@ -131,10 +204,25 @@ export function parseTwoUpSectionMetadataWithTreeview(el, document, section) {
     ], document);
   });
   
+  // theme
+  let theme = 'light'; // default, dark color + light background
+  const fontColor = crawlColorFromCSS(el, document);
+  if (fontColor) {
+    if (isLightColor(fontColor)) {
+      theme = 'dark'; // default, light color + dark background
+    }
+  }
 
-  return buildSectionMetadataLayoutGeneric(blocks, {
-    style: 'two-up, grid-template-columns-1-3, l spacing',
-  }, document);
+  const options = {
+    style: `${theme}, two-up, grid-template-columns-1-3, l spacing`,
+  }
+
+  const bg = extractBackground(el, document);
+  if (bg) {
+    options.background = bg;
+  }
+
+  return buildSectionMetadataLayoutGeneric(blocks, options, document);
 }
 
 
@@ -174,9 +262,104 @@ export function parseTwoUpLayoutsSectionMetadataWithCardHor(el, document, sectio
     ], document);
   });
 
-  const layoutEl = buildSectionMetadataLayoutGeneric(blocks, {
-    style: 'XL spacing, two up, grid-width-12',
-  }, document);
+  // theme
+  let theme = 'light'; // default, dark color + light background
+  const fontColor = crawlColorFromCSS(el, document);
+  if (fontColor) {
+    if (isLightColor(fontColor)) {
+      theme = 'dark'; // default, light color + dark background
+    }
+  }
+  
+  const options = {
+    style: `${theme}, XL spacing, two up, grid-width-12`,
+  }
+
+  const bg = extractBackground(el, document);
+  if (bg) {
+    options.background = bg;
+  }
+
+  const layoutEl = buildSectionMetadataLayoutGeneric(blocks, options, document);
+
+  if (titleLayoutEl) {
+    const titleTable = WebImporter.DOMUtils.createTable([
+      ['text (center, xs spacing)'],
+      [titleLayoutEl],
+    ], document)
+
+    if(isPost){
+      layoutEl.append(titleTable)
+    } else {
+      layoutEl.prepend(titleTable)
+    }
+  }
+
+  return layoutEl;
+}
+
+export function parseTwoUpLayoutGrid_1_2_SectionMetadata(el, document, section, elementType = 'text') {
+  let els = getNSiblingsElements(el, (n) => n >= 2);
+
+  let titleLayoutEl = null;
+  let isPost = false
+
+  if (els.length === 2) {
+    els.forEach(e => {
+      e.querySelectorAll('style').forEach(s => s.remove());
+    });
+    const els0Textcontent = els[0].textContent.replaceAll('\n','').trim();
+    const els1Textcontent = els[1].textContent.replaceAll('\n','').trim();
+    if (els0Textcontent.length > 0 && els0Textcontent.length < 100) {
+      titleLayoutEl = els[0];
+      els = getNSiblingsElements(els[1], (n) => n >= 2);
+    } else if (els1Textcontent.length > 0 && els1Textcontent.length < 100) {
+      titleLayoutEl = els[1];
+      els = getNSiblingsElements(els[0], (n) => n >= 2);
+      isPost = true
+      }
+  }
+
+  // if (els.length === 2 && els[1].textContent.replaceAll('\n','').trim().length < 100) {
+  //   titleLayoutEl = els[1];
+  //   els = getNSiblingsElements(els[0], (n) => n >= 2);
+  //   isPost = true
+  // } else if(els.length === 2 && els[0].textContent.replaceAll('\n','').trim().length < 100) {
+  //   titleLayoutEl = els[0];
+  //   els = getNSiblingsElements(els[1], (n) => n >= 2);
+  // }
+
+  const blocks = els.map(e => {
+    const img = findImageFromCSS(e, document);
+    if (img) {
+      e.prepend(img);
+    }
+
+    return WebImporter.DOMUtils.createTable([
+      [elementType],
+      [e],
+    ], document);
+  });
+
+  // theme
+  let theme = 'light'; // default, dark color + light background
+  const fontColor = crawlColorFromCSS(el, document);
+  if (fontColor) {
+    if (isLightColor(fontColor)) {
+      theme = 'dark'; // default, light color + dark background
+    }
+  }
+
+  const options = {
+    style: `${theme}, XL spacing, two up, grid-template-columns-1-2`,
+  }
+
+  const bg = extractBackground(el, document);
+  if (bg) {
+    options.background = bg;
+  }
+
+  const layoutEl = buildSectionMetadataLayoutGeneric(blocks, options, document);
 
   if (titleLayoutEl) {
     const titleTable = WebImporter.DOMUtils.createTable([
@@ -236,9 +419,52 @@ export function parseSectionMetadataGenericCentered(el, document, section) {
   el.querySelectorAll('hr, style').forEach((e) => e.remove());
   const container = document.createElement('div');
   container.innerHTML = el.outerHTML;
-  return buildSectionMetadataLayoutGeneric([container], {
-    style: 'XL spacing, center',
-  }, document);
+
+  // theme
+  let theme = 'light'; // default, dark color + light background
+  const fontColor = crawlColorFromCSS(el, document);
+  if (fontColor) {
+    if (isLightColor(fontColor)) {
+      theme = 'dark'; // default, light color + dark background
+    }
+  }
+
+  const options = {
+    style: `${theme}, XL spacing, center`,
+  }
+
+  const bg = extractBackground(el, document);
+  if (bg) {
+    options.background = bg;
+  }
+
+  return buildSectionMetadataLayoutGeneric([container], options, document);
+}
+
+export function parseSectionMetadataGenericRaw(el, document, section) {
+  el.querySelectorAll('hr, style, script').forEach((e) => e.remove());
+  const container = document.createElement('div');
+  container.innerHTML = el.outerHTML;
+
+  // theme
+  let theme = 'light'; // default, dark color + light background
+  const fontColor = crawlColorFromCSS(el, document);
+  if (fontColor) {
+    if (isLightColor(fontColor)) {
+      theme = 'dark'; // default, light color + dark background
+    }
+  }
+
+  const options = {
+    style: theme,
+  }
+
+  const bg = extractBackground(el, document);
+  if (bg) {
+    options.background = bg;
+  }
+
+  return buildSectionMetadataLayoutGeneric([container], options, document);
 }
 
 export function parseMultipleSectionMetadataTwoUpGeneric(el, document, section) {
@@ -264,9 +490,28 @@ export function parseMultipleSectionMetadataTwoUpGeneric(el, document, section) 
         ], document);
       }
     });
-    sectionMetadata.append(buildSectionMetadataLayoutGeneric(blocks, {
-      style: 'XL spacing, two up',
-    }, document));
+
+    // theme
+    let theme = 'light'; // default, dark color + light background
+    const fontColor = crawlColorFromCSS(el, document);
+    if (fontColor) {
+      if (isLightColor(fontColor)) {
+        theme = 'dark'; // default, light color + dark background
+      }
+    }
+
+    const options = {
+      style: `${theme}, XL spacing, two up`,
+    }
+
+    const bg = extractBackground(el, document);
+    if (bg) {
+      options.background = bg;
+    }
+
+    const smEl = buildSectionMetadataLayoutGeneric(blocks, options, document);
+
+    sectionMetadata.append(smEl);
   }
 
   return sectionMetadata;

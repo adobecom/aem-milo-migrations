@@ -1,3 +1,5 @@
+//'use strict'
+
 /*
  * Copyright 2022 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -25,8 +27,11 @@ import {
   parseThreeUpLayoutsSectionMetadataGeneric,
   parseFourUpLayoutsSectionMetadataGeneric,
   parseTwoUpLayoutsSectionMetadataWithCardHor,
+  parseFiveUpLayoutsSectionMetadataGeneric,
   parseSectionMetadataGenericCentered,
+  parseSectionMetadataGenericRaw,
   parseMultipleSectionMetadataTwoUpGeneric,
+  parseTwoUpLayoutGrid_1_2_SectionMetadata,
 } from './rules/section-metadata.js';
 import { parseUnknown } from './rules/unknown.js';
 import { getElementByXpath } from './utils.js';
@@ -49,39 +54,48 @@ import { parseTableGeneric } from './rules/table.js';
 import { parseBacomProductsPageTemplateKMultiBlocksSection } from './rules/bacom-products-template-k.js';
 
 
+function nUpElementTypeVariantParserLayoutSectionMetadata(elementType = 'text', parserFn) {
+  return function parser(el, document, section) {
+    return parserFn(el, document, section, elementType);
+  };
+}
 
 /*
  * mapping between the section type and the parsing function
  */
 
 const sectionsRulesMap = {
-  'unknown': parseUnknown,
-  'marquee': parseMarquee,
-  'text': parseText,
-  'fragment': parseFragment,
-  'z-pattern': parseZPattern,
-  'z-pattern-single': parseZPattern,
   'aside': parseAside,
-  'tree-view-two-up-section': parseTwoUpSectionMetadataWithTreeview,
-  'media': parseMedia,
-  'two-up': parseTwoUpLayoutsSectionMetadata,
-  'three-up': parseThreeUpLayoutsSectionMetadataGeneric,
-  'see-what-makes-it-work': parse_seeWhatMakesItWork_Section,
+  'bacom-digital-trends-three-up-charts': parseBacomDigitalTrendsThreeUpCharts,
   'caas': parseCAASContent,
-  'table-of-contents': parseTableOfContents,
   'card-hor-two-up-section': parseTwoUpLayoutsSectionMetadataWithCardHor,
+  'faas-form': parse_faasForm,
+  'five-up': parseFiveUpLayoutsSectionMetadataGeneric,
+  'four-up': parseFourUpLayoutsSectionMetadataGeneric,
   'fragment-products-related-content-cards': parseFragment_products_related_content_cards,
   'fragment-products-request-demo-marquee': parseFragment_fragment_products_request_demo_marquee,
+  'fragment': parseFragment,
   'marquee-with-treeview': parse_marquee_with_treeview,
-  'faas-form': parse_faasForm,
-  'four-up': parseFourUpLayoutsSectionMetadataGeneric,
-  'table': parseTableGeneric,
-  'single-comparison-table': parseSingleComparisonTable,
+  'marquee': parseMarquee,
+  'media': parseMedia,
   'multiple-comparison-table': parseMultipleComparisonTable,
-  'section-center': parseSectionMetadataGenericCentered,
   'multiple-section-metadata': parseMultipleSectionMetadataTwoUpGeneric,
   'products-pages-template-k-multi-block-section': parseBacomProductsPageTemplateKMultiBlocksSection,
-  'bacom-digital-trends-three-up-charts': parseBacomDigitalTrendsThreeUpCharts,
+  'section-raw': parseSectionMetadataGenericRaw,
+  'section-center': parseSectionMetadataGenericCentered,
+  'see-what-makes-it-work': parse_seeWhatMakesItWork_Section,
+  'single-comparison-table': parseSingleComparisonTable,
+  'table-of-contents': parseTableOfContents,
+  'table': parseTableGeneric,
+  'text': parseText,
+  'three-up': parseThreeUpLayoutsSectionMetadataGeneric,
+  'tree-view-two-up-section': parseTwoUpSectionMetadataWithTreeview,
+  'two-up': parseTwoUpLayoutsSectionMetadata,
+  'two-up-cards': nUpElementTypeVariantParserLayoutSectionMetadata('card', parseTwoUpLayoutsSectionMetadata),
+  'two-up-grid-template-columns-1-2': parseTwoUpLayoutGrid_1_2_SectionMetadata,
+  'unknown': parseUnknown,
+  'z-pattern-single': parseZPattern,
+  'z-pattern': parseZPattern,
 };
 
 const sectionsToReport = [
@@ -126,6 +140,11 @@ export default {
         if (bgImage && bgImage !== 'none') {
           div.setAttribute('data-hlx-background-image', bgImage);
           console.log('bgImage', bgImage);
+        }
+        const bgColor = window.getComputedStyle(div).getPropertyValue('background-color');
+        if (bgColor && bgColor !== 'rgb(0, 0, 0)' && bgColor !== 'rgba(0, 0, 0, 0)') {
+          div.setAttribute('data-hlx-imp-bgcolor', bgColor);
+          console.log('data-hlx-imp-bgcolor', bgColor);
         }
         const color = window.getComputedStyle(div).getPropertyValue('color');
         if (color && color !== 'rgb(0, 0, 0)') {
@@ -292,6 +311,11 @@ export default {
       const t = a.textContent;
       a.querySelectorAll('*').forEach((n) => n.remove());
       a.textContent = t;
+
+      // make all links absolute
+      if (a.href) {
+        a.href = new URL(a.href, params.originalURL).href;
+      }
     });
 
     // parse icons

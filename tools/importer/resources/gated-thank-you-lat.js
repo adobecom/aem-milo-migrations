@@ -43,12 +43,21 @@ const getResource = (document, originalURL) => {
   // video
   const videoIframe = document.querySelector('.video iframe, .modal iframe');
   if (videoIframe) {
-    return videoIframe.getAttribute('data-video-src') || videoIframe.src;
+    const link = videoIframe.getAttribute('data-video-src') || videoIframe.src;
+    return {
+      el: link,
+      text: link,
+    };
   }
   const videoLink = document.querySelector('.dexter-Cta a[href*="tv.adobe.com"]');
   if (videoLink) {
-    return videoLink.href;
+    return {
+      el: videoLink.href,
+      text: videoLink.href,
+    };
   }
+
+  // slides deck link
 
   // pdf link
   let pdfLink = document.querySelector('.dexter-Cta a[href*=".pdf"]');
@@ -71,7 +80,10 @@ const getResource = (document, originalURL) => {
     console.warn('No pdf link found, fallback to whatever link we find');
     const link = document.querySelector('.dexter-Cta a[href]');
     if (link) {
-      return link;
+      return {
+        el: link,
+        text: link.textContent,
+      };
     }
     return null;
   }
@@ -83,6 +95,7 @@ const getResource = (document, originalURL) => {
     pdfLink.href = originalURL.origin + u.pathname;
   }
 
+  const pdfLinkTextBkp = pdfLink.textContent;
   pdfLink.textContent = decodeURI(pdfLink.href);
   
   // For cleanup (to avoid a weird bug from original a link.)
@@ -91,7 +104,10 @@ const getResource = (document, originalURL) => {
   newPdfLink.textContent = pdfLink.textContent;
   pdfLink.remove();
 
-  return newPdfLink;
+  return {
+    el: newPdfLink,
+    text: pdfLinkTextBkp,
+  };
 }
 
 export default {
@@ -135,27 +151,41 @@ export default {
 
     const main = document.createElement('div');
     const flexContainers = document.querySelectorAll('.dexter-FlexContainer');
+    let title = null;
     for (const item of flexContainers) {
       if(item.querySelector('.cmp-title, .cmp-text, a')) {
         const texts = document.createElement('div')
         item.querySelectorAll('.cmp-title, .cmp-text').forEach(elem => texts.append(elem))
-        if (!resource) {
+        if (!resource.el) {
           const button = document.querySelector('a[href*="gartner.com/"], a[href*="forrester.com/"]');
-          const str = document.createElement('B');
-          str.append(button);
-          texts.append(str)
+          if (button) {
+            const str = document.createElement('B');
+            str.append(button);
+            texts.append(str);
+          }
         }
-        main.append(WebImporter.DOMUtils.createTable([
-          ['text (large)'],
-          [texts],
-        ], document));
-        break;
+        if (texts.textContent.length > 0 && !texts.textContent.toLowerCase().includes('materials are ready')) {
+          title = texts.textContent;
+          break;
+        }
       }
+    }
+    if (!title && resource.text) {
+      title = resource.text;
+    }
+
+    if (title) {
+      const h1TitleEl = document.createElement('h1');
+      h1TitleEl.textContent = title;
+      main.append(WebImporter.DOMUtils.createTable([
+        ['text (large)'],
+        [h1TitleEl],
+      ], document));
     }
 
     // Add Resource (pdf, video, etc.) to output
-    if (resource) {
-      main.append(resource);
+    if (resource.el) {
+      main.append(resource.el);
     }
 
     main.append(WebImporter.DOMUtils.createTable([

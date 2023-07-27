@@ -380,7 +380,7 @@ export async function parseBacomDigitalTrendsThreeUpCharts(el, document, section
   return container;
 }
 
-export function extractBackground(el, document, defaultBackground = '') {
+export function extractBackground(el, document, defaultBackground = null) {
   let background = WebImporter.DOMUtils.getImgFromBackground(el, document);
   
   // strategy 2
@@ -389,7 +389,7 @@ export function extractBackground(el, document, defaultBackground = '') {
       // do not extract background image of a video
       if (!d.querySelector('video')) {
         const bg = document.defaultView.getComputedStyle(d).getPropertyValue('background-image');
-        if (bg !== '') {
+        if (bg !== '' && !bg.includes('none')) {
           background = WebImporter.DOMUtils.getImgFromBackground(d, document);
         }
       }
@@ -401,11 +401,8 @@ export function extractBackground(el, document, defaultBackground = '') {
     const bgImage = el.querySelector('[data-hlx-background-image]')?.dataset?.hlxBackgroundImage;
     if (bgImage) {
       if (bgImage.trim().startsWith('url')) {
-        const url = WebImporter.DOMUtils.getImgFromBackground(el.querySelector('[data-hlx-background-image]'), document);
-        if (url && typeof(url) == "string" && url.toLowerCase() !== 'none') {
-          const src = url.replace(/url\(/gm, '').replace(/'/gm, '').replace(/\)/gm, '');
-          img = document.createElement('img');
-          img.src = src;
+        const img = WebImporter.DOMUtils.getImgFromBackground(el.querySelector('[data-hlx-background-image]'), document);
+        if (img) {
           background = img;
         }
       } else if (bgImage.trim().startsWith('linear-gradient')) {

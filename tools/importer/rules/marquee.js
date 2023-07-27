@@ -89,7 +89,7 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
   */
   let isVideo = false
 
-  let resource = document.createElement('div');
+  let resource = document.createElement('span');
   const videoText = videoElem.querySelector('.cmp-text')
   if (videoElem != marqueeDoc && videoText) {
     const videoTextH3 = document.createElement('h3')

@@ -14,7 +14,7 @@ export default {
  
     const faasFormLink = document.querySelector('a[href*=faas], div.faas, faas-form-settings');
     const hasFaasForm = faasFormLink ? true : false;
-    const hasResourceFormStyle = document.querySelector('.resource-form') ? true : false;
+    const hasResourceFormStyle = [...document.querySelectorAll('.section-metadata')].some((el) => { return el.textContent.includes('resource-form') }) ? true : false;
     const isAFragment = params.originalURL.includes('/fragments/');
     let faasSectionDataOK = 'not relevant';
     if (!isAFragment && hasFaasForm) {
