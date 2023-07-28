@@ -380,7 +380,7 @@ export async function parseBacomDigitalTrendsThreeUpCharts(el, document, section
   return container;
 }
 
-export function extractBackground(el, document, defaultBackground = null) {
+export function extractBackground(el, document, defaultBackground = '') {
   let background = WebImporter.DOMUtils.getImgFromBackground(el, document);
   
   // strategy 2

@@ -176,3 +176,27 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
     [container, (resource || '')],
   ], document);
 }
+
+export async function parseMarqueeSimple(el, document, section, backgroundColor = '') {
+
+  let marqueeDoc = el
+  let videoElem = marqueeDoc
+  
+  marqueeDoc.querySelectorAll('.video-Wrapper, style, script, hr').forEach(e => e.remove());
+
+  const container = marqueeDoc.cloneNode(true); 
+
+  let theme = 'light'; // default, dark color + light background
+  const fontColor = crawlColorFromCSS(el, document);
+  if (fontColor) {
+    if (isLightColor(fontColor)) {
+      theme = 'dark'; // default, light color + dark background
+    }
+  }
+
+  return WebImporter.DOMUtils.createTable([
+    [`marquee (small, ${theme})`],
+    [extractBackground(marqueeDoc, document)],
+    [container, ''],
+  ], document);
+}

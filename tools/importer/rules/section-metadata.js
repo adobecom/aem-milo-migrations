@@ -116,7 +116,7 @@ export function parseFiveUpLayoutsSectionMetadataGeneric(el, document, section, 
 }
 
 export function parseNUpLayoutsSectionMetadata(el, document, section, elNum = 2, elementType = 'text') {
-    let els = getNSiblingsElements(el, (n) => n >= elNum);
+  let els = getNSiblingsElements(el, (n) => n >= elNum);
 
   let titleLayoutEl = null;
   let isPost = false
@@ -129,7 +129,8 @@ export function parseNUpLayoutsSectionMetadata(el, document, section, elNum = 2,
     els = getNSiblingsElements(els[1], (n) => n >= elNum);
   }
 
-  const blocks = els.map(e => {
+  const cloneEls = els.map(e => e.cloneNode(true));
+  const blocks = cloneEls.map(e => {
     const img = findImageFromCSS(e, document);
     if (img) {
       e.prepend(img);
@@ -162,7 +163,7 @@ export function parseNUpLayoutsSectionMetadata(el, document, section, elNum = 2,
   }
 
   const bg = extractBackground(el, document);
-  if (bg) {
+  if (bg !== '') {
     options.background = bg;
   }
 
@@ -178,6 +179,12 @@ export function parseNUpLayoutsSectionMetadata(el, document, section, elNum = 2,
       layoutEl.append(titleTable)
     } else {
       layoutEl.prepend(titleTable)
+    }
+  } else {
+    els.forEach(e => { e.remove() });
+    el.querySelectorAll('script, style').forEach((e) => e.remove() );
+    if (el.textContent.replaceAll('\n','').trim().length > 0) {
+      layoutEl.prepend(el.cloneNode(true));
     }
   }
 
@@ -218,7 +225,7 @@ export function parseTwoUpSectionMetadataWithTreeview(el, document, section) {
   }
 
   const bg = extractBackground(el, document);
-  if (bg) {
+  if (bg !== '') {
     options.background = bg;
   }
 
@@ -276,7 +283,7 @@ export function parseTwoUpLayoutsSectionMetadataWithCardHor(el, document, sectio
   }
 
   const bg = extractBackground(el, document);
-  if (bg) {
+  if (bg !== '') {
     options.background = bg;
   }
 
@@ -355,7 +362,7 @@ export function parseTwoUpLayoutGrid_1_2_SectionMetadata(el, document, section, 
   }
 
   const bg = extractBackground(el, document);
-  if (bg) {
+  if (bg !== '') {
     options.background = bg;
   }
 
@@ -434,7 +441,7 @@ export function parseSectionMetadataGenericCentered(el, document, section) {
   }
 
   const bg = extractBackground(el, document);
-  if (bg) {
+  if (bg !== '') {
     options.background = bg;
   }
 
@@ -460,7 +467,7 @@ export function parseSectionMetadataGenericRaw(el, document, section) {
   }
 
   const bg = extractBackground(el, document);
-  if (bg) {
+  if (bg !== '') {
     options.background = bg;
   }
 
@@ -505,7 +512,7 @@ export function parseMultipleSectionMetadataTwoUpGeneric(el, document, section) 
     }
 
     const bg = extractBackground(el, document);
-    if (bg) {
+    if (bg !== '') {
       options.background = bg;
     }
 

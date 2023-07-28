@@ -13,13 +13,13 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 import { getSectionsData } from './rules/sections-data.js';
-import { parseMarquee } from './rules/marquee.js';
+import { parseMarquee, parseMarqueeSimple } from './rules/marquee.js';
 import { parseText } from './rules/text.js';
 import { parseFragment } from './rules/fragment.js';
 import { parseCardMetadata, parseMetadata } from './rules/metadata.js';
 import { parseCAASContent } from './rules/caas.js';
 import { parseZPattern } from './rules/z-pattern.js';
-import { parseAside } from './rules/aside.js';
+import { parseAside, parseAsideInline, parseAsideNotificationCenter } from './rules/aside.js';
 import { generateDocumentPath, setGlobals } from './utils.js';
 import { parseBreadcrumb } from './rules/breadcrumb.js';
 import {
@@ -51,7 +51,7 @@ import {
 import { parse_faasForm } from './rules/form-link.js';
 import { waitForFaasForm } from './rules/handleFaasForm.js';
 import { parseTableGeneric } from './rules/table.js';
-import { parseBacomProductsPageTemplateKMultiBlocksSection } from './rules/bacom-products-template-k.js';
+// import { parseBacomProductsPageTemplateKMultiBlocksSection } from './rules/bacom-products-template-k.js';
 
 
 function nUpElementTypeVariantParserLayoutSectionMetadata(elementType = 'text', parserFn) {
@@ -66,6 +66,8 @@ function nUpElementTypeVariantParserLayoutSectionMetadata(elementType = 'text', 
 
 const sectionsRulesMap = {
   'aside': parseAside,
+  'aside-inline': parseAsideInline,
+  'aside-notification-center': parseAsideNotificationCenter,
   'bacom-digital-trends-three-up-charts': parseBacomDigitalTrendsThreeUpCharts,
   'caas': parseCAASContent,
   'card-hor-two-up-section': parseTwoUpLayoutsSectionMetadataWithCardHor,
@@ -77,10 +79,11 @@ const sectionsRulesMap = {
   'fragment': parseFragment,
   'marquee-with-treeview': parse_marquee_with_treeview,
   'marquee': parseMarquee,
+  'marquee-simple': parseMarqueeSimple,
   'media': parseMedia,
   'multiple-comparison-table': parseMultipleComparisonTable,
   'multiple-section-metadata': parseMultipleSectionMetadataTwoUpGeneric,
-  'products-pages-template-k-multi-block-section': parseBacomProductsPageTemplateKMultiBlocksSection,
+  // 'products-pages-template-k-multi-block-section': parseBacomProductsPageTemplateKMultiBlocksSection,
   'section-raw': parseSectionMetadataGenericRaw,
   'section-center': parseSectionMetadataGenericCentered,
   'see-what-makes-it-work': parse_seeWhatMakesItWork_Section,
@@ -89,6 +92,7 @@ const sectionsRulesMap = {
   'table': parseTableGeneric,
   'text': parseText,
   'three-up': parseThreeUpLayoutsSectionMetadataGeneric,
+  'three-up-cards': nUpElementTypeVariantParserLayoutSectionMetadata('card', parseThreeUpLayoutsSectionMetadataGeneric),
   'tree-view-two-up-section': parseTwoUpSectionMetadataWithTreeview,
   'two-up': parseTwoUpLayoutsSectionMetadata,
   'two-up-cards': nUpElementTypeVariantParserLayoutSectionMetadata('card', parseTwoUpLayoutsSectionMetadata),
@@ -201,9 +205,11 @@ export default {
           continue;
         }
 
-        WebImporter.DOMUtils.remove(el, [
-          '.dexter-Spacer',
-        ]);
+        if (el) {
+          WebImporter.DOMUtils.remove(el, [
+            '.dexter-Spacer',
+          ]);
+        }
 
         // report special sections
         if (sectionsToReport.includes(section.block.type)) {
