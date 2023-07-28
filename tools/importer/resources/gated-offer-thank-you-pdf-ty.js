@@ -156,38 +156,104 @@ export default {
      */
 
     const main = document.createElement('div');
-    const flexContainers = document.querySelectorAll('.dexter-FlexContainer');
-    let title = null;
-    for (const item of flexContainers) {
-      if(item.querySelector('.cmp-title, .cmp-text, a')) {
-        const texts = document.createElement('div')
-        item.querySelectorAll('.cmp-title, .cmp-text').forEach(elem => texts.append(elem))
-        if (!resource.el) {
-          const button = document.querySelector('a[href*="gartner.com/"], a[href*="forrester.com/"]');
-          if (button) {
-            const str = document.createElement('B');
-            str.append(button);
-            texts.append(str);
-          }
-        }
-        if (texts.textContent.length > 0 && !texts.textContent.toLowerCase().includes('materials are ready')) {
-          title = texts.textContent;
-          break;
+    // const flexContainers = document.querySelectorAll('.dexter-FlexContainer');
+    // let title = null;
+    // for (const item of flexContainers) {
+    //   if(item.querySelector('.cmp-title')) {
+    //     const texts = document.createElement('div')
+    //     item.querySelectorAll('.cmp-title').forEach(elem => texts.append(elem))
+    //     if (!resource.el) {
+    //       const button = document.querySelector('a[href*="gartner.com/"], a[href*="forrester.com/"]');
+    //       if (button) {
+    //         const str = document.createElement('B');
+    //         str.append(button);
+    //         texts.append(str);
+    //       }
+    //     }
+    //     if (texts.textContent.length > 0 && !texts.textContent.toLowerCase().includes('materials are ready')) {
+    //       title = texts.textContent;
+    //       break;
+    //     }
+    //   }
+    // }
+    // if (!title && resource.text) {
+    //   title = resource.text;
+    // }
+
+    document.querySelectorAll('style, script').forEach((el) => el.remove());
+
+    const header = document.createElement('div');
+
+    if (u.pathname.includes('/sdk/')) {
+      const eyebrowEl = document.createElement('div');
+      eyebrowEl.textContent = document.querySelector('.dexter-FlexContainer .cmp-text').textContent.toUpperCase();
+
+      const titleEl = document.createElement('h1');
+      titleEl.textContent = document.querySelector('.dexter-FlexContainer .cmp-title').textContent;
+
+      header.append(eyebrowEl);
+      header.append(titleEl);
+    } else {
+      // title
+      let title = document.createElement('h1');
+      
+      // strategy 1
+      if (document.querySelector('.cmp-title')) {
+        title.textContent = document.querySelector('.cmp-title').textContent.trim();
+      }
+
+      if (title.textContent.length === 0 && document.querySelector('.dexter-FlexContainer')) {
+        title.textContent = document.querySelector('.dexter-FlexContainer').textContent.trim();
+      }
+
+      if (title) {
+        header.append(title);
+      }
+
+      // eyebrow, extracted from url path
+      let eyebrowText = null;
+
+      // strategy 1
+      if (document.querySelector('.dexter-FlexContainer .cmp-text')) {
+        const t = document.querySelector('.dexter-FlexContainer .cmp-text').textContent.trim().toUpperCase();
+        if (t.length > 0 && t.length <= 11 && t !== title.textContent) {
+          eyebrowText = t;
         }
       }
-    }
-    if (!title && resource.text) {
-      title = resource.text;
+
+      // strategy 2
+      if (!eyebrowText) {
+        const paths = u.pathname.split('/');
+        const t = paths[3].replace(/[sS]$/g, '').toUpperCase();
+        if (t.length > 0 && t.length <= 11 && t !== title.textContent) {
+          eyebrowText = t;
+        }
+      }
+
+      // if (header.textContent.indexOf(eyebrow.textContent) === 0) {
+      //   header.textContent = header.textContent.replace(eyebrow.textContent, '');
+      // }
+
+      // strategy 3
+      if (!eyebrowText) {
+        eyebrowText = 'REPORT';
+      }
+
+      const eyebrowEl = document.createElement('div');
+      eyebrowEl.textContent = eyebrowText;
+
+      header.prepend(eyebrowEl);
+
     }
 
-    if (title) {
-      const h1TitleEl = document.createElement('h1');
-      h1TitleEl.textContent = title;
+    // if (title) {
+    //   const h1TitleEl = document.createElement('h1');
+    //   h1TitleEl.textContent = title;
       main.append(WebImporter.DOMUtils.createTable([
         ['text (large)'],
-        [h1TitleEl],
+        [header],
       ], document));
-    }
+    // }
 
     // Add Resource (pdf, video, etc.) to output
     if (resource.el) {

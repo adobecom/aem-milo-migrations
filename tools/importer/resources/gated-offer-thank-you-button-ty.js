@@ -43,27 +43,31 @@ const getResource = (document, originalURL) => {
   // video
   const videoIframe = document.querySelector('.video iframe, .modal iframe');
   if (videoIframe) {
-    const href = videoIframe.getAttribute('data-video-src') || videoIframe.src;
-    const link = document.createElement('a');
-    link.href = href;
-    link.textContent = href;
+    const link = videoIframe.getAttribute('data-video-src') || videoIframe.src;
+
+    if (link.includes('nam04.safelinks.protection.outlook.com')) {
+      const u = new URL(link);
+      const params = new URLSearchParams(u.search);
+      const url = params.get('url');
+      if (url) {
+        link = decodeURIComponent(url);
+      }
+    }
+
     return {
       el: link,
-      text: href,
+      text: link,
     };
-
   }
   const videoLink = document.querySelector('.dexter-Cta a[href*="tv.adobe.com"]');
   if (videoLink) {
-    const link = document.createElement('a');
-    link.href = videoLink.href;
-    link.textContent = videoLink.href;
     return {
-      el: link,
+      el: videoLink.href,
       text: videoLink.href,
     };
-
   }
+
+  // slides deck link
 
   // pdf link
   let pdfLink = document.querySelector('.dexter-Cta a[href*=".pdf"]');
@@ -150,7 +154,7 @@ export default {
 
     const u = new URL(params.originalURL);
     // Resource (pdf, video, etc.)
-    const resource = getResource(document, u);
+    const resource = null; // getResource(document, u);
     /*
      * title + resource link
      */
@@ -162,14 +166,14 @@ export default {
       if(item.querySelector('.cmp-title, .cmp-text, a')) {
         const texts = document.createElement('div')
         item.querySelectorAll('.cmp-title, .cmp-text').forEach(elem => texts.append(elem))
-        if (!resource.el) {
-          const button = document.querySelector('a[href*="gartner.com/"], a[href*="forrester.com/"]');
-          if (button) {
-            const str = document.createElement('B');
-            str.append(button);
-            texts.append(str);
-          }
-        }
+        // if (!resource.el) {
+        //   const button = document.querySelector('a[href*="gartner.com/"], a[href*="forrester.com/"]');
+        //   if (button) {
+        //     const str = document.createElement('B');
+        //     str.append(button);
+        //     texts.append(str);
+        //   }
+        // }
         if (texts.textContent.length > 0 && !texts.textContent.toLowerCase().includes('materials are ready')) {
           title = texts.textContent;
           break;
@@ -181,30 +185,23 @@ export default {
     }
 
     if (title) {
+      const content = document.createElement('div');
       const h1TitleEl = document.createElement('h1');
       h1TitleEl.textContent = title;
+      content.append(h1TitleEl);
+      // Add Resource (pdf, video, etc.) to output
+      const button = document.querySelector('a[href*="gartner.com/"], a[href*="forrester.com/"]');
+      if (button) {
+        const str = document.createElement('B');
+        str.append(button);
+        content.append(str);
+      }
       main.append(WebImporter.DOMUtils.createTable([
         ['text (large)'],
-        [h1TitleEl],
+        [content],
       ], document));
     }
 
-    // Add Resource (pdf, video, etc.) to output
-    if (resource.el) {
-      main.append(resource.el);
-    }
-
-    main.querySelectorAll('a').forEach((a) => {
-      if (a.href.includes('nam04.safelinks.protection.outlook.com')) {
-        const u = new URL(a.href);
-        const params = new URLSearchParams(u.search);
-        const url = params.get('url');
-        if (url) {
-          a.href = url;
-          a.textContent = url;
-        }
-      }
-    });
 
     main.append(WebImporter.DOMUtils.createTable([
       ['Section Metadata'],
