@@ -22,7 +22,7 @@ export function parseFiveUpLayoutsSectionMetadataGeneric(el, document, section, 
   return parseNUpLayoutsSectionMetadata(el, document, section, 5, elementType);
 }
 
-export function parseNUpLayoutsSectionMetadata(el, document, section, elNum = 2, elementType = 'text') {
+export function parseNUpLayoutsSectionMetadata(el, document, section, elNum = 2, elementType = 'text', options = {}) {
   let els = getNSiblingsElements(el, (n) => n >= elNum);
 
   console.log('els', els.length);
@@ -85,6 +85,7 @@ export function parseNUpLayoutsSectionMetadata(el, document, section, elNum = 2,
     ], document);
   });
 
+
   // theme
   let theme = 'light'; // default, dark color + light background
   const fontColor = crawlColorFromCSS(el, document);
@@ -101,16 +102,17 @@ export function parseNUpLayoutsSectionMetadata(el, document, section, elNum = 2,
     5: 'five up',
   };
 
-  const options = {
-    style: `${theme}, XL spacing, ${nUpStylesMap[elNum]}, grid-width-12`,
+  const smOptions = {
+    ...options,
+    ...{style: `${theme}, XL spacing, ${nUpStylesMap[elNum]}, grid-width-12`},
   }
 
   const bg = extractBackground(el, document);
   if (bg !== '') {
-    options.background = bg;
+    smOptions.background = bg;
   }
 
-  const layoutEl = buildSectionMetadataLayoutGeneric(blocks, options, document);
+  const layoutEl = buildSectionMetadataLayoutGeneric(blocks, smOptions, document);
 
   if (titleLayoutEl) {
     const titleTable = WebImporter.DOMUtils.createTable([
