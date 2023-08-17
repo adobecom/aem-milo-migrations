@@ -51,6 +51,8 @@ import {
 import { parse_faasForm } from './rules/form-link.js';
 import { waitForFaasForm } from './rules/handleFaasForm.js';
 import { parseTableGeneric } from './rules/table.js';
+import { parseCarousel } from './rules/carousel.js';
+
 // import { parseBacomProductsPageTemplateKMultiBlocksSection } from './rules/bacom-products-template-k.js';
 
 
@@ -71,6 +73,8 @@ const sectionsRulesMap = {
   'bacom-digital-trends-three-up-charts': parseBacomDigitalTrendsThreeUpCharts,
   'caas': parseCAASContent,
   'card-hor-two-up-section': parseTwoUpLayoutsSectionMetadataWithCardHor,
+  'carousel': parseCarousel,
+  'carousel-two-up': nUpElementTypeVariantParserLayoutSectionMetadata('two-up', parseCarousel),
   'faas-form': parse_faasForm,
   'five-up': parseFiveUpLayoutsSectionMetadataGeneric,
   'four-up': parseFourUpLayoutsSectionMetadataGeneric,
