@@ -25,16 +25,52 @@ export function parseFiveUpLayoutsSectionMetadataGeneric(el, document, section, 
 export function parseNUpLayoutsSectionMetadata(el, document, section, elNum = 2, elementType = 'text') {
   let els = getNSiblingsElements(el, (n) => n >= elNum);
 
+  console.log('els', els.length);
+  let topEls = [els[0]];
+  els.reduce((acc, block) => {
+    console.log('acc', acc);
+    if (block.dataset.hlxImpRect && acc.dataset.hlxImpRect) {
+      const blockRect = JSON.parse(block.dataset.hlxImpRect);
+      const accRect = JSON.parse(acc.dataset.hlxImpRect);
+
+      if (blockRect.y < accRect.y) {
+        topEls = [block];
+        return block;
+      } else if (blockRect.y === accRect.y) {
+        topEls.push(block);
+        return acc;
+      } else {
+        topEls = [acc];
+        return acc;
+      }
+    }
+    return acc;
+  });
+  console.log('topEls', topEls);
+  topEls.forEach((e) => {
+    console.log('e rect', e.dataset.hlxImpRect);
+  });
+  
   let titleLayoutEl = null;
-  let isPost = false
-  if (els.length === elNum && els[1].textContent.replaceAll('\n','').trim().length < 100) {
-    titleLayoutEl = els[1];
-    els = getNSiblingsElements(els[0], (n) => n >= elNum);
-    isPost = true
-  } else if(els.length === elNum && els[0].textContent.replaceAll('\n','').trim().length < 100) {
-    titleLayoutEl = els[0];
-    els = getNSiblingsElements(els[1], (n) => n >= elNum);
+
+  if (topEls.length === 1) {
+    els = els.filter((e) => e !== topEls[0]);
+    if (els.length < elNum) {
+      els = getNSiblingsElements(els[0], (n) => n >= elNum);
+    }
+    titleLayoutEl = topEls[0];
   }
+
+  let isPost = false
+
+  // if (els.length === elNum && els[1].textContent.replaceAll('\n','').trim().length < 100) {
+  //   titleLayoutEl = els[1];
+  //   els = getNSiblingsElements(els[0], (n) => n >= elNum);
+  //   isPost = true
+  // } else if(els.length === elNum && els[0].textContent.replaceAll('\n','').trim().length < 100) {
+  //   titleLayoutEl = els[0];
+  //   els = getNSiblingsElements(els[1], (n) => n >= elNum);
+  // }
 
   const cloneEls = els.map(e => e.cloneNode(true));
   const blocks = cloneEls.map(e => {
