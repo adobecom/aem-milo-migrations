@@ -276,6 +276,18 @@ function toHex(int) {
   return hex.length == 1 ? "0" + hex : hex;
 }
 
+// thanks to https://stackoverflow.com/questions/49974145/how-to-convert-rgba-to-hex-color-code-using-javascript
+export function RGBAToHexA(rgba, forceRemoveAlpha = false) {
+  return "#" + rgba.replace(/^rgba?\(|\s+|\)$/g, '') // Get's rgba / rgb string values
+    .split(',') // splits them at ","
+    .filter((string, index) => !forceRemoveAlpha || index !== 3)
+    .map(string => parseFloat(string)) // Converts them to numbers
+    .map((number, index) => index === 3 ? Math.round(number * 255) : number) // Converts alpha to 255 number
+    .map(number => number.toString(16)) // Converts numbers to hex
+    .map(string => string.length === 1 ? "0" + string : string) // Adds 0 when length of one number is 1
+    .join("") // Puts the array to togehter to a string
+}
+
 export function getXPathByElement(elm, addClass = false) {
   // var allNodes = document.getElementsByTagName('*');
   for (var segs = []; elm && elm.nodeType == 1; elm = elm.parentNode) {

@@ -9,7 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-import { getXPathByElement, rgbToHex } from '../utils.js';
+import { getXPathByElement, RGBAToHexA } from '../utils.js';
 
 export const utf8ToB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
 export const b64ToUtf8 = (str) => decodeURIComponent(escape(window.atob(str)));
@@ -49,7 +49,7 @@ export function getBGColor(el, document, recurse=true) {
   let bgcolor = el.querySelector('div[data-hlx-imp-bgcolor]')?.getAttribute('data-hlx-imp-bgcolor');
 
   if (bgcolor) {
-    return rgbToHex(bgcolor);
+    return RGBAToHexA(bgcolor);
   }
 
   // jsdom doesn't support well getComputedStyle
@@ -58,7 +58,7 @@ export function getBGColor(el, document, recurse=true) {
   //   el.querySelectorAll('div').forEach(d => {
   //     const bg = document.defaultView.getComputedStyle(d).getPropertyValue('background-color');
   //     if (bg != '') {
-  //       bgcolor = rgbToHex(bg);
+  //       bgcolor = RGBAToHexA(bg);
   //     }
   //   });
   // }
@@ -70,7 +70,7 @@ export function getBGColor(el, document, recurse=true) {
       let m;
       if ((m = /(rgb\(\d+,\s*\d+,\s*\d+\))/.exec(bgImage)) !== null) {
         console.log('linear-gradient', m);
-        bgcolor = rgbToHex(m[1]);
+        bgcolor = RGBAToHexA(m[1]);
       }
     }
   }
@@ -118,7 +118,7 @@ export function crawlColorFromCSS(el, document) {
     const color = el.querySelector('[data-hlx-imp-color]')?.dataset?.hlxImpColor;
     console.log('color', '>>>', color, '<<<');
     if (color) {
-      bgcolor = rgbToHex(color);
+      bgcolor = RGBAToHexA(color);
     }
   }  
 
@@ -127,7 +127,7 @@ export function crawlColorFromCSS(el, document) {
     el.querySelectorAll('div').forEach(d => {
       const bg = document.defaultView.getComputedStyle(d).getPropertyValue('color');
       if (bg) {
-        bgcolor = rgbToHex(bg.trim());
+        bgcolor = RGBAToHexA(bg.trim());
       }
     });
   }
