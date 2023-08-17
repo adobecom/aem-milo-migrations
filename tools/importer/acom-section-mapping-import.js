@@ -221,6 +221,7 @@ export default {
         }
 
         if (sectionsRulesMap[section.block.type]) {
+          console.log('parsing section of type', section.block.type);
           // z-pattern special case (multiple elements)
           if (section.block.type === 'z-pattern') {
             const zpatternElements = [ el ];
