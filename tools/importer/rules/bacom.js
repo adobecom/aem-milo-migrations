@@ -26,9 +26,9 @@ export function parse_seeWhatMakesItWork_Section(el, document, section) {
   //   return !el.querySelector('img') && !el.classList.contains('title');
   // }));
 
-  els = els.filter((el) => {
-    return !el.querySelector('img') && !el.classList.contains('title');
-  });
+  // els = els.filter((el) => {
+  //   return !el.querySelector('img') && !el.classList.contains('title');
+  // });
 
   const textsCol1 = document.createElement('div');
   const textsCol2 = document.createElement('div');
@@ -44,20 +44,26 @@ export function parse_seeWhatMakesItWork_Section(el, document, section) {
   
   blocks.forEach((el, idx) => {
     if (!el.querySelector('img')) {
+      el.querySelectorAll('.cmp-title, br, hr, style, script').forEach((e) => e.remove());
+      el.querySelectorAll('span').forEach((e) => {
+        const p = document.createElement('p');
+        p.innerHTML = e.innerHTML;
+        e.replaceWith(p);
+      });
+      
       blocks[idx] = WebImporter.DOMUtils.createTable([
         ['text'],
         [el],
       ], document);
     }
   });
-    
 
-  const title = document.createElement('h3');
-  title.textContent = defaultTitle;
-
+  
   const container = document.createElement('div');
 
-  container.append(title);
+  // const title = document.createElement('h3');
+  // title.textContent = defaultTitle;
+  // container.append(title);
 
   const smOptions = {
     style: 'XL spacing, three up, grid-width-12',
@@ -67,6 +73,21 @@ export function parse_seeWhatMakesItWork_Section(el, document, section) {
   if (bgColor) {
     smOptions.background = bgColor;
   }
+  
+  // title element
+  const title = document.createElement('div');
+  title.append(document.createElement('hr'));
+  title.append(WebImporter.DOMUtils.createTable([
+    ['text (center, xl-spacing-top)'],
+    ['<h1>' + defaultTitle + '</h1>'],
+  ], document));
+  title.append(WebImporter.DOMUtils.createTable([
+    ['section metadata'],
+    ['background', bgColor],
+  ], document));
+  // title.append(document.createElement('hr'));
+
+  container.append(title);
 
   container.append(buildSectionMetadataLayoutGeneric(blocks, smOptions, document));
 
