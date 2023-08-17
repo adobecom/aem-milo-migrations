@@ -14,11 +14,11 @@ export function parseAsideInline(el, document, section) {
 }
 
 export function parseAsideNotificationCenter(el, document, section) {
-  return parseAsideGeneric(el, document, section, 'notification, large, center');
+  return parseAsideGeneric(el, document, section, 'notification, medium, center');
 }
 
 export function parseAsideGeneric(el, document, section, type = 'medium') {
-    /*
+  /*
    * theme
    */
 
@@ -39,28 +39,10 @@ export function parseAsideGeneric(el, document, section, type = 'medium') {
     img.src = bgImage;
     bgImage = img;
   }
-
   const bg = extractBackground(el, document);
   if (bg !== '') {
     cells.push([bg]);
   }
-  // let bgcolor = el.querySelector('div[data-bgcolor]')?.getAttribute('data-bgcolor');
-
-  // // strategy 2
-  // if (!bgImage && !bgcolor) {
-  //   el.querySelectorAll('div').forEach(d => {
-  //     console.log(document.defaultView.getComputedStyle(d).getPropertyValue('background-color'));
-  //     const bg = document.defaultView.getComputedStyle(d).getPropertyValue('background-color');
-  //     if (bg != '') {
-  //       bgcolor = rgbToHex(bg);
-  //     }
-  //   });
-  // }
-
-  // const c = [bgImage || bgcolor || ' '];
-  // console.log(c);
-  // cells.push(c);
-
 
   // content
   const imageContainer = el.querySelector('.image');
@@ -71,11 +53,10 @@ export function parseAsideGeneric(el, document, section, type = 'medium') {
   } else {
     cells.push([el.innerHTML]);
   }
+
   const table = WebImporter.DOMUtils.createTable(cells, document);
+
   return table;
-  // table.classList.add('import-table');
-  // el.before(document.createElement('hr'));
-  // el.replaceWith(table);
 }
 
 
