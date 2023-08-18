@@ -58,7 +58,7 @@ import { parseCarousel } from './rules/carousel.js';
 
 function nUpElementTypeVariantParserLayoutSectionMetadata(elementType = 'text', parserFn) {
   return function parser(el, document, section) {
-    return parserFn(el, document, section, elementType);
+    return parserFn(el, document, section, {elementType});
   };
 }
 
@@ -78,6 +78,7 @@ const sectionsRulesMap = {
   'faas-form': parse_faasForm,
   'five-up': parseFiveUpLayoutsSectionMetadataGeneric,
   'four-up': parseFourUpLayoutsSectionMetadataGeneric,
+  'four-up-cards': nUpElementTypeVariantParserLayoutSectionMetadata('card', parseFourUpLayoutsSectionMetadataGeneric),
   'fragment-products-related-content-cards': parseFragment_products_related_content_cards,
   'fragment-products-request-demo-marquee': parseFragment_fragment_products_request_demo_marquee,
   'fragment': parseFragment,

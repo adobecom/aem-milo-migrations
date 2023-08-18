@@ -5,32 +5,69 @@ import { crawlColorFromCSS } from "./utils.js";
 
 /* global WebImporter */
 
-export function parseAside(el, document, section) {
-  return parseAsideGeneric(el, document, section);
+const DEFAULT_ASIDE_PARSER_OPTIONS = {
+  style: 'medium',
+};
+
+export function parseAside(el, document, section, options = {}) {
+  return parseAsideGeneric(el, document, section, options);
 }
 
-export function parseAsideInline(el, document, section) {
-  return parseAsideGeneric(el, document, section, 'inline');
+export function parseAsideInline(el, document, section, options = {}) {
+  const opts = {
+    ...DEFAULT_ASIDE_PARSER_OPTIONS,
+    ...options,
+    ...{ style: 'inline' },
+  };
+  return parseAsideGeneric(el, document, section, opts);
 }
 
-export function parseAsideNotificationCenter(el, document, section) {
-  return parseAsideGeneric(el, document, section, 'notification, medium, center');
+export function parseAsideNotificationCenter(el, document, section, options = {}) {
+  const opts = {
+    ...DEFAULT_ASIDE_PARSER_OPTIONS,
+    ...options,
+    ...{ style: 'notification, medium, center' },
+  };
+  return parseAsideGeneric(el, document, section, opts);
 }
 
-export function parseAsideGeneric(el, document, section, type = 'medium') {
-  /*
+/**
+ * 
+ * @param {HTMLElement} el original dom element
+ * @param {Document} document original page document
+ * @param {Object} section section-mapping json object
+ * @param {Object} options extra options for the parser 
+ * @returns {HTMLElement}
+ * 
+ * options: {
+ *  style: string representing extra styles added to the block header // default: medium
+ *  theme: light | dark,
+ * }
+ */
+export function parseAsideGeneric(el, document, section, options = {}) {
+
+  const opts = {
+    ...DEFAULT_ASIDE_PARSER_OPTIONS,
+    ...options,
+  };
+
+  /**
    * theme
    */
 
   let theme = 'light'; // default, dark color + light background
-  const fontColor = crawlColorFromCSS(el, document);
-  if (fontColor) {
-    if (isLightColor(fontColor)) {
-      theme = 'dark'; // default, light color + dark background
+  if (opts.theme) {
+    theme = opts.theme;
+  } else {
+    const fontColor = crawlColorFromCSS(el, document);
+    if (fontColor) {
+      if (isLightColor(fontColor)) {
+        theme = 'dark'; // default, light color + dark background
+      }
     }
   }
 
-  const cells = [[`aside (${theme}, ${type}, xl spacing)`]];
+  const cells = [[`aside (${theme}, ${opts.style}, xl spacing)`]];
 
   // background color or background image
   let bgImage = el.querySelector('div[style]')?.getAttribute('style').split('"')[1];

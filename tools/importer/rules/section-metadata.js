@@ -6,24 +6,70 @@ import { crawlColorFromCSS, findImageFromCSS, getNSiblingsElements } from './uti
 
 
 
-export function parseTwoUpLayoutsSectionMetadata(el, document, section, elementType = 'text') {
-  return parseNUpLayoutsSectionMetadata(el, document, section, 2, elementType);
+const DEFAULT_SM_PARSER_OPTIONS = {
+  elNum: 2,
+  elementType: 'text',
+  bgStrategy: 'default',
+  smOptions: {},
+};
+
+export function parseTwoUpLayoutsSectionMetadata(el, document, section, options = {}) {
+  const opts = {
+    ...DEFAULT_SM_PARSER_OPTIONS,
+    ...options,
+  };
+  return parseNUpLayoutsSectionMetadata(el, document, section, opts);
 }
 
-export function parseThreeUpLayoutsSectionMetadataGeneric(el, document, section, elementType = 'text') {
-  return parseNUpLayoutsSectionMetadata(el, document, section, 3, elementType);
+export function parseThreeUpLayoutsSectionMetadataGeneric(el, document, section, options = {}) {
+  const opts = {
+    ...DEFAULT_SM_PARSER_OPTIONS,
+    ...options,
+    ...{ elNum: 3 },
+  };
+  return parseNUpLayoutsSectionMetadata(el, document, section, opts);
 }
 
-export function parseFourUpLayoutsSectionMetadataGeneric(el, document, section, elementType = 'text') {
-  return parseNUpLayoutsSectionMetadata(el, document, section, 4, elementType);
+export function parseFourUpLayoutsSectionMetadataGeneric(el, document, section, options = {}) {
+  const opts = {
+    ...DEFAULT_SM_PARSER_OPTIONS,
+    ...options,
+    ...{ elNum: 4 },
+  };
+  return parseNUpLayoutsSectionMetadata(el, document, section, opts);
 }
 
-export function parseFiveUpLayoutsSectionMetadataGeneric(el, document, section, elementType = 'text') {
-  return parseNUpLayoutsSectionMetadata(el, document, section, 5, elementType);
+export function parseFiveUpLayoutsSectionMetadataGeneric(el, document, section, options = {}) {
+  const opts = {
+    ...DEFAULT_SM_PARSER_OPTIONS,
+    ...options,
+    ...{ elNum: 5 },
+  };
+  return parseNUpLayoutsSectionMetadata(el, document, section, opts);
 }
 
-export function parseNUpLayoutsSectionMetadata(el, document, section, elNum = 2, elementType = 'text', options = {}) {
-  let els = getNSiblingsElements(el, (n) => n >= elNum);
+/**
+ * 
+ * @param {HTMLElement} el original dom element
+ * @param {Document} document original page document
+ * @param {Object} section section-mapping json object
+ * @param {Object} options extra options for the parser
+ * @returns {HTMLElement}
+ * 
+ * options: {
+ *   elNum: number of elements in the section-metadata block // default: 2
+ *   elementType: string representing the type of the element in the section-metadata block // default: 'text'
+ *   smStyle: string representing extra styles added to the section-metadata block header // default: ''
+ *   smOptions: object
+ *   theme: light | dark
+ *   bgStrategy: enum - default | color | image - representing the background extraction strategy // default: 'default'
+ * }
+ */
+export function parseNUpLayoutsSectionMetadata(el, document, section, options = {}) {
+
+  console.log('parseNUpLayoutsSectionMetadata options: ', options);
+
+  let els = getNSiblingsElements(el, (n) => n >= options.elNum);
 
   console.log('els', els.length);
   let topEls = [els[0]];
@@ -55,8 +101,8 @@ export function parseNUpLayoutsSectionMetadata(el, document, section, elNum = 2,
 
   if (topEls.length === 1) {
     els = els.filter((e) => e !== topEls[0]);
-    if (els.length < elNum) {
-      els = getNSiblingsElements(els[0], (n) => n >= elNum);
+    if (els.length < options.elNum) {
+      els = getNSiblingsElements(els[0], (n) => n >= options.elNum);
     }
     titleLayoutEl = topEls[0];
   }
@@ -80,7 +126,7 @@ export function parseNUpLayoutsSectionMetadata(el, document, section, elNum = 2,
     }
 
     return WebImporter.DOMUtils.createTable([
-      [elementType],
+      [options.elementType],
       [e],
     ], document);
   });
@@ -88,10 +134,14 @@ export function parseNUpLayoutsSectionMetadata(el, document, section, elNum = 2,
 
   // theme
   let theme = 'light'; // default, dark color + light background
-  const fontColor = crawlColorFromCSS(el, document);
-  if (fontColor) {
-    if (isLightColor(fontColor)) {
-      theme = 'dark'; // default, light color + dark background
+  if (options.theme) {
+    theme = options.theme;
+  } else {
+    const fontColor = crawlColorFromCSS(el, document);
+    if (fontColor) {
+      if (isLightColor(fontColor)) {
+        theme = 'dark'; // default, light color + dark background
+      }
     }
   }
 
@@ -103,11 +153,11 @@ export function parseNUpLayoutsSectionMetadata(el, document, section, elNum = 2,
   };
 
   const smOptions = {
-    ...options,
-    ...{style: `${theme}, XL spacing, ${nUpStylesMap[elNum]}, grid-width-12`},
+    ...options.smOptions,
+    ...{style: `${theme}, XL spacing, ${nUpStylesMap[options.elNum]}, grid-width-12`},
   }
 
-  const bg = extractBackground(el, document);
+  const bg = extractBackground(el, document, { strategy: options.bgStrategy });
   if (bg !== '') {
     smOptions.background = bg;
   }

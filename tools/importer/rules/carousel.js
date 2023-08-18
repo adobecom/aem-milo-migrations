@@ -31,7 +31,17 @@ export function parseCarousel(el, document, section, itemType = 'text') {
   const carouselEl = document.createElement('div');
   carouselEl.append(elClone.querySelector('.dexter-Carousel'));
 
-  container.prepend(elClone);
+  const titleEl = document.createElement('h2');
+  const textEl = document.createElement('I');
+  textEl.textContent = elClone.textContent;
+  titleEl.append(textEl);
+
+  container.prepend(WebImporter.DOMUtils.createTable([
+    ['text (center)'],
+    [titleEl],
+  ], document));
+
+  container.prepend(document.createElement('hr'));
 
   // prepare carousel items
   // const items = carouselEl.querySelectorAll('.dexter-Carousel-item').map(item => {
@@ -53,7 +63,11 @@ export function parseCarousel(el, document, section, itemType = 'text') {
       ], document));
       container.append(document.createElement('hr'));
     } else if (itemType === 'two-up') {
-      container.append(parseNUpLayoutsSectionMetadata(item, document, null, 2, 'text', { carousel: carouselId }));
+      container.append(parseNUpLayoutsSectionMetadata(item, document, null, {
+        elNum: 2,
+        elementType: 'text',
+        smOptions: { carousel: carouselId },
+      }));
     }
   });
 

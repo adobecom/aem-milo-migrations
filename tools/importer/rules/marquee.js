@@ -2,14 +2,26 @@ import { isLightColor } from '../utils.js';
 import { extractBackground } from './bacom.js';
 import { crawlColorFromCSS, getNSiblingsElements } from './utils.js';
 
-
 const createImage = (document, url)  => {
   const img = document.createElement('img');
   img.src = url;
   return img;
 };
 
-export async function parseMarquee(el, document, section, backgroundColor = '') {
+/**
+ * Parse a marquee component
+ * @param {HTMLElement} el        original dom element
+ * @param {Document}    document  original page document
+ * @param {Object}      section   section-mapping json object
+ * @param {Object}      options   extra options for the parser
+ * @returns {HTMLElement}
+ * 
+ * options: {
+ *   theme: light | dark
+ *   imageFirst: boolean
+ * }
+ */
+export async function parseMarquee(el, document, section, options = { imageFirst: false }) {
 
   let marqueeDoc = el
   let els = getNSiblingsElements(el, (c) => c >= 2)
@@ -118,19 +130,24 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
     isVideo = true
   }
 
-  /*
+  /**
    * theme
    */
 
-  let theme = 'light'; // default, dark color + light background
-  const fontColor = crawlColorFromCSS(el, document);
-  if (fontColor) {
-    if (isLightColor(fontColor)) {
-      theme = 'dark'; // default, light color + dark background
+  let theme = 'light'; // default, dark font color + light background
+
+  if (options.theme) {
+    theme = options.theme;
+  } else {
+    const fontColor = crawlColorFromCSS(el, document);
+    if (fontColor) {
+      if (isLightColor(fontColor)) {
+        theme = 'dark'; // default, light color + dark background
+      }
     }
   }
 
-  /*
+  /**
    * Handle modal videos 
    */
 
@@ -170,10 +187,14 @@ export async function parseMarquee(el, document, section, backgroundColor = '') 
     }
   }
 
+  let marqueeContent = [container, (resource || '')];
+  if (options.imageFirst) {
+    marqueeContent = [(resource || ''), container];
+  }
   return WebImporter.DOMUtils.createTable([
     [`marquee (small, ${theme})`],
     [extractBackground(marqueeDoc, document)],
-    [container, (resource || '')],
+    marqueeContent,
   ], document);
 }
 

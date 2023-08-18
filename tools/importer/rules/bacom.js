@@ -132,7 +132,7 @@ export async function parseFragment_fragment_products_request_demo_marquee(el, d
 }
 
 
-export function parseTwoUpSectionMetadataWithTreeview(el, document, section) {
+export function parseTwoUpSectionMetadataWithTreeview(el, document, section, options = { bgStrategy: 'default' }) {
   let els = getNSiblingsElements(el, (n) => n >= 2);
   const container = document.createElement('div');
 
@@ -168,11 +168,16 @@ export function parseTwoUpSectionMetadataWithTreeview(el, document, section) {
     ], document));
   }
 
-  container.append(buildSectionMetadataLayoutGeneric(blocks, {
+  const smOptions = {
     style: 'XXL spacing, two up, grid-width-12, xxxl-gap',
-    background: extractBackground(el, document),
     layout: '1 | 3',
-  }, document));
+  };
+
+  if (options.bgStrategy != 'none') {
+    smOptions.background = extractBackground(el, document);
+  }
+
+  container.append(buildSectionMetadataLayoutGeneric(blocks, smOptions, document));
 
   return container;
 }
@@ -401,20 +406,55 @@ export async function parseBacomDigitalTrendsThreeUpCharts(el, document, section
   return container;
 }
 
-export function extractBackground(el, document, defaultBackground = '') {
-  let background = WebImporter.DOMUtils.getImgFromBackground(el, document);
+const BG_EXTRACTION_STRATEGIES = {
+  default: 'default',
+  image: 'image',
+  color: 'color',
+};
+
+/**
+ * 
+ * @param {HTMLElement} el original element
+ * @param {Document} document original page document
+ * @param {Object} options extra options for the function
+ * @returns {string}
+ */
+export function extractBackground(el, document, options = {}) {
+
+  const opts = {
+    ...{ strategy: 'default', defaultBackground: '' },
+    ...options,
+  };
+
+  console.log('extractBackground options:', opts);
+
+  let background = null;
+  
+  // strategy 1
+  if (options.strategy === BG_EXTRACTION_STRATEGIES.image || options.strategy === BG_EXTRACTION_STRATEGIES.default) {
+    background = WebImporter.DOMUtils.getImgFromBackground(el, document);
+    if (options.strategy === BG_EXTRACTION_STRATEGIES.image && background) {
+      return background;
+    }
+  }
+
   
   // strategy 2
   if (!background) {
-    el.querySelectorAll('div').forEach(d => {
-      // do not extract background image of a video
-      if (!d.querySelector('video')) {
-        const bg = document.defaultView.getComputedStyle(d).getPropertyValue('background-image');
-        if (bg !== '' && !bg.includes('none')) {
-          background = WebImporter.DOMUtils.getImgFromBackground(d, document);
+    if (options.strategy === BG_EXTRACTION_STRATEGIES.image || options.strategy === BG_EXTRACTION_STRATEGIES.default) {
+      el.querySelectorAll('div').forEach(d => {
+        // do not extract background image of a video
+        if (!d.querySelector('video')) {
+          const bg = document.defaultView.getComputedStyle(d).getPropertyValue('background-image');
+          if (bg !== '' && !bg.includes('none')) {
+            background = WebImporter.DOMUtils.getImgFromBackground(d, document);
+          }
         }
+      });
+      if (options.strategy === BG_EXTRACTION_STRATEGIES.image && background) {
+        return background;
       }
-    });
+    }
   }
   
   // strategy 3 - use Helix Importer onLoad data marker 'data-hlx-background-image'
@@ -425,10 +465,16 @@ export function extractBackground(el, document, defaultBackground = '') {
         const img = WebImporter.DOMUtils.getImgFromBackground(el.querySelector('[data-hlx-background-image]'), document);
         if (img) {
           background = img;
+          if (options.strategy === BG_EXTRACTION_STRATEGIES.image && background) {
+            return background;
+          }
         }
       } else if (bgImage.trim().startsWith('linear-gradient')) {
         background = bgImage.trim();
-        // let m;
+        if (options.strategy === BG_EXTRACTION_STRATEGIES.color && background) {
+          return background;
+        }
+          // let m;
         // if ((m = /(rgb\(\d+,\s*\d+,\s*\d+\))/.exec(bgImage)) !== null) {
         //   console.log('linear-gradient', m);
         //   background = rgbToHex(m[1]);
@@ -438,16 +484,19 @@ export function extractBackground(el, document, defaultBackground = '') {
   }
 
   // strategy 4: get background color
-  if (!background) {
+  if (!background || (options.strategy === BG_EXTRACTION_STRATEGIES.color || options.strategy === BG_EXTRACTION_STRATEGIES.default)) {
     const bgColor = getBGColor(el, document);
     if (bgColor) {
       background = bgColor
+      if (options.strategy === BG_EXTRACTION_STRATEGIES.color && background) {
+        return background;
+      }
     }
-  }
-  
+  }  
+
   // fallback: use default
   if (!background) {
-    background = defaultBackground;
+    background = opts.defaultBackground;
   }
 
   return background;
