@@ -2,7 +2,7 @@
 import { extractBackground } from './bacom.js';
 import { parseNUpLayoutsSectionMetadata } from './section-metadata.js';
 
-export function parseCarousel(el, document, section, itemType = 'text') {
+export function parseCarousel(el, document, section, options = { elementType: 'text' }) {
   const carouselId = 'carousel-' + crypto.randomUUID();
   const elClone = el.cloneNode(true);
 
@@ -43,16 +43,8 @@ export function parseCarousel(el, document, section, itemType = 'text') {
 
   container.prepend(document.createElement('hr'));
 
-  // prepare carousel items
-  // const items = carouselEl.querySelectorAll('.dexter-Carousel-item').map(item => {
-  //   return container.append(WebImporter.DOMUtils.createTable([
-  //     ['text (large, xl spacing)'],
-  //     [item.outerHTML],
-  //   ], document));
-  // });
-
   carouselEl.querySelectorAll('.dexter-Carousel-item').forEach(item => {
-    if (itemType === 'text') {
+    if (options.elementType === 'text') {
       container.append(WebImporter.DOMUtils.createTable([
         ['text (large, xl spacing)'],
         [item.outerHTML],
@@ -62,7 +54,7 @@ export function parseCarousel(el, document, section, itemType = 'text') {
         ['carousel', carouselId],
       ], document));
       container.append(document.createElement('hr'));
-    } else if (itemType === 'two-up') {
+    } else if (options.elementType === 'two-up') {
       container.append(parseNUpLayoutsSectionMetadata(item, document, null, {
         elNum: 2,
         elementType: 'text',
