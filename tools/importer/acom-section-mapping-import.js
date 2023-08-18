@@ -53,6 +53,8 @@ import { waitForFaasForm } from './rules/handleFaasForm.js';
 import { parseTableGeneric } from './rules/table.js';
 import { parseCarousel } from './rules/carousel.js';
 
+import * as customParsers from './rules/customs/customs.mjs';
+
 // import { parseBacomProductsPageTemplateKMultiBlocksSection } from './rules/bacom-products-template-k.js';
 
 
@@ -106,6 +108,16 @@ const sectionsRulesMap = {
   'z-pattern-single': parseZPattern,
   'z-pattern': parseZPattern,
 };
+
+/*
+ * load custom parsers
+ */
+
+Object.keys(customParsers).forEach((key) => {
+  Object.keys(customParsers[key].parsers).forEach((parserKey) => {
+    sectionsRulesMap[key + '_' + parserKey] = customParsers[key].parsers[parserKey];
+  });
+});
 
 const sectionsToReport = [
   'unknown',
