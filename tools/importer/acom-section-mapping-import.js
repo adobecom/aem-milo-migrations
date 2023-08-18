@@ -147,17 +147,14 @@ export default {
         const bgImage = window.getComputedStyle(div).getPropertyValue('background-image');
         if (bgImage && bgImage !== 'none') {
           div.setAttribute('data-hlx-background-image', bgImage);
-          console.log('bgImage', bgImage);
         }
         const bgColor = window.getComputedStyle(div).getPropertyValue('background-color');
         if (bgColor && bgColor !== 'rgb(0, 0, 0)' && bgColor !== 'rgba(0, 0, 0, 0)') {
           div.setAttribute('data-hlx-imp-bgcolor', bgColor);
-          console.log('data-hlx-imp-bgcolor', bgColor);
         }
         const color = window.getComputedStyle(div).getPropertyValue('color');
         if (color && color !== 'rgb(0, 0, 0)') {
           div.setAttribute('data-hlx-imp-color', color);
-          console.log('data-hlx-imp-color', color);
         }
       }
     });
