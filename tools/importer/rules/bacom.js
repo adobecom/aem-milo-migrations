@@ -5,7 +5,12 @@ import { parseTreeView } from './tree-view.js';
 import { parseTableGeneric } from './table.js';
 
 export function parse_seeWhatMakesItWork_Section(el, document, section) {
-  const defaultTitle = 'See what makes it work';
+  let title = 'See what makes it work';
+  // Get existing title if exists
+  const existingTitle = el.querySelector('h3');
+  if (existingTitle) {
+    title = existingTitle.textContent;
+  }
 
   // // remove first title (should be the main "See what makes it work" title)
   // el.querySelector('.title').remove();
@@ -62,32 +67,32 @@ export function parse_seeWhatMakesItWork_Section(el, document, section) {
   const container = document.createElement('div');
 
   // const title = document.createElement('h3');
-  // title.textContent = defaultTitle;
+  // title.textContent = title;
   // container.append(title);
 
   const smOptions = {
     style: 'XL spacing, three up, grid-width-12',
   }
-
+  
   const bgColor = getBGColor(el, document);
   if (bgColor) {
     smOptions.background = bgColor;
   }
   
   // title element
-  const title = document.createElement('div');
-  title.append(document.createElement('hr'));
-  title.append(WebImporter.DOMUtils.createTable([
+  const titleEl = document.createElement('div');
+  titleEl.append(document.createElement('hr'));
+  titleEl.append(WebImporter.DOMUtils.createTable([
     ['text (center, xl-spacing-top)'],
-    ['<h1>' + defaultTitle + '</h1>'],
+    ['<h1>' + title + '</h1>'],
   ], document));
-  title.append(WebImporter.DOMUtils.createTable([
+  titleEl.append(WebImporter.DOMUtils.createTable([
     ['section metadata'],
     ['background', bgColor],
   ], document));
-  // title.append(document.createElement('hr'));
+  // titleEl.append(document.createElement('hr'));
 
-  container.append(title);
+  container.append(titleEl);
 
   container.append(buildSectionMetadataLayoutGeneric(blocks, smOptions, document));
 
