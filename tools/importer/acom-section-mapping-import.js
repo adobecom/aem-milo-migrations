@@ -144,6 +144,10 @@ export default {
       })
     );
 
+    // force close locale modal which is blocking scrolling on some pages
+    document.querySelector('locale-modal a.dexter-CloseButton').click();
+    await smartScroll(document);
+
     // handle faas form
     await waitForFaasForm(document);
 

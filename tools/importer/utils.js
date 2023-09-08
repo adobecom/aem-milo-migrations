@@ -377,3 +377,22 @@ export function generateDocumentPath({ document, url }) {
 //   }
 //   return true;
 // }
+
+const sleep = (ms) => new Promise(
+  (resolve) => {
+    setTimeout(resolve, ms);
+  },
+);
+
+export async function smartScroll(document) {
+  let scrolledOffset = 0;
+  let maxLoops = 4;
+  while (maxLoops > 0 && document.body.scrollHeight > scrolledOffset) {
+    const scrollTo = document.body.scrollHeight;
+    document.scrollingElement.scrollTo({ left: 0, top: scrollTo, behavior: 'smooth' });
+    scrolledOffset = scrollTo;
+    maxLoops -= 1;
+    // eslint-disable-next-line no-await-in-loop
+    await sleep(250);
+  }
+}
