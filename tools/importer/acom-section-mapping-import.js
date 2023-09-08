@@ -357,6 +357,20 @@ export default {
       el.remove();
     });
 
+    // // MWPW-135976 ONLY!
+    // TODO - implement extension mechanism to add custom global rules to the script
+    // // fix all #form links to make them point to the <form> element id
+    // const formEl = document.querySelector('[data-faas-form-id]');
+    // if (formEl) {
+    //   const faasFormTitle = document.querySelector('[data-hlx-imp-label="faas-form-title"]');
+    //   if (faasFormTitle) {
+    //     const anchorId = faasFormTitle.textContent.toLowerCase().replace(/[!\"#\$%&\'\(\)\*\+,-\./:;<=>\?@\[\\\]\^_`{\|}~]/g, '').replace(/\s+/g, '-').replace(/(^-|-$)/g, '');
+    //     document.querySelectorAll('a[href$="#form"]').forEach((a) => {
+    //       a.href = '#' + anchorId;
+    //     });
+    //   }
+    // }
+
 
 
     /**
