@@ -16,5 +16,6 @@ export async function parseCAASContent(el, document, section) {
     ['style', 'L spacing, center'],
   ], document))
   container.append(document.createElement('hr'))
-  return container;
+
+  return {block: container };
 }

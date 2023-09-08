@@ -63,5 +63,5 @@ export function parseCarousel(el, document, section, options = { elementType: 't
     }
   });
 
-  return container;
+  return { block: container };
 }

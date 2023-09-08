@@ -9,7 +9,8 @@ const createImage = (document, url)  => {
 export function parseMetadata(document) {
   const meta = {};
 
-  const title = getMetadataValue(document, 'title') || getMetadataValue(document, 'og:title')
+  const title = document.head.querySelector(`meta[property="title"], meta[property="og:title"]`)?.content ||
+  document.head.querySelector(`meta[name="title"], meta[name="og:title"]`)?.content
       || getMetadataValue(document, 'jcr:title') || '';
 
   meta.Title = title;
@@ -31,8 +32,11 @@ export function parseMetadata(document) {
 }
 
 export function parseCardMetadata(document, originalURL) {
-  const title = getMetadataValue(document, 'cardTitle') || getMetadataValue(document, 'title') || getMetadataValue(document, 'og:title')
-      || getMetadataValue(document, 'jcr:title') || '';
+  const title = getMetadataValue(document, 'cardTitle') || 
+    document.head.querySelector(`meta[property="title"], meta[property="og:title"]`)?.content ||
+    document.head.querySelector(`meta[name="title"], meta[name="og:title"]`)?.content || 
+    getMetadataValue(document, 'jcr:title') || 
+    '';
 
   const cqTags = getJSONValues(window.jcrContent, 'cq:tags');
   const convertedTags = cqTags === '' ? '' : convertEnterpriseTags(cqTags, originalURL);

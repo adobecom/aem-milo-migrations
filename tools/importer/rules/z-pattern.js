@@ -52,5 +52,5 @@ export async function parseZPattern(el, document, sectionsEls) {
 
   cells.push(...rowEls);
 
-  return WebImporter.DOMUtils.createTable(cells, document);
+  return { block: WebImporter.DOMUtils.createTable(cells, document) };
 }

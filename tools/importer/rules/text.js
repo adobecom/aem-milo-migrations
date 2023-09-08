@@ -12,7 +12,7 @@ export async function parseText(el, document, section) {
     }
   });
 
-  return WebImporter.DOMUtils.createTable(
+  const block = WebImporter.DOMUtils.createTable(
     [
       ['text (center, xs spacing)'],
       [bgColor],
@@ -20,4 +20,6 @@ export async function parseText(el, document, section) {
     ], 
     document,
   );
+
+  return { block };
 }

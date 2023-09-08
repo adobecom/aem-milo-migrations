@@ -5,7 +5,7 @@ export async function parseFragment(el, document, section) {
   img.style.border = "1px solid blue";
   img.src = section.block.screenshot;
 
-  return WebImporter.DOMUtils.createTable(
+  const block = WebImporter.DOMUtils.createTable(
     [
       ['fragment'],
       [ 'content', el.outerHTML ],
@@ -13,5 +13,7 @@ export async function parseFragment(el, document, section) {
     ], 
     document,
   );
+
+  return { block };
 }
 

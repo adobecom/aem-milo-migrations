@@ -2,6 +2,7 @@ import { parseAsideGeneric, parseAsideNotificationCenter } from '../aside.js';
 import { extractBackground, parseTwoUpSectionMetadataWithTreeview } from '../bacom.js';
 import { parseMarquee } from '../marquee.js';
 import { parseTwoUpLayoutsSectionMetadata } from '../section-metadata.js';
+import { getNSiblingsElements } from '../utils.js';
 
 /**
  * data-analytics-video 
@@ -14,14 +15,116 @@ function parseDataAnalyticsSection0(el, document, section) {
   });
 }
 
+/**
+ * Builds 2 elements:
+ * 
+ * 1. A 2-columns block with the following structure:
+ *  - fragment link
+ *  - image
+ * 2. A fragment document containing a list of icon-blocks
+ */
+function parseDataAnalyticsSection1(el, document, section) {
+  console.log('section', section);
+
+  const [fragmentEl, imageEl] = el.querySelectorAll('.container > div > .position');
+
+  /**
+   * fragment
+   */
+
+  // build fragment url
+  const u = new URL(section.url);
+  const locale = u.pathname.split('/').slice(1, 2);
+  const fragmentPath = `/${locale}/fragments/products/analytics/data-analytics-video`;
+  const fragmentUrl = `https://main--bacom--adobecom.hlx.page${fragmentPath}`;
+
+  // fragment link
+  const fragmentLink = document.createElement('a');
+  fragmentLink.href = fragmentUrl;
+  fragmentLink.textContent = fragmentUrl;
+
+  // fragment content
+  const fragmentContent = document.createElement('div');
+  const fragmentEls = getNSiblingsElements(fragmentEl, 6);
+
+  const topEl = fragmentEls.shift();
+  const bottomEl = fragmentEls.pop();
+
+  const iconsMapping = [
+    'https://main--bacom--adobecom.hlx.page/drafts/mkhare/fragments/media_18d76013cbd6bdd255dd05f0bf1d91685bb00743e.png?width=750&format=png&optimize=medium',
+    'https://main--bacom--adobecom.hlx.page/drafts/mkhare/fragments/media_18e55450587372b30d06e6ecb504fbcca41866d30.png?width=2000&format=webply&optimize=medium',
+    'https://main--bacom--adobecom.hlx.page/drafts/mkhare/fragments/media_168870d05dc425fddeb1cd73ee4a1a73160c39d6b.png?width=2000&format=webply&optimize=medium',
+    'https://main--bacom--adobecom.hlx.page/drafts/mkhare/fragments/media_12de48335708e09bba07bc7b3b560776ef1219c7f.png?width=2000&format=webply&optimize=medium',
+  ]
+  const iconBlocks = fragmentEls.map((el, idx) => {
+    el.querySelectorAll('img').forEach(img => {
+      img.src = iconsMapping[idx];
+    });
+
+    return WebImporter.DOMUtils.createTable([
+      ['icon-block (inline, small, xs-spacing)'],
+      [el],
+    ], document);
+  });
+  fragmentContent.append(topEl, ...iconBlocks, bottomEl);
+
+  fragmentContent.querySelectorAll('b').forEach(bEl => {
+    bEl.querySelectorAll('a').forEach(aEl => {
+      aEl.querySelectorAll('*').forEach(brEl => bEl.after(brEl));
+      bEl.after(aEl);
+      bEl.remove();
+    });
+
+  });
+
+  console.log('fragmentContent', fragmentContent.outerHTML);
+
+
+  /**
+   * column block
+   */
+
+  const img = imageEl.querySelector('img');
+
+  const block = document.createElement('div');
+
+  const colBlock = WebImporter.DOMUtils.createTable([
+    ['columns (split, half, small, light)'],
+    [fragmentLink, img],
+  ], document);
+  
+  const smBlk = WebImporter.DOMUtils.createTable([
+    ['section metadata'],
+    ['style', 'light, XL spacing, grid-width-10'],
+    ['background', '#f2f8fa'],
+  ], document);
+
+  block.append(
+    document.createElement('hr'),
+    colBlock,
+    smBlk,
+    document.createElement('hr'),
+  );
+
+  return { 
+    block,
+    extraDocs: [{
+      element: fragmentContent,
+      path: fragmentPath,
+    }],
+  };
+}
+
 function parseDataAnalyticsSection2(el, document, section) {
   const image = extractBackground(el, document, { strategy: 'image' });
 
-  return WebImporter.DOMUtils.createTable([
+  const block = WebImporter.DOMUtils.createTable([
     ['aside (split, half, small, light)'],
     ['#f7e6ff '],
     [image || '', el.outerHTML],
   ], document);
+
+  return { block };
 }
 
 function parseDataAnalyticsSection4(el, document, section) {
@@ -44,12 +147,14 @@ function parseDataAnalyticsSection4(el, document, section) {
   p.append(link);
   container.append(p);
 
-  return container;
+  return { block: container };
 }
 
 function parseDataAnalyticsSection5(el, document, section) {
   return parseAsideNotificationCenter(el, document, section, { theme: 'dark' });
 }
+
+
 
 /**
  * media-library
@@ -68,7 +173,7 @@ function parseMediaLibrarySection4(el, document, section) {
   link.href = href;
   link.textContent = href;
   container.append(link);
-  return container;
+  return { block: container };
 }
 
 function parseMediaLibrarySection5(el, document, section) {
@@ -78,15 +183,44 @@ function parseMediaLibrarySection5(el, document, section) {
   link.href = href;
   link.textContent = href;
   container.append(link);
-  return container;
+  return { block: container};
+}
+
+
+
+/**
+ * thank-you
+ */
+
+function parseThankYouSection0(el, document, section) {
+  const img = el.querySelector('img');
+  const content = el.querySelector('.position');
+
+  // make "watch video" link point to the right video
+  const videoLink = content.querySelector('a');
+  if (videoLink) {
+    videoLink.href = 'https://main--bacom--adobecom.hlx.page/fragments/products/modal/videos/real-time-customer-data-platform/RTCDP/rtcdp-definitive-hub#watch-now';
+  }
+
+  const bgColor = '#EB1000';
+
+  const block = WebImporter.DOMUtils.createTable([
+    ['marquee (medium)'],
+    [bgColor],
+    [content, img],
+  ], document);
+
+  return { block };
 }
 
 export const parsers = {
   "data-analytics-section-0": parseDataAnalyticsSection0,
+  "data-analytics-section-1": parseDataAnalyticsSection1,
   "data-analytics-section-2": parseDataAnalyticsSection2,
   "data-analytics-section-4": parseDataAnalyticsSection4,
   "data-analytics-section-5": parseDataAnalyticsSection5,
   "media-library-section-0": parseMediaLibrarySection0,
   "media-library-section-4": parseMediaLibrarySection4,
   "media-library-section-5": parseMediaLibrarySection5,
+  "thank-you-section-0": parseThankYouSection0,
 };

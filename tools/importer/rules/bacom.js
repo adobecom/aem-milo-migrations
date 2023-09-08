@@ -96,7 +96,7 @@ export function parse_seeWhatMakesItWork_Section(el, document, section) {
 
   container.append(buildSectionMetadataLayoutGeneric(blocks, smOptions, document));
 
-  return container;
+  return { block: container };
 }
 
 const BACOM_PRODUCTS_FRAGMENT_URL_RELATED_CONTENT = 'https://main--bacom--adobecom.hlx.page/fragments/resources/recommended/template-a-recommended';
@@ -122,7 +122,7 @@ export async function parseFragment_products_related_content_cards(el, document,
 
   container.append(document.createElement('hr'));
 
-  return container;
+  return { block: container };
 }
 
 export async function parseFragment_fragment_products_request_demo_marquee(el, document, section) {
@@ -133,13 +133,13 @@ export async function parseFragment_fragment_products_request_demo_marquee(el, d
   a.textContent = BACOM_PRODUCTS_FRAGMENT_URL_REQUEST_DEMO;
   fragment.append(a);
 
-  return fragment;
+  return { block: fragment };
 }
 
 
 export function parseTwoUpSectionMetadataWithTreeview(el, document, section, options = { bgStrategy: 'default' }) {
   let els = getNSiblingsElements(el, (n) => n >= 2);
-  const container = document.createElement('div');
+  const block = document.createElement('div');
 
   // remove all empty elements from els
   els = els.filter((el) => {
@@ -148,7 +148,7 @@ export function parseTwoUpSectionMetadataWithTreeview(el, document, section, opt
 
   // there is an extra element in the list, consider it a title to add before the section
   if (els.length > 2) {
-    container.append(els.shift());
+    block.append(els.shift());
   }
 
   const blocks = [];
@@ -182,9 +182,9 @@ export function parseTwoUpSectionMetadataWithTreeview(el, document, section, opt
     smOptions.background = extractBackground(el, document);
   }
 
-  container.append(buildSectionMetadataLayoutGeneric(blocks, smOptions, document));
+  block.append(buildSectionMetadataLayoutGeneric(blocks, smOptions, document));
 
-  return container;
+  return { block };
 }
 
 
@@ -258,7 +258,7 @@ export async function parse_marquee_with_treeview(el, document, section) {
 
   container.append(document.createElement('hr'));
 
-  return container;
+  return { block: container };
 }
 
 const BACOM_ICONS_CSS_PATTERNS = [
@@ -357,12 +357,12 @@ export async function parseMultipleComparisonTable(el, document, section) {
     }
   }
 
-  return container;
+  return { block: container };
 }
 
 
 export async function parseSingleComparisonTable(el, document, section) {
-  const container = document.createElement('div');
+  const block = document.createElement('div');
 
   // extract tables
   const table = el.querySelector('table');
@@ -371,22 +371,22 @@ export async function parseSingleComparisonTable(el, document, section) {
   const blockHeaderEl = document.createElement('tr');
   blockHeaderEl.innerHTML = `<th colspan=${colspan}>comparison</th>`;
   table.querySelector('tr').before(blockHeaderEl);
-  container.append(table);
+  block.append(table);
 
   // extract title
   const titleEl = el.querySelector('.title');
   if (titleEl && !titleEl.closest('table')) {
-    container.prepend(titleEl);
+    block.prepend(titleEl);
   }
 
   // extract remaining content
   const sanitizedEl = el.cloneNode(true);
   sanitizedEl.querySelectorAll('style, script').forEach((e) => e.remove());
   if (sanitizedEl.textContent.replaceAll(/\s+/gm, '').trim() !== '') {
-    container.append(sanitizedEl);
+    block.append(sanitizedEl);
   }
 
-  return container;
+  return { block };
 }
 
 // bacom-digital-trends-three-up-charts
@@ -408,7 +408,7 @@ export async function parseBacomDigitalTrendsThreeUpCharts(el, document, section
   container.append(threeUpCharts);
   container.append(centeredTexts);
 
-  return container;
+  return { block: container };
 }
 
 const BG_EXTRACTION_STRATEGIES = {

@@ -7,8 +7,10 @@ export function parse_faasForm(el, document, section) {
 
     const form = document.createElement('p');
     form.append(formLink);
-    return WebImporter.DOMUtils.createTable([
+    const block = WebImporter.DOMUtils.createTable([
         ['Columns (contained)'],
         [form]
     ], document);
+
+    return { block };
 }

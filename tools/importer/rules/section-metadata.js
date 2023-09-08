@@ -18,7 +18,8 @@ export function parseTwoUpLayoutsSectionMetadata(el, document, section, options 
     ...DEFAULT_SM_PARSER_OPTIONS,
     ...options,
   };
-  return parseNUpLayoutsSectionMetadata(el, document, section, opts);
+  const block = parseNUpLayoutsSectionMetadata(el, document, section, opts);
+  return { block };
 }
 
 export function parseThreeUpLayoutsSectionMetadataGeneric(el, document, section, options = {}) {
@@ -27,7 +28,8 @@ export function parseThreeUpLayoutsSectionMetadataGeneric(el, document, section,
     ...options,
     ...{ elNum: 3 },
   };
-  return parseNUpLayoutsSectionMetadata(el, document, section, opts);
+  const block = parseNUpLayoutsSectionMetadata(el, document, section, opts);
+  return { block };
 }
 
 export function parseFourUpLayoutsSectionMetadataGeneric(el, document, section, options = {}) {
@@ -36,7 +38,8 @@ export function parseFourUpLayoutsSectionMetadataGeneric(el, document, section, 
     ...options,
     ...{ elNum: 4 },
   };
-  return parseNUpLayoutsSectionMetadata(el, document, section, opts);
+  const block = parseNUpLayoutsSectionMetadata(el, document, section, opts);
+  return { block };
 }
 
 export function parseFiveUpLayoutsSectionMetadataGeneric(el, document, section, options = {}) {
@@ -45,7 +48,8 @@ export function parseFiveUpLayoutsSectionMetadataGeneric(el, document, section, 
     ...options,
     ...{ elNum: 5 },
   };
-  return parseNUpLayoutsSectionMetadata(el, document, section, opts);
+  const block = parseNUpLayoutsSectionMetadata(el, document, section, opts);
+  return { block };  
 }
 
 /**
@@ -224,7 +228,8 @@ export function parseTwoUpSectionMetadataWithTreeview(el, document, section) {
     options.background = bg;
   }
 
-  return buildSectionMetadataLayoutGeneric(blocks, options, document);
+  const block = buildSectionMetadataLayoutGeneric(blocks, options, document);
+  return { block };
 }
 
 
@@ -282,7 +287,7 @@ export function parseTwoUpLayoutsSectionMetadataWithCardHor(el, document, sectio
     options.background = bg;
   }
 
-  const layoutEl = buildSectionMetadataLayoutGeneric(blocks, options, document);
+  const block = buildSectionMetadataLayoutGeneric(blocks, options, document);
 
   if (titleLayoutEl) {
     const titleTable = WebImporter.DOMUtils.createTable([
@@ -291,13 +296,13 @@ export function parseTwoUpLayoutsSectionMetadataWithCardHor(el, document, sectio
     ], document)
 
     if(isPost){
-      layoutEl.append(titleTable)
+      block.append(titleTable)
     } else {
-      layoutEl.prepend(titleTable)
+      block.prepend(titleTable)
     }
   }
 
-  return layoutEl;
+  return { block };
 }
 
 export function parseTwoUpLayoutGrid_1_2_SectionMetadata(el, document, section, elementType = 'text') {
@@ -361,7 +366,7 @@ export function parseTwoUpLayoutGrid_1_2_SectionMetadata(el, document, section, 
     options.background = bg;
   }
 
-  const layoutEl = buildSectionMetadataLayoutGeneric(blocks, options, document);
+  const block = buildSectionMetadataLayoutGeneric(blocks, options, document);
 
   if (titleLayoutEl) {
     const titleTable = WebImporter.DOMUtils.createTable([
@@ -370,13 +375,13 @@ export function parseTwoUpLayoutGrid_1_2_SectionMetadata(el, document, section, 
     ], document)
 
     if(isPost){
-      layoutEl.append(titleTable)
+      block.append(titleTable)
     } else {
-      layoutEl.prepend(titleTable)
+      block.prepend(titleTable)
     }
   }
 
-  return layoutEl;
+  return { block };
 }
 
 export function buildSectionMetadataLayoutGeneric(els, options, document) {
@@ -440,7 +445,8 @@ export function parseSectionMetadataGenericCentered(el, document, section) {
     options.background = bg;
   }
 
-  return buildSectionMetadataLayoutGeneric([container], options, document);
+  const block = buildSectionMetadataLayoutGeneric([container], options, document);
+  return { block };
 }
 
 export function parseSectionMetadataGenericRaw(el, document, section) {
@@ -466,12 +472,13 @@ export function parseSectionMetadataGenericRaw(el, document, section) {
     options.background = bg;
   }
 
-  return buildSectionMetadataLayoutGeneric([container], options, document);
+  const block = buildSectionMetadataLayoutGeneric([container], options, document);
+  return { block };
 }
 
 export function parseMultipleSectionMetadataTwoUpGeneric(el, document, section) {
   let subSections = getNSiblingsElements(el, (n) => n > 2);
-  const sectionMetadata = document.createElement('div');
+  const block = document.createElement('div');
 
   // remove empty sections
   subSections = subSections.filter((e) => e.textContent.replace('\n', '').trim().length > 0);
@@ -513,8 +520,8 @@ export function parseMultipleSectionMetadataTwoUpGeneric(el, document, section) 
 
     const smEl = buildSectionMetadataLayoutGeneric(blocks, options, document);
 
-    sectionMetadata.append(smEl);
+    block.append(smEl);
   }
 
-  return sectionMetadata;
+  return { block };
 }

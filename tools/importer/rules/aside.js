@@ -10,7 +10,8 @@ const DEFAULT_ASIDE_PARSER_OPTIONS = {
 };
 
 export function parseAside(el, document, section, options = {}) {
-  return parseAsideGeneric(el, document, section, options);
+  const block = parseAsideGeneric(el, document, section, options);
+  return { block };
 }
 
 export function parseAsideInline(el, document, section, options = {}) {
@@ -19,7 +20,8 @@ export function parseAsideInline(el, document, section, options = {}) {
     ...options,
     ...{ style: 'inline' },
   };
-  return parseAsideGeneric(el, document, section, opts);
+  const block = parseAsideGeneric(el, document, section, opts);
+  return { block };
 }
 
 export function parseAsideNotificationCenter(el, document, section, options = {}) {
@@ -28,7 +30,8 @@ export function parseAsideNotificationCenter(el, document, section, options = {}
     ...options,
     ...{ style: 'notification, medium, center' },
   };
-  return parseAsideGeneric(el, document, section, opts);
+  const block = parseAsideGeneric(el, document, section, opts);
+  return { block };
 }
 
 /**

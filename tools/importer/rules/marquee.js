@@ -191,11 +191,14 @@ export async function parseMarquee(el, document, section, options = { imageFirst
   if (options.imageFirst) {
     marqueeContent = [(resource || ''), container];
   }
-  return WebImporter.DOMUtils.createTable([
+
+  const block = WebImporter.DOMUtils.createTable([
     [`marquee (small, ${theme})`],
     [extractBackground(marqueeDoc, document)],
     marqueeContent,
   ], document);
+
+  return { block };
 }
 
 export async function parseMarqueeSimple(el, document, section, backgroundColor = '') {
@@ -215,9 +218,11 @@ export async function parseMarqueeSimple(el, document, section, backgroundColor 
     }
   }
 
-  return WebImporter.DOMUtils.createTable([
+  const block = WebImporter.DOMUtils.createTable([
     [`marquee (small, ${theme})`],
     [extractBackground(marqueeDoc, document)],
     [container, ''],
   ], document);
+
+  return { block };
 }

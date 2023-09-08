@@ -5,8 +5,10 @@ export function parseTreeView(el, document, section) {
     input.remove();
   });
 
-  return WebImporter.DOMUtils.createTable([
+  const block = WebImporter.DOMUtils.createTable([
     ['tree-view'],
     [treeview],
   ], document);
+
+  return { block };
 }

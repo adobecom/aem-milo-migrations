@@ -14,8 +14,10 @@ export function parseUnknown(el, document, section) {
     img
   ]);
 
-  return WebImporter.DOMUtils.createTable(
+  const block = WebImporter.DOMUtils.createTable(
     cells,
     document,
   );
+
+  return { block };
 }

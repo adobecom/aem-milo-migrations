@@ -185,6 +185,7 @@ export default {
     const main = document.querySelector('main');
     const elsToPush = [];
     const elsToRemove = [];
+    const extraElements = [];
 
     // init sections report
     const IMPORT_REPORT = {};
@@ -243,21 +244,24 @@ export default {
               }
               zpatternElements.push(getElementByXpath(document, '/' + sectionsData[i].xpath));
             }
-            const block = await sectionsRulesMap[section.block.type](el, document, zpatternElements);
+            const { block, extraDocs } = await sectionsRulesMap[section.block.type](el, document, zpatternElements);
             elsToPush.push(block);
+            extraElements.push(...extraDocs || []);
             elsToRemove.push(el);
             continue;
           }
           else if (section.block.type === 'z-pattern-single') {
             const zpatternElements = [ el ];
-            const block = await sectionsRulesMap[section.block.type](el, document, zpatternElements);
+            const { block, extraDocs } = await sectionsRulesMap[section.block.type](el, document, zpatternElements);
             elsToPush.push(block);
+            extraElements.push(...extraDocs || []);
             elsToRemove.push(el);
             continue;
           }
 
-          const block = await sectionsRulesMap[section.block.type](el, document, section);
+          const { block, extraDocs } = await sectionsRulesMap[section.block.type](el, document, section);
           elsToPush.push(block);
+          extraElements.push(...extraDocs || []);
           elsToRemove.push(el);
         } else {
           const cells = [
@@ -395,11 +399,14 @@ export default {
     // make every report value a string
     Object.keys(IMPORT_REPORT).map(k => (IMPORT_REPORT[k] = '' + IMPORT_REPORT[k]));
 
-    return [{
+    const elements = [{
       element: main,
       path: generateDocumentPath({ document, url: params.originalURL }),
       report: IMPORT_REPORT,
     }];
+    elements.push(...extraElements);
+
+    return elements;
 
   },
 

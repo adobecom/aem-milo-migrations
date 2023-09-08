@@ -85,7 +85,7 @@ export function parseMedia(el, document, section) {
 
   container.append(document.createElement('hr'));
 
-  return container;
+  return { block: container };
 
 }
 

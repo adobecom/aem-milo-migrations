@@ -70,18 +70,18 @@ export async function parseTableOfContents(el, document, section) {
   const tocTable = WebImporter.DOMUtils.createTable(tocCells, document);
 
   // construct output
-  const container = document.createElement('div');
+  const block = document.createElement('div');
   const sectionTable = WebImporter.DOMUtils.createTable([
     ['Section Metadata'],
     ['style', 'toc'],
     ['background', '']
   ], document);
 
-  container.append(document.createElement('hr'));
-  container.append(sectionTable)
-  container.append(marqueeTable)
-  container.append(tocTable)
-  container.append(document.createElement('hr'));
+  block.append(document.createElement('hr'));
+  block.append(sectionTable)
+  block.append(marqueeTable)
+  block.append(tocTable)
+  block.append(document.createElement('hr'));
 
-  return container;
+  return { block };
 }
