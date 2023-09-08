@@ -1,5 +1,6 @@
 import { parseAsideGeneric, parseAsideNotificationCenter } from '../aside.js';
 import { extractBackground, parseTwoUpSectionMetadataWithTreeview } from '../bacom.js';
+import { handleFaasForm } from '../handleFaasForm.js';
 import { parseMarquee } from '../marquee.js';
 import { parseTwoUpLayoutsSectionMetadata } from '../section-metadata.js';
 import { getNSiblingsElements } from '../utils.js';
@@ -196,6 +197,14 @@ function parseThankYouSection0(el, document, section) {
   const img = el.querySelector('img');
   const content = el.querySelector('.position');
 
+  // cleanup empty spans
+  content.querySelectorAll('a').forEach(a => {
+    const spaceEl = document.createElement('span');
+    spaceEl.innerHTML = '&nbsp;';
+    content.append(a);
+    content.append(spaceEl);
+  });
+
   // make "watch video" link point to the right video
   const videoLink = content.querySelector('a');
   if (videoLink) {
@@ -213,6 +222,47 @@ function parseThankYouSection0(el, document, section) {
   return { block };
 }
 
+
+
+/**
+ * cdp-definitive-hub
+ */
+
+function parseCDPDefHubFaasForm(el, document, section) {
+  // original faas form
+  const formEl = handleFaasForm(el, document);
+
+  const titleEl = el.querySelector('h2') || ((root) => {
+    const el = root.querySelector('h2');
+    el.textContent = 'Access Now';
+    return el;
+  })(el);
+  titleEl.dataset.hlxImpLabel = 'faas-form-title';
+
+  const titleBlock = WebImporter.DOMUtils.createTable([
+    ["text (center)"],
+    [titleEl],
+  ], document);
+
+  // let title = 'Access Now';
+  // // check if existing title
+  // const existingTitleEl = el.querySelector('h2');
+  // if (existingTitleEl) {
+  //   title = existingTitleEl.textContent;
+  // }
+
+  // block
+  const block = document.createElement('div');
+
+  // const formTitleEl = document.createElement('h5');
+  // formTitleEl.id = 'form'
+  // formTitleEl.textContent = 'Access Now';
+
+  block.append(titleBlock, formEl);
+
+  return { block };
+}
+
 export const parsers = {
   "data-analytics-section-0": parseDataAnalyticsSection0,
   "data-analytics-section-1": parseDataAnalyticsSection1,
@@ -223,4 +273,6 @@ export const parsers = {
   "media-library-section-4": parseMediaLibrarySection4,
   "media-library-section-5": parseMediaLibrarySection5,
   "thank-you-section-0": parseThankYouSection0,
+  "cdp-def-hub-section-0": parseThankYouSection0,
+  "cdp-def-hub-faas-form": parseCDPDefHubFaasForm,
 };

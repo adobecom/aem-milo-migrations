@@ -88,6 +88,7 @@ const handleFaasForm = (root, document, faasTitle) => {
 
   const formLink = document.createElement('a');
   formLink.href = formLinkURL;
+  formLink.dataset.faasFormId = faasConfig.id;
   formLink.innerHTML = `FaaS Link - FormID: ${faasConfig.id} ${faasConfig.cleabitStyle}`;
   faasFormElement.replaceWith(formLink);
   return formLink;
