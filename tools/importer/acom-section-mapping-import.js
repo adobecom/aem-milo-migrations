@@ -1,6 +1,6 @@
 //'use strict'
 
-/*
+/**
  * Copyright 2022 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License. You may obtain a copy
@@ -12,6 +12,12 @@
  * governing permissions and limitations under the License.
  */
 /* eslint-disable no-console, class-methods-use-this */
+import { generateDocumentPath, getElementByXpath, setGlobals, smartScroll } from './utils.js';
+
+/**
+ * parsers
+ */
+
 import { getSectionsData } from './rules/sections-data.js';
 import { parseMarquee, parseMarqueeSimple } from './rules/marquee.js';
 import { parseText } from './rules/text.js';
@@ -20,7 +26,6 @@ import { parseCardMetadata, parseMetadata } from './rules/metadata.js';
 import { parseCAASContent } from './rules/caas.js';
 import { parseZPattern } from './rules/z-pattern.js';
 import { parseAside, parseAsideInline, parseAsideNotificationCenter } from './rules/aside.js';
-import { generateDocumentPath, setGlobals } from './utils.js';
 import { parseBreadcrumb } from './rules/breadcrumb.js';
 import {
   parseTwoUpLayoutsSectionMetadata,
@@ -34,7 +39,6 @@ import {
   parseTwoUpLayoutGrid_1_2_SectionMetadata,
 } from './rules/section-metadata.js';
 import { parseUnknown } from './rules/unknown.js';
-import { getElementByXpath } from './utils.js';
 import { parseMedia } from './rules/media.js';
 import { parseTableOfContents } from './rules/table-of-contents.js';
 import {
@@ -52,19 +56,17 @@ import { parse_faasForm } from './rules/form-link.js';
 import { waitForFaasForm } from './rules/handleFaasForm.js';
 import { parseTableGeneric } from './rules/table.js';
 import { parseCarousel } from './rules/carousel.js';
-
+// custom parsers
 import * as customParsers from './rules/customs/customs.mjs';
 
-// import { parseBacomProductsPageTemplateKMultiBlocksSection } from './rules/bacom-products-template-k.js';
-
-
+// parser wrapper
 function nUpElementTypeVariantParserLayoutSectionMetadata(elementType = 'text', parserFn) {
   return function parser(el, document, section) {
     return parserFn(el, document, section, {elementType});
   };
 }
 
-/*
+/**
  * mapping between the section type and the parsing function
  */
 
@@ -109,7 +111,7 @@ const sectionsRulesMap = {
   'z-pattern': parseZPattern,
 };
 
-/*
+/**
  * load custom parsers
  */
 
@@ -180,7 +182,7 @@ export default {
 
   transform: async ({ document, params }) => {
 
-    /*
+    /**
      * init globals and constants
      */
 
@@ -200,16 +202,16 @@ export default {
 
 
 
-    /*
-     * global top content
-     */
+    // /**
+    //  * global top content
+    //  */
 
     const [breadcrumbType, breadcrumb] = parseBreadcrumb(document);
     elsToPush.push(breadcrumb);
 
 
 
-    /*
+    /**
      * create blocks from sections data
      */
 
@@ -291,7 +293,7 @@ export default {
 
     
     
-    /*
+    /**
      * global changes
      */
 
@@ -357,7 +359,7 @@ export default {
 
 
 
-    /*
+    /**
      * bottom elements (metadata)
      */
     
@@ -367,7 +369,7 @@ export default {
     
 
 
-    /*
+    /**
      * cleanup to remove unwanted elements
      */
 
@@ -385,7 +387,7 @@ export default {
     });
     
     
-    /*
+    /**
      * return + custom report
      */
 
