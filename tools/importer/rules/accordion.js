@@ -17,5 +17,7 @@ export function parseAccordion(el, document, section) {
     cells.push([item.children[1]]);
   });
 
-  return WebImporter.DOMUtils.createTable(cells, document);
+  const block = WebImporter.DOMUtils.createTable(cells, document);
+
+  return { block };
 }

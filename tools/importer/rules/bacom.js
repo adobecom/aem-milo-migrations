@@ -158,12 +158,12 @@ export function parseTwoUpSectionMetadataWithTreeview(el, document, section, opt
     let blockType = 'text';
 
     if (el.querySelector('.treeview, .treeView')) {
-      const treeview = parseTreeView(el, document);
-      blocks.push(treeview);
+      const { block } = parseTreeView(el, document);
+      blocks.push(block);
       continue;
     } else if (el.querySelector('.accordion')) {
-      const accordion = parseAccordion(el, document);
-      blocks.push(accordion);
+      const { block } = parseAccordion(el, document);
+      blocks.push(block);
       continue;
     }
 
@@ -196,23 +196,25 @@ export async function parse_marquee_with_treeview(el, document, section) {
   * background
   */
 
-  let background =  WebImporter.DOMUtils.getImgFromBackground(el, document)
+  let background = extractBackground(el, document);
+  // let background =  WebImporter.DOMUtils.getImgFromBackground(el, document)
 
-  // strategy 2
-  if (!background) {
-    el.querySelectorAll('div').forEach(d => {
-      const bg = document.defaultView.getComputedStyle(d).getPropertyValue('background-image');
-      if (bg !== '') {
-        background = WebImporter.DOMUtils.getImgFromBackground(d, document);
-      }
-    });
-  }
+  // // strategy 2
+  // if (!background) {
+  //   el.querySelectorAll('div').forEach(d => {
+  //     const bg = document.defaultView.getComputedStyle(d).getPropertyValue('background-image');
+  //     if (bg !== '') {
+  //       background = WebImporter.DOMUtils.getImgFromBackground(d, document);
+  //     }
+  //   });
+  // }
 
   /*
   * tree-view
   */
 
-  container.append(parseTreeView(el, document));
+  const treeview = parseTreeView(el, document);
+  container.append(treeview.block);
 
   /*
   * texts
