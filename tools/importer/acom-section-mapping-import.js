@@ -117,7 +117,7 @@ const sectionsRulesMap = {
 
 Object.keys(customParsers).forEach((key) => {
   Object.keys(customParsers[key].parsers).forEach((parserKey) => {
-    sectionsRulesMap[key + '_' + parserKey] = customParsers[key].parsers[parserKey];
+    sectionsRulesMap[parserKey] = customParsers[key].parsers[parserKey];
   });
 });
 
@@ -147,7 +147,10 @@ export default {
     );
 
     // force close locale modal which is blocking scrolling on some pages
-    document.querySelector('locale-modal a.dexter-CloseButton').click();
+    const localeModalEl = document.querySelector('locale-modal a.dexter-CloseButton');
+    if (localeModalEl) {
+      localeModalEl.click();
+    }
     await smartScroll(document);
 
     // handle faas form

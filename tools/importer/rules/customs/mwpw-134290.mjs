@@ -2,7 +2,7 @@ import { parseAsideGeneric, parseAsideNotificationCenter } from '../aside.js';
 import { extractBackground, parseTwoUpSectionMetadataWithTreeview } from '../bacom.js';
 import { handleFaasForm } from '../handleFaasForm.js';
 import { parseMarquee } from '../marquee.js';
-import { parseTwoUpLayoutsSectionMetadata } from '../section-metadata.js';
+import { buildSectionMetadataLayoutGeneric, parseTwoUpLayoutsSectionMetadata } from '../section-metadata.js';
 import { getNSiblingsElements } from '../utils.js';
 
 /**
@@ -263,16 +263,65 @@ function parseCDPDefHubFaasForm(el, document, section) {
   return { block };
 }
 
+/**
+ * competitive comparison (https://business.adobe.com/ca_fr/products/target/competitive-comparison.html)
+ */
+
+
+function parseCompCompSections1_5(el, document, section) {
+  // cleanup
+  el.querySelectorAll('.horizontalRule').forEach(el => { el.remove(); });
+
+  const els = getNSiblingsElements(el, 3);
+  const blocks = els.map(el => {
+    return WebImporter.DOMUtils.createTable([
+      ["text (center)"],
+      [el],
+    ], document);
+  });
+
+  const smOptions = {
+    style: 'three-up, grid-width-12',
+  };
+
+  const block = buildSectionMetadataLayoutGeneric(blocks, smOptions, document);
+
+  return { block };
+}
+
+function parseCompCompSection0(el, document, section) {
+  // cleanup
+  el.querySelectorAll('style').forEach(el => { el.remove(); });
+
+  const els = getNSiblingsElements(el.querySelector('.container .container'), 2);
+  
+  const block = WebImporter.DOMUtils.createTable([
+    [`marquee (small, dark)`],
+    [extractBackground(el, document)],
+    [els[0], els[1]],
+  ], document);
+  
+  return { block };
+  }
+
+
+
+/**
+ * exports parsers
+ */
+
 export const parsers = {
-  "data-analytics-section-0": parseDataAnalyticsSection0,
-  "data-analytics-section-1": parseDataAnalyticsSection1,
-  "data-analytics-section-2": parseDataAnalyticsSection2,
-  "data-analytics-section-4": parseDataAnalyticsSection4,
-  "data-analytics-section-5": parseDataAnalyticsSection5,
-  "media-library-section-0": parseMediaLibrarySection0,
-  "media-library-section-4": parseMediaLibrarySection4,
-  "media-library-section-5": parseMediaLibrarySection5,
-  "thank-you-section-0": parseThankYouSection0,
-  "cdp-def-hub-section-0": parseThankYouSection0,
-  "cdp-def-hub-faas-form": parseCDPDefHubFaasForm,
+  "MWPW_134290_data-analytics-section-0": parseDataAnalyticsSection0,
+  "MWPW_134290_data-analytics-section-1": parseDataAnalyticsSection1,
+  "MWPW_134290_data-analytics-section-2": parseDataAnalyticsSection2,
+  "MWPW_134290_data-analytics-section-4": parseDataAnalyticsSection4,
+  "MWPW_134290_data-analytics-section-5": parseDataAnalyticsSection5,
+  "MWPW_134290_media-library-section-0": parseMediaLibrarySection0,
+  "MWPW_134290_media-library-section-4": parseMediaLibrarySection4,
+  "MWPW_134290_media-library-section-5": parseMediaLibrarySection5,
+  "MWPW_134290_thank-you-section-0": parseThankYouSection0,
+  "MWPW_134290_cdp-def-hub-section-0": parseThankYouSection0,
+  "MWPW_134290_cdp-def-hub-faas-form": parseCDPDefHubFaasForm,
+  "MWPW_134290_competitive-comparison_sections-1-5": parseCompCompSections1_5,
+  "MWPW_134290_competitive-comparison_sections-0": parseCompCompSection0,
 };

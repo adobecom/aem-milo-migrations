@@ -73,6 +73,8 @@ export function parseNUpLayoutsSectionMetadata(el, document, section, options = 
 
   console.log('parseNUpLayoutsSectionMetadata options: ', options);
 
+  el.querySelectorAll('.horizontalRule').forEach((e) => e.remove());
+
   let els = getNSiblingsElements(el, (n) => n >= options.elNum);
 
   console.log('els', els.length);
