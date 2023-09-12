@@ -38,7 +38,7 @@ BACOM - Franklin Imports
 
 * Consonant Design System  
   https://consonant.adobe.com/1975e5ba1/v/32165/p/03e00a-aside/b/5192be  
-  Can help taking decisions about which Milo component to use (ex. differences between a Marquee and a Media)
+  Can help taking decisions about best Milo block to use (ex. differences between a Marquee and a Media)
 
 
 ## BACOM Page Types we have to Import
