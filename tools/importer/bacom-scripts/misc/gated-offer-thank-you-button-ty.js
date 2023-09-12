@@ -11,8 +11,8 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { setGlobals, getMetadataValue, isRelative, findPaths, createElementFromHTML, getRecommendedArticles, generateDocumentPath } from '../utils.js';
-import { parseCardMetadata } from '../rules/metadata.js';
+import { setGlobals, getMetadataValue, isRelative, findPaths, createElementFromHTML, getRecommendedArticles, generateDocumentPath } from '../../utils.js';
+import { parseCardMetadata } from '../../rules/metadata.js';
 
 const createMetadata = (main, document) => {
   const meta = {};
@@ -43,27 +43,31 @@ const getResource = (document, originalURL) => {
   // video
   const videoIframe = document.querySelector('.video iframe, .modal iframe');
   if (videoIframe) {
-    const href = videoIframe.getAttribute('data-video-src') || videoIframe.src;
-    const link = document.createElement('a');
-    link.href = href;
-    link.textContent = href;
+    const link = videoIframe.getAttribute('data-video-src') || videoIframe.src;
+
+    if (link.includes('nam04.safelinks.protection.outlook.com')) {
+      const u = new URL(link);
+      const params = new URLSearchParams(u.search);
+      const url = params.get('url');
+      if (url) {
+        link = decodeURIComponent(url);
+      }
+    }
+
     return {
       el: link,
-      text: href,
+      text: link,
     };
-
   }
   const videoLink = document.querySelector('.dexter-Cta a[href*="tv.adobe.com"]');
   if (videoLink) {
-    const link = document.createElement('a');
-    link.href = videoLink.href;
-    link.textContent = videoLink.href;
     return {
-      el: link,
+      el: videoLink.href,
       text: videoLink.href,
     };
-
   }
+
+  // slides deck link
 
   // pdf link
   let pdfLink = document.querySelector('.dexter-Cta a[href*=".pdf"]');
@@ -150,127 +154,54 @@ export default {
 
     const u = new URL(params.originalURL);
     // Resource (pdf, video, etc.)
-    const resource = getResource(document, u);
+    const resource = null; // getResource(document, u);
     /*
      * title + resource link
      */
 
     const main = document.createElement('div');
-    // const flexContainers = document.querySelectorAll('.dexter-FlexContainer');
-    // let title = null;
-    // for (const item of flexContainers) {
-    //   if(item.querySelector('.cmp-title')) {
-    //     const texts = document.createElement('div')
-    //     item.querySelectorAll('.cmp-title').forEach(elem => texts.append(elem))
-    //     if (!resource.el) {
-    //       const button = document.querySelector('a[href*="gartner.com/"], a[href*="forrester.com/"]');
-    //       if (button) {
-    //         const str = document.createElement('B');
-    //         str.append(button);
-    //         texts.append(str);
-    //       }
-    //     }
-    //     if (texts.textContent.length > 0 && !texts.textContent.toLowerCase().includes('materials are ready')) {
-    //       title = texts.textContent;
-    //       break;
-    //     }
-    //   }
-    // }
-    // if (!title && resource.text) {
-    //   title = resource.text;
-    // }
-
-    document.querySelectorAll('style, script').forEach((el) => el.remove());
-
-    const header = document.createElement('div');
-
-    if (u.pathname.includes('/sdk/')) {
-      const eyebrowEl = document.createElement('div');
-      eyebrowEl.textContent = document.querySelector('.dexter-FlexContainer .cmp-text').textContent.toUpperCase();
-
-      const titleEl = document.createElement('h1');
-      titleEl.textContent = document.querySelector('.dexter-FlexContainer .cmp-title').textContent;
-
-      header.append(eyebrowEl);
-      header.append(titleEl);
-    } else {
-      // title
-      let title = document.createElement('h1');
-      
-      // strategy 1
-      if (document.querySelector('.cmp-title')) {
-        title.textContent = document.querySelector('.cmp-title').textContent.trim();
-      }
-
-      if (title.textContent.length === 0 && document.querySelector('.dexter-FlexContainer')) {
-        title.textContent = document.querySelector('.dexter-FlexContainer').textContent.trim();
-      }
-
-      if (title) {
-        header.append(title);
-      }
-
-      // eyebrow, extracted from url path
-      let eyebrowText = null;
-
-      // strategy 1
-      if (document.querySelector('.dexter-FlexContainer .cmp-text')) {
-        const t = document.querySelector('.dexter-FlexContainer .cmp-text').textContent.trim().toUpperCase();
-        if (t.length > 0 && t.length <= 11 && t !== title.textContent) {
-          eyebrowText = t;
+    const flexContainers = document.querySelectorAll('.dexter-FlexContainer');
+    let title = null;
+    for (const item of flexContainers) {
+      if(item.querySelector('.cmp-title, .cmp-text, a')) {
+        const texts = document.createElement('div')
+        item.querySelectorAll('.cmp-title, .cmp-text').forEach(elem => texts.append(elem))
+        // if (!resource.el) {
+        //   const button = document.querySelector('a[href*="gartner.com/"], a[href*="forrester.com/"]');
+        //   if (button) {
+        //     const str = document.createElement('B');
+        //     str.append(button);
+        //     texts.append(str);
+        //   }
+        // }
+        if (texts.textContent.length > 0 && !texts.textContent.toLowerCase().includes('materials are ready')) {
+          title = texts.textContent;
+          break;
         }
       }
-
-      // strategy 2
-      if (!eyebrowText) {
-        const paths = u.pathname.split('/');
-        const t = paths[3].replace(/[sS]$/g, '').toUpperCase();
-        if (t.length > 0 && t.length <= 11 && t !== title.textContent) {
-          eyebrowText = t;
-        }
-      }
-
-      // if (header.textContent.indexOf(eyebrow.textContent) === 0) {
-      //   header.textContent = header.textContent.replace(eyebrow.textContent, '');
-      // }
-
-      // strategy 3
-      if (!eyebrowText) {
-        eyebrowText = 'REPORT';
-      }
-
-      const eyebrowEl = document.createElement('div');
-      eyebrowEl.textContent = eyebrowText;
-
-      header.prepend(eyebrowEl);
-
+    }
+    if (!title && resource.text) {
+      title = resource.text;
     }
 
-    // if (title) {
-    //   const h1TitleEl = document.createElement('h1');
-    //   h1TitleEl.textContent = title;
+    if (title) {
+      const content = document.createElement('div');
+      const h1TitleEl = document.createElement('h1');
+      h1TitleEl.textContent = title;
+      content.append(h1TitleEl);
+      // Add Resource (pdf, video, etc.) to output
+      const button = document.querySelector('a[href*="gartner.com/"], a[href*="forrester.com/"]');
+      if (button) {
+        const str = document.createElement('B');
+        str.append(button);
+        content.append(str);
+      }
       main.append(WebImporter.DOMUtils.createTable([
         ['text (large)'],
-        [header],
+        [content],
       ], document));
-    // }
-
-    // Add Resource (pdf, video, etc.) to output
-    if (resource.el) {
-      main.append(resource.el);
     }
 
-    main.querySelectorAll('a').forEach((a) => {
-      if (a.href.includes('nam04.safelinks.protection.outlook.com')) {
-        const u = new URL(a.href);
-        const params = new URLSearchParams(u.search);
-        const url = params.get('url');
-        if (url) {
-          a.href = url;
-          a.textContent = url;
-        }
-      }
-    });
 
     main.append(WebImporter.DOMUtils.createTable([
       ['Section Metadata'],

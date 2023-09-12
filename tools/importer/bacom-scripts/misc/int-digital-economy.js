@@ -11,7 +11,7 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { cleanupHeadings, setGlobals, findPaths, getMetadataValue, getRecommendedArticles } from '../utils.js';
+import { cleanupHeadings, setGlobals, findPaths, getMetadataValue, getRecommendedArticles } from '../../utils.js';
 
 const createMetadata = (document) => {
   const meta = {};
@@ -29,8 +29,7 @@ const createMetadata = (document) => {
   meta.publishDate = getMetadataValue(document, 'publishDate');
   meta.productJcrID = getMetadataValue(document, 'productJcrID');
   meta.primaryProductName = getMetadataValue(document, 'primaryProductName');
-  const imageMeta = getMetadataValue(document, 'og:image');
-  meta.image = imageMeta === '' ? '' : createImage(document, `https://business.adobe.com${imageMeta}`);
+  meta.image = createImage(document, `https://business.adobe.com${getMetadataValue(document, 'og:image')}`);
 
   const block = WebImporter.Blocks.getMetadataBlock(document, meta);
   return block;
@@ -42,9 +41,8 @@ const createImage = (document, url)  => {
   return img;
 };
 
-const createMarquee = (main, document, originalURL) => {
-  let marqueeDoc = document.querySelector('.dexter-FlexContainer');
-
+const createMarquee = (main, document, backgroundColor) => {
+  let marqueeDoc = main; //, document.querySelector('.dexter-FlexContainer');
 
   /*
    * texts
@@ -76,7 +74,7 @@ const createMarquee = (main, document, originalURL) => {
    * background
    */
 
-  const background =  WebImporter.DOMUtils.getImgFromBackground(marqueeDoc, document) || '#F8F8F8';
+  const background =  WebImporter.DOMUtils.getImgFromBackground(marqueeDoc, document) || backgroundColor || '';
 
   /*
    * image + resource
@@ -106,6 +104,15 @@ const createMarquee = (main, document, originalURL) => {
     }
   }
 
+  const video = marqueeDoc.querySelector('video.video-desktop');
+  if (video) {
+    const source = video.querySelector('source');
+    // const l = document.createElement('a');
+    // l.textContent = source.src;
+    // l.href = source.src;
+    resource = source.src;
+  }
+
   /*
    * create table
    */
@@ -125,7 +132,7 @@ const createCardMetadata = (document) => {
   const cells = [
     ['Card Metadata'],
     ['title', getMetadataValue(document, 'cardTitle')],
-    ['cardImagePath', getMetadataValue(document, 'cardImagePath') === '' ? '' : createImage(document,`https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`)],
+    ['cardImagePath', createImage(document,`https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`)],
     ['CardDescription', getMetadataValue(document, 'cardDesc')],
     ['primaryTag', `caas:content-type/${getMetadataValue(document, 'caas:content-type')}`],
     ['tags', `${getMetadataValue(document, 'cq:tags')}`],
@@ -231,53 +238,107 @@ export default {
     
     const [breadcrumbType, breadcrumb] = createBreadcrumbs(document);
 
-    WebImporter.DOMUtils.remove(document, [
-      `header, footer, .faas-form-settings, .xf, style, northstar-card-collection, consonant-card-collection`,
-      '.globalnavheader', 
-      '.globalNavHeader',
-    ]);
     
     cleanupHeadings(document.body);
     
     const elementsToPush = [breadcrumb];
     // content.prepend(breadcrumb);
+
+
     
-    const content = document.querySelector('.content');
+    /*
+     * collect all sections
+     */
+
     const sections = [];
-    content.querySelectorAll(`:scope > div > div`).forEach((section) => {
-      console.log(section.textContent.trim().replaceAll(/\s+/gm, ' '));
-      if (!section.classList.contains('ghost') && !section.classList.contains('dexter-Spacer') && !section.classList.contains('aem-GridColumn--phone--none') && section.innerText !== '' && section.querySelector(':scope .horizontalRule') === null && section.textContent.trim().replaceAll(/\s+/gm, '') !== '') {
+
+    const content = document.querySelector('.content');
+    const divs = content.querySelectorAll(`:scope > div > div`);
+    console.log('divs length: ', divs.length);
+    divs.forEach((section) => {
+      if (!section.classList.contains('ghost') && !section.classList.contains('dexter-Spacer') && !section.classList.contains('aem-GridColumn--phone--none') && !section.classList.contains('aem-GridColumn--default--hide') && section.innerText !== '' /*&& section.querySelector(':scope .horizontalRule') === null*/ && (section.textContent.trim().replaceAll(/\s+/gm, '') !== '' || section.querySelector('.dxf') !== null)) {
         sections.push(section);
+      } else {
+        console.log('skipping section');
+        console.log(section.textContent.trim().replaceAll(/\s+/gm, ' '));
+        console.log(section.querySelector('.dxf'));
+        console.log(section.clientHeight);
+        console.log(section.outerHTML);
       }
     });
+
+    console.log(sections);
     console.log(sections.length);
 
-    sections.forEach((section) => {
-      console.log('>>>', section.textContent.trim().replaceAll(/\s+/gm, ' '), '<<<');
-    });
 
-    // marquee
+    /*
+     * section 1 - marquee
+     */
+
     const marqueeEl = sections.shift();
-    elementsToPush.push(createMarquee(marqueeEl, document, new URL(params.originalURL)));
+    elementsToPush.push(createMarquee(marqueeEl, document, '#FBFBFB'));
     elementsToPush.push(document.createElement('hr'));
 
 
+    /*
+     * section 2
+     */
 
-    // potential aside #0
-    // console.log('=======================');
-    // console.log(sections[0].innerHTML.trim());
-    // console.log('=======================');
-    if (sections[0].querySelector(':scope img[src*="DX-banner-DT23"]')) {
-      console.log('remove extra aside!')
-      sections.shift();
-    }
+    const section2 = sections.shift();
+    const s2Content = section2.querySelector(':scope .container');
+    elementsToPush.push(s2Content);
+    elementsToPush.push(WebImporter.DOMUtils.createTable([
+      ['section metadata'],
+      ['style', 'xl spacing, center']
+    ], document));
+
+    elementsToPush.push(document.createElement('hr'));
 
 
+    /*
+     * section 3
+     */
 
-    // aside #1
+    const section3 = sections.shift();
+    elementsToPush.push(section3);
+
+
+    /*
+     * section 4
+     */
+
+    const section4 = sections.shift();
+
+    const s4Texts = section4.querySelector('.dexter-FlexContainer-Items > .flex');
+    const s4Image = section4.querySelector('.dexter-FlexContainer-Items > .image');
+    elementsToPush.push(WebImporter.DOMUtils.createTable([
+      ['aside (inline)'],
+      ['#FFFFFF'],
+      [s4Texts, s4Image],
+    ], document));
+
+    elementsToPush.push(WebImporter.DOMUtils.createTable([
+      ['section metadata'],
+      ['style', 'xl spacing, center']
+    ], document));
+    elementsToPush.push(document.createElement('hr'));
+
+
+    /*
+     * section 5
+     */
+
     const aside1 = sections.shift();
 
     const aside1Items = aside1.querySelectorAll('.dexter-FlexContainer-Items > div');
+
+    // make links italic to trigger button decoration
+    aside1Items[0].querySelectorAll('a').forEach((el) => {
+      const str = document.createElement('i');
+      el.before(str);
+      str.append(el);
+    });
+
     elementsToPush.push(WebImporter.DOMUtils.createTable([
       ['aside (inline)'],
       ['#F5F5F5'],
@@ -290,126 +351,80 @@ export default {
     elementsToPush.push(document.createElement('hr'));
 
 
+    /*
+     * section 6
+     */
 
-    // z pattern
-    const zPatternCells = [
-      ['z-pattern (medium)'],
-    ];
-
-    if (!sections[0].querySelector('img')) {
-      const zPFirstEl = sections.shift();
-      const zPFirstElTitle = zPFirstEl.querySelector('h2') || '';
-      const zPFirstElText = zPFirstEl.querySelector('p') || '';
-      zPatternCells.push([
-        `${zPFirstElTitle.outerHTML}${zPFirstElText.outerHTML}`,
-      ])
-    }
-
-    for (var i = 0; i < 3; i++) {
-      const zPRow1El = sections.shift();
-      // console.log(zPRow1El.innerHTML);
-      const zPRow1Img = zPRow1El.querySelector('img');
-      const zPRow1Content = zPRow1El.querySelector('.position');
-      zPatternCells.push([
-        zPRow1Img, zPRow1Content
-      ])
-    }
-    elementsToPush.push(WebImporter.DOMUtils.createTable(zPatternCells, document));
-
-
-
-    // link/button - Learn more about experience personalisation
-    // skip this one
-    sections.shift();
-
-    // aside #2
-    const aside2 = sections.shift();
-
-    const aside2Items = aside2.querySelectorAll('.dexter-FlexContainer-Items > div');
+    const section6 = sections.shift();
+    const s6Content = section6.querySelector(':scope h1');
     elementsToPush.push(WebImporter.DOMUtils.createTable([
-      ['aside (inline)'],
-      ['#F5F5F5'],
-      [aside2Items[1], aside2Items[0]],
+      ['text (full-width)'],
+      [s6Content],
     ], document));
 
 
+    /*
+     * section 7
+     */
 
-    // skip this one
-    sections.shift();
+    const section7 = sections.shift();
+
+    elementsToPush.push(await getRecommendedArticles(section7, document));
+    elementsToPush.push(document.createElement('hr'));
 
 
+    /*
+     * section 8
+     */
 
-    // bottom elements
-    const bottom = sections.shift();
+    const section8 = sections.shift();
 
-    const bottomTitle = bottom.querySelector('h2') || '';
-    const bottomText = bottom.querySelector('p') || '';
+    const subSections8 = section8.querySelector(':scope .position').querySelectorAll(':scope > div > div > div')
     elementsToPush.push(WebImporter.DOMUtils.createTable([
-      ['text (intro, medium, center)'],
-      [`${bottomTitle.outerHTML}${bottomText.outerHTML}`],
+      ['text (full-width)'],
+      [subSections8[0]],
+    ], document));
+
+    elementsToPush.push(WebImporter.DOMUtils.createTable([
+      ['section metadata'],
+      ['background', '#F5F5F5']
     ], document));
     elementsToPush.push(document.createElement('hr'));
 
-    const bottomEls = bottom.querySelectorAll(':scope .container > div > div');
-    const columns = bottomEls[1];
+    // make links italic to trigger button decoration
+    subSections8[1].querySelectorAll('a').forEach((el) => {
+      const str = document.createElement('i');
+      el.before(str);
+      str.append(el);
+    });
 
-    const columnsEls = columns.querySelectorAll(':scope .position');
-
-    // const infoGraphicEls = [];
-
+    // columns
+    const cols = subSections8[1].querySelector('.dexter-FlexContainer-Items').querySelectorAll(':scope .flex');
     for (var i = 0; i < 3; i++) {
-      const columnEl = columnsEls[i];
-      const img = columnEl.querySelector('img');
-      const text = columnEl.querySelector('p');
-
+      const columnEl = cols[i];
       const el = WebImporter.DOMUtils.createTable([
-        ['text (vertical, center)'],
-        [`${img.outerHTML}${text.outerHTML}`],
+        ['card'],
+        [columnEl.outerHTML],
       ], document);
       elementsToPush.push(el);
     }
 
     elementsToPush.push(WebImporter.DOMUtils.createTable([
       ['section metadata'],
-      ['style', 'three-up, s-spacing']
+      ['style', '3-up'],
+      ['background', '#F5F5F5']
     ], document));
     elementsToPush.push(document.createElement('hr'));
 
 
 
-    // read the study
-    const link = columnsEls[3];
-    elementsToPush.push(WebImporter.DOMUtils.createTable([
-      ['text (full-width, no spacing)'],
-      [link],
-    ], document));
-    elementsToPush.push(document.createElement('hr'));
 
-    // Make all links (minus the breadcrumb) italic to trigger button decoration
-    for (var i = 1 ; i < elementsToPush.length; i++) {
-      const elToPush = elementsToPush[i];
-      elToPush.querySelectorAll('a').forEach((el) => {
-        const str = document.createElement('i');
-        el.before(str);
-        str.append(el);
-      });
-    }
-
-    // https://main--bacom--adobecom.hlx.page/fragments/resources/request-demo
-    const demoLink = document.createElement('a');
-    demoLink.href = 'https://main--bacom--adobecom.hlx.page/fragments/resources/request-demo';
-    demoLink.textContent = 'https://main--bacom--adobecom.hlx.page/fragments/resources/request-demo';
-    elementsToPush.push(demoLink);
-    elementsToPush.push(WebImporter.DOMUtils.createTable([
-      ['section metadata'],
-      ['style', 'XXL Spacing, center'],
-      ['background', '#ffffff'],
-    ], document));
-
-    elementsToPush.push(document.createElement('hr'));
-
-    elementsToPush.push(createMetadata(document));
-    elementsToPush.push(createCardMetadata(document));
+    // // section 9
+    // const section9 = sections.shift();
+    // if (section9) {
+    //   elementsToPush.push(createMarquee(section9, document, '#EB1000'));
+    //   elementsToPush.push(document.createElement('hr'));
+    // }
 
 
 
@@ -421,6 +436,15 @@ export default {
     elementsToPush.forEach((el) => {
       content.append(el);
     });
+
+
+    // cleaning
+    WebImporter.DOMUtils.remove(document, [
+      `header, footer, .xf, style, northstar-card-collection, consonant-card-collection`,
+      '.globalnavheader', 
+      '.globalNavHeader',
+    ]);
+
 
 
     /*

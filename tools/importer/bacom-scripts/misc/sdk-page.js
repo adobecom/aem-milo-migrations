@@ -11,10 +11,10 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { setGlobals, getMetadataValue, isRelative, findPaths, createElementFromHTML } from '../utils.js';
-import { parseCardMetadata } from '../rules/metadata.js';
-import { getBGColor, getNSiblingsElements } from '../rules/utils.js';
-import { getXPathByElement } from '../utils.js';
+import { setGlobals, getMetadataValue, isRelative, findPaths, createElementFromHTML } from '../../utils.js';
+import { parseCardMetadata } from '../../rules/metadata.js';
+import { getBGColor, getNSiblingsElements } from '../../rules/utils.js';
+import { getXPathByElement } from '../../utils.js';
 
 const createMetadata = (main, document) => {
   const meta = {};

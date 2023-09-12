@@ -11,7 +11,7 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { setGlobals, getMetadataValue, isRelative, findPaths, createElementFromHTML, getRecommendedArticles, generateDocumentPath } from '../utils.js';
+import { setGlobals, getMetadataValue, isRelative, findPaths, createElementFromHTML, getRecommendedArticles, generateDocumentPath } from '../../utils.js';
 
 const createMetadata = (main, document) => {
   const meta = {};

@@ -11,11 +11,9 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
+import { cleanupHeadings, setGlobals, findPaths, getMetadataValue, getRecommendedArticles } from '../../utils.js';
 
-import { cleanupHeadings, setGlobals, findPaths, getMetadataValue, getRecommendedArticles } from '../utils.js';
-
-const createMetadata = (document) => {
+const createMetadata = (main, document) => {
   const meta = {};
 
   const title = document.querySelector('title');
@@ -43,8 +41,9 @@ const createImage = (document, url)  => {
   return img;
 };
 
-const createMarquee = (main, document, backgroundColor) => {
-  let marqueeDoc = main; //, document.querySelector('.dexter-FlexContainer');
+const createMarquee = (main, document, originalURL) => {
+  let marqueeDoc = document.querySelector('.dexter-FlexContainer');
+
 
   /*
    * texts
@@ -52,31 +51,23 @@ const createMarquee = (main, document, backgroundColor) => {
 
   const textElements = [];
 
-  const title = marqueeDoc.querySelector('.title');
-  if (title) {
-    textElements.push(title.innerHTML);
-  }
-
-  const text = marqueeDoc.querySelector('.text');
-  if (text) {
-    textElements.push(text.innerHTML);
-  }
-
-  const cta = marqueeDoc.querySelector('.cta');
-  if (cta) {
-    const link = cta.querySelector('a');
-    if (link.href.indexOf('#watch-now') < 0) {
-      const str = document.createElement('B');
-      str.append(cta);
-      textElements.push(str.outerHTML); 
-    }
-  }
+  ['text', 'title', 'cta'].forEach((className) => {
+    marqueeDoc.querySelectorAll(`.${className}`).forEach((element) => {
+      if (className === 'cta') {
+        const link = element.querySelector('a');
+        if (link.href.indexOf('#watch-now') > -1) {
+          return;
+        }
+      }
+      textElements.push(element.innerHTML);
+    });
+  });
 
   /*
    * background
    */
 
-  const background =  WebImporter.DOMUtils.getImgFromBackground(marqueeDoc, document) || backgroundColor || '#000000';
+  const background =  WebImporter.DOMUtils.getImgFromBackground(marqueeDoc, document) || '#F8F8F8';
 
   /*
    * image + resource
@@ -106,21 +97,12 @@ const createMarquee = (main, document, backgroundColor) => {
     }
   }
 
-  const video = marqueeDoc.querySelector('video.video-desktop');
-  if (video) {
-    const source = video.querySelector('source');
-    // const l = document.createElement('a');
-    // l.textContent = source.src;
-    // l.href = source.src;
-    resource = source.src;
-  }
-
   /*
    * create table
    */
 
   const cells = [
-    ['marquee (medium, light)'],
+    ['marquee (small, light)'],
     [background],
     [textElements.join(''), (resource || '')],
   ];
@@ -130,18 +112,18 @@ const createMarquee = (main, document, backgroundColor) => {
   return table;
 };
 
-const createCardMetadata = (document) => {  
-  const cells = [
-    ['Card Metadata'],
-    ['title', getMetadataValue(document, 'cardTitle')],
-    ['cardImagePath', createImage(document,`https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`)],
-    ['CardDescription', getMetadataValue(document, 'cardDesc')],
-    ['primaryTag', `caas:content-type/${getMetadataValue(document, 'caas:content-type')}`],
-    ['tags', `${getMetadataValue(document, 'cq:tags')}`],
-  ];
-  const table = WebImporter.DOMUtils.createTable(cells, document);
-  return table;
-};
+// const createCardMetadata = (main, document) => {  
+//   const cells = [
+//     ['Card Metadata'],
+//     ['title', getMetadataValue(document, 'cardTitle')],
+//     ['cardImagePath', createImage(document,`https://business.adobe.com${getMetadataValue(document, 'cardImagePath')}`)],
+//     ['CardDescription', getMetadataValue(document, 'cardDesc')],
+//     ['primaryTag', `caas:content-type/${getMetadataValue(document, 'caas:content-type')}`],
+//     ['tags', `${getMetadataValue(document, 'cq:tags')}`],
+//   ];
+//   const table = WebImporter.DOMUtils.createTable(cells, document);
+//   return table;
+// };
 
 const appendBackward = (elements, main) => {
   for (let i=elements.length-1; i>=0; i--) {
@@ -228,10 +210,6 @@ const createBreadcrumbs = (document) => {
 
 
 export default {
-  onLoad: async ({ document }) => {
-    await waitForFaasForm(document);
-  },
-
   /**
    * Apply DOM operations to the provided document and return
    * the root element to be then transformed to Markdown.
@@ -244,178 +222,49 @@ export default {
     
     const [breadcrumbType, breadcrumb] = createBreadcrumbs(document);
 
+    console.log(breadcrumbType, breadcrumb.innerHTML, params.originalURL);
+
     WebImporter.DOMUtils.remove(document, [
-      `header, footer, .xf, style, northstar-card-collection, consonant-card-collection`,
+      `header, footer, .faas-form-settings, .xf, style, northstar-card-collection, consonant-card-collection`,
       '.globalnavheader', 
       '.globalNavHeader',
     ]);
-    
+    const main = document.querySelector('main');
+
     cleanupHeadings(document.body);
-    
-    const elementsToPush = [breadcrumb];
-    // content.prepend(breadcrumb);
+
+    // Top area
+    const elementsToGo = [];
+    elementsToGo.push(breadcrumb);
+    elementsToGo.push(createMarquee(main, document, new URL(params.originalURL)));
+    elementsToGo.push(document.createElement('hr'));
+    // const h2 = document.querySelector('.title h2');
+    // if (h2) {
+    //   elementsToGo.push(h2);
+    // }
+
+    appendBackward(elementsToGo, main);
 
 
-    
-    /*
-     * collect all sections
-     */
+    // All other content from page should be automatically added here //
+    document.querySelectorAll('.cta a').forEach(link => {link.href.includes('/resources/main') ? link.remove() : false});
 
-    const sections = [];
+    // Bottom area
+    const cells = [
+      ['Section Metadata'],
+      ['style', 'xl spacing'],
+    ];
+    const table = WebImporter.DOMUtils.createTable(cells, document);
+    main.append(table);
+    elementsToGo.push(document.createElement('hr'));
+    main.append(createMetadata(main, document));
 
-    const content = document.querySelector('.content');
-    content.querySelectorAll(`:scope > div > div`).forEach((section) => {
-      console.log(section.textContent.trim().replaceAll(/\s+/gm, ' '));
-      if (!section.classList.contains('ghost') && !section.classList.contains('dexter-Spacer') && !section.classList.contains('aem-GridColumn--phone--none') && !section.classList.contains('aem-GridColumn--default--hide') && section.innerText !== '' && section.querySelector(':scope .horizontalRule') === null && section.textContent.trim().replaceAll(/\s+/gm, '') !== '') {
-        sections.push(section);
-      }
-    });
+    // // if robots doesn't have noindex include Card Metadata;
+    // if (!getMetadataValue(document, 'robots')?.toLowerCase()?.includes('noindex')) {
+    //   main.append(createCardMetadata(main, document));
+    // }
 
-    // section 1 - marquee #1
-    const marqueeEl = sections.shift();
-    elementsToPush.push(createMarquee(marqueeEl, document, '#000000'));
-    elementsToPush.push(document.createElement('hr'));
-
-
-
-    // section 2
-    const section2 = sections.shift();
-    const s2Title = section2.querySelector('.title');
-    const s2Text = section2.querySelector('.text');
-    elementsToPush.push(WebImporter.DOMUtils.createTable([
-      ['text (full-width)'],
-      [s2Title.outerHTML + s2Text.outerHTML],
-    ], document));
-    elementsToPush.push(WebImporter.DOMUtils.createTable([
-      ['section metadata'],
-      ['style', 'blue section']
-    ], document));
-    elementsToPush.push(document.createElement('hr'));
-
-
-
-    // section 3
-    const section3 = sections.shift();
-
-    // columns
-    const cols = section3.querySelector('.container .dexter-FlexContainer-Items').querySelectorAll(':scope > div');
-
-    for (var i = 0; i < 3; i++) {
-      const columnEl = cols[i];
-      const el = WebImporter.DOMUtils.createTable([
-        ['text (vertical, center)'],
-        [columnEl.outerHTML],
-      ], document);
-      elementsToPush.push(el);
-    }
-
-    elementsToPush.push(WebImporter.DOMUtils.createTable([
-      ['section metadata'],
-      ['style', 'three-up, s-spacing']
-    ], document));
-    elementsToPush.push(document.createElement('hr'));
-
-    // get the report button
-    const link = section3.querySelector('.cta a');
-    if (link) {
-      elementsToPush.push(WebImporter.DOMUtils.createTable([
-        ['text (full-width, no spacing)'],
-        [link],
-      ], document));
-      elementsToPush.push(document.createElement('hr'));
-    }
-
-    elementsToPush.push(WebImporter.DOMUtils.createTable([
-      ['section metadata'],
-      ['style', 'get the report button']
-    ], document));
-    elementsToPush.push(document.createElement('hr'));
-
-
-
-    // section 4
-    const section4 = sections.shift();
-    const title = section4.querySelector('.title');
-    const text = section4.querySelector('.text');
-    elementsToPush.push(WebImporter.DOMUtils.createTable([
-      ['text (full-width)'],
-      [title.outerHTML+text.outerHTML],
-    ], document));
-
-
-
-    // section 5
-    const section5 = sections.shift();
-
-    const chartsCols = [];
-    const chartsEls = section5.querySelectorAll('.container .position');
-    for (var i = 1; i < chartsEls.length; i++) {
-      const chartEl = chartsEls[i];
-      const imgEl = chartEl.querySelector('video source');
-      const imgSrc = imgEl.src;
-      const img = document.createElement('a');
-      img.textContent = imgSrc;
-      img.href = imgSrc;
-      const text = chartEl.querySelector('h3');
-      chartsCols.push(img.outerHTML+text.outerHTML);
-    }
-    elementsToPush.push(WebImporter.DOMUtils.createTable([
-      ['columns'],
-      chartsCols,
-    ], document));
-
-    // title
-    const s5Title = section5.querySelectorAll('.container > div > div.title h1');
-    elementsToPush.push(WebImporter.DOMUtils.createTable([
-      ['text (full-width)'],
-      [s5Title[0]],
-    ], document));
-
-    // legend
-    const s5Legends = section5.querySelectorAll('.container > div > div.flex .text');
-    elementsToPush.push(WebImporter.DOMUtils.createTable([
-      ['columns (contained)'],
-      [s5Legends[1].outerHTML, s5Legends[2].outerHTML],
-    ], document));
-
-
-
-    // section 6
-    const section6 = sections.shift();
-    elementsToPush.push(createMarquee(section6, document, '#E54A94'));
-    elementsToPush.push(document.createElement('hr'));
-
-
-    // section 7
-    const section7 = sections.shift();
-
-    // form
-    const titleElement = section7.querySelector('h2');
-    const formLink = handleFaasForm(section7, document, titleElement);
-
-    elementsToPush.push(WebImporter.DOMUtils.createTable([
-      ['text (full-width, xl spacing)'],
-      [titleElement.outerHTML + formLink.outerHTML],
-    ], document));
-
-
-
-    /*
-     * final page
-     */
-
-    content.innerHTML = '';
-    elementsToPush.forEach((el) => {
-      content.append(el);
-    });
-
-
-
-    /*
-     * return
-     */
-
-    return content;
+    return main;
   },
 
   /**

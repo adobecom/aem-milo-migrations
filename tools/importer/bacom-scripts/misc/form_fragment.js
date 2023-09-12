@@ -11,7 +11,7 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { setGlobals } from "../utils.js";
+import { setGlobals } from "../../utils.js";
 
 export default {
   /**
