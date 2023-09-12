@@ -8,7 +8,7 @@ BACOM - Franklin Imports
 
 ### Bacom
 
-* Import Code (initiated by BACOM team, taken over by AEM engineering early 2023)
+* Import Code (initiated by adobe.com team, taken over by AEM engineering early 2023)
   https://github.com/adobecom/aem-milo-migrations
 
 * Bacom Sharepoint
@@ -57,9 +57,11 @@ BACOM - Franklin Imports
     -   Dynamic Form loaded from external service (FaaS)
     --  High variance in original pages (many edge cases to implement in a single script)
 
-#### Script
+#### Scripts
 
 * [/tools/importer/bacom-scripts/gated-offer.js](https://github.com/adobecom/aem-milo-migrations/blob/main/tools/importer/bacom-scripts/gated-offer.js)
+* [/tools/importer/bacom-scripts/webinarv2.js](https://github.com/adobecom/aem-milo-migrations/blob/main/tools/importer/bacom-scripts/webinarv2.js)
+* [/tools/importer/bacom-scripts/webinarv2-modal.js](https://github.com/adobecom/aem-milo-migrations/blob/main/tools/importer/bacom-scripts/webinarv2-modal.js)
 
 Uses the Franklin Importer [`onLoad`](https://github.com/adobe/helix-importer-ui/blob/main/importer-guidelines.md#onload) function to dynamically wait for FaaS form presence  
 https://github.com/adobecom/aem-milo-migrations/blob/main/tools/importer/bacom-scripts/gated-offer.js#L272-L274
@@ -82,9 +84,10 @@ https://github.com/adobecom/aem-milo-migrations/blob/main/tools/importer/bacom-s
     -   Mixed type of resource (PDF, video, slide deck) to extract and make it an embed in Franklin page
     --  High variance in original pages (many edge cases to implement in a single script)
 
-#### Script
+#### Scripts
 
-* [/tools/importer/bacom-scripts/gated-offer-thank-you.js](https://github.com/adobecom/aem-milo-migrations/blob/main/tools/importer/bacom-scripts/gated-offer.js)
+* [/tools/importer/bacom-scripts/gated-offer-thank-you.js](https://github.com/adobecom/aem-milo-migrations/blob/main/tools/importer/bacom-scripts/gated-offer-thank-you.js)
+* [/tools/importer/bacom-scripts/webinar-thank-you.js](https://github.com/adobecom/aem-milo-migrations/blob/main/tools/importer/bacom-scripts/webinar-thank-you.js)
 
 
 
