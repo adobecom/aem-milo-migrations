@@ -1,4 +1,4 @@
-import { handleFaasForm } from '../rules/handleFaasForm.js';
+import { handleFaasForm } from '../parsers/handleFaasForm.js';
 
 
 export function parse_faasForm(el, document, section) {

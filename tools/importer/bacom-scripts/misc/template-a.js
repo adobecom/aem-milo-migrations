@@ -20,7 +20,7 @@ Template A https://main--bacom--adobecom.hlx.page/layouts/resources/template-a
 */
 
 
-import { handleFaasForm, waitForFaasForm } from '../../rules/handleFaasForm.js';
+import { handleFaasForm, waitForFaasForm } from '../../parsers/handleFaasForm.js';
 import { cleanupHeadings, setGlobals, findPaths, getMetadataValue, getRecommendedArticles } from '../../utils.js';
 
 const createMetadata = (main, document) => {

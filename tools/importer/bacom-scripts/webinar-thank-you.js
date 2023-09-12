@@ -12,10 +12,10 @@
 /* eslint-disable no-console, class-methods-use-this */
 
 import { findPaths, generateDocumentPath, getMetadataValue, setGlobals } from '../utils.js';
-import { parseCardMetadata } from '../rules/metadata.js';
+import { parseCardMetadata } from '../parsers/metadata.js';
 import { isLightColor } from '../utils.js';
-import { extractBackground } from '../rules/bacom.js';
-import { crawlColorFromCSS, getNSiblingsElements } from '../rules/utils.js';
+import { extractBackground } from '../parsers/bacom.js';
+import { crawlColorFromCSS, getNSiblingsElements } from '../parsers/utils.js';
 
 const createMetadata = (main, document) => {
   const meta = {};

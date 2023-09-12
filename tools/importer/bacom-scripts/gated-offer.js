@@ -11,10 +11,10 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { handleFaasForm, waitForFaasForm } from '../rules/handleFaasForm.js';
+import { handleFaasForm, waitForFaasForm } from '../parsers/handleFaasForm.js';
 import { setGlobals, cleanupParagraphs, getJSONValues, generateDocumentPath } from '../utils.js';
-import { parseCardMetadata, parseMetadata } from '../rules/metadata.js';
-import { getNSiblingsElements } from '../rules/utils.js';
+import { parseCardMetadata, parseMetadata } from '../parsers/metadata.js';
+import { getNSiblingsElements } from '../parsers/utils.js';
 
 const createImage = (document, url)  => {
   const img = document.createElement('img');

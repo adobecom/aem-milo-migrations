@@ -11,13 +11,13 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { parseMarquee } from '../rules/marquee.js';
-import { parseCardMetadata, parseMetadata } from '../rules/metadata.js';
-import { parseCAASContent } from '../rules/caas.js';
+import { parseMarquee } from '../parsers/marquee.js';
+import { parseCardMetadata, parseMetadata } from '../parsers/metadata.js';
+import { parseCAASContent } from '../parsers/caas.js';
 import { setGlobals, generateDocumentPath } from '../utils.js';
-import { parseBreadcrumb } from '../rules/breadcrumb.js';
-import { waitForFaasForm } from '../rules/handleFaasForm.js';
-import { parseEventSpeakerAndProduct, parseEventSpeakerAndFaas, parseWebinarTime } from '../rules/event-speaker-product.js';
+import { parseBreadcrumb } from '../parsers/breadcrumb.js';
+import { waitForFaasForm } from '../parsers/handleFaasForm.js';
+import { parseEventSpeakerAndProduct, parseEventSpeakerAndFaas, parseWebinarTime } from '../parsers/event-speaker-product.js';
 
 async function layout1(sections, document, container) {
   container.append(await parseMarquee(sections.shift(), document, null))

@@ -11,10 +11,10 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { handleFaasForm, waitForFaasForm } from '../../rules/handleFaasForm.js';
-import { parseCardMetadata } from '../../rules/metadata.js';
+import { handleFaasForm, waitForFaasForm } from '../../parsers/handleFaasForm.js';
+import { parseCardMetadata } from '../../parsers/metadata.js';
 import { cleanupHeadings, setGlobals, findPaths, getMetadataValue, getRecommendedArticles, generateDocumentPath } from '../../utils.js';
-import { getNSiblingsElements } from '../../rules/utils.js';
+import { getNSiblingsElements } from '../../parsers/utils.js';
 import { getXPathByElement } from '../../utils.js';
 
 const createMetadata = (main, document) => {

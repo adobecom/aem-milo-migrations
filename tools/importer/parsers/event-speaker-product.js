@@ -1,4 +1,4 @@
-import { handleFaasForm } from '../rules/handleFaasForm.js';
+import { handleFaasForm } from '../parsers/handleFaasForm.js';
 import { getNSiblingsElements, getBGColor } from './utils.js';
 import { getXPathByElement } from '../utils.js';
 

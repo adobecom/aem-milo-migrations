@@ -12,7 +12,7 @@
 /* eslint-disable no-console, class-methods-use-this */
 
 import { setGlobals, getMetadataValue, isRelative, findPaths, createElementFromHTML, getRecommendedArticles, generateDocumentPath } from '../utils.js';
-import { parseCardMetadata } from '../rules/metadata.js';
+import { parseCardMetadata } from '../parsers/metadata.js';
 
 const createMetadata = (main, document) => {
   const meta = {};

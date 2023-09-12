@@ -1,5 +1,5 @@
-import { parseMarquee } from "./rules/marquee.js";
-import { parseMetadata, parseCardMetadata } from "./rules/metadata.js";
+import { parseMarquee } from "./parsers/marquee.js";
+import { parseMetadata, parseCardMetadata } from "./parsers/metadata.js";
 import { generateDocumentPath } from './utils.js';
 
 export default {

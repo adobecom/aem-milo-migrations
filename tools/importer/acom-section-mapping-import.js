@@ -18,15 +18,15 @@ import { generateDocumentPath, getElementByXpath, setGlobals, smartScroll } from
  * parsers
  */
 
-import { getSectionsData } from './rules/sections-data.js';
-import { parseMarquee, parseMarqueeSimple } from './rules/marquee.js';
-import { parseText } from './rules/text.js';
-import { parseFragment } from './rules/fragment.js';
-import { parseCardMetadata, parseMetadata } from './rules/metadata.js';
-import { parseCAASContent } from './rules/caas.js';
-import { parseZPattern } from './rules/z-pattern.js';
-import { parseAside, parseAsideInline, parseAsideNotificationCenter } from './rules/aside.js';
-import { parseBreadcrumb } from './rules/breadcrumb.js';
+import { getSectionsData } from './parsers/sections-data.js';
+import { parseMarquee, parseMarqueeSimple } from './parsers/marquee.js';
+import { parseText } from './parsers/text.js';
+import { parseFragment } from './parsers/fragment.js';
+import { parseCardMetadata, parseMetadata } from './parsers/metadata.js';
+import { parseCAASContent } from './parsers/caas.js';
+import { parseZPattern } from './parsers/z-pattern.js';
+import { parseAside, parseAsideInline, parseAsideNotificationCenter } from './parsers/aside.js';
+import { parseBreadcrumb } from './parsers/breadcrumb.js';
 import {
   parseTwoUpLayoutsSectionMetadata,
   parseThreeUpLayoutsSectionMetadataGeneric,
@@ -37,10 +37,10 @@ import {
   parseSectionMetadataGenericRaw,
   parseMultipleSectionMetadataTwoUpGeneric,
   parseTwoUpLayoutGrid_1_2_SectionMetadata,
-} from './rules/section-metadata.js';
-import { parseUnknown } from './rules/unknown.js';
-import { parseMedia } from './rules/media.js';
-import { parseTableOfContents } from './rules/table-of-contents.js';
+} from './parsers/section-metadata.js';
+import { parseUnknown } from './parsers/unknown.js';
+import { parseMedia } from './parsers/media.js';
+import { parseTableOfContents } from './parsers/table-of-contents.js';
 import {
   parse_seeWhatMakesItWork_Section,
   parseFragment_products_related_content_cards,
@@ -51,13 +51,13 @@ import {
   parseSingleComparisonTable,
   parseMultipleComparisonTable,
   parseBacomDigitalTrendsThreeUpCharts,
-} from './rules/bacom.js';
-import { parse_faasForm } from './rules/form-link.js';
-import { waitForFaasForm } from './rules/handleFaasForm.js';
-import { parseTableGeneric } from './rules/table.js';
-import { parseCarousel } from './rules/carousel.js';
+} from './parsers/bacom.js';
+import { parse_faasForm } from './parsers/form-link.js';
+import { waitForFaasForm } from './parsers/handleFaasForm.js';
+import { parseTableGeneric } from './parsers/table.js';
+import { parseCarousel } from './parsers/carousel.js';
 // custom parsers
-import * as customParsers from './rules/customs/customs.mjs';
+import * as customParsers from './parsers/customs/customs.mjs';
 
 // parser wrapper
 function nUpElementTypeVariantParserLayoutSectionMetadata(elementType = 'text', parserFn) {

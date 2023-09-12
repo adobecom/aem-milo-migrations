@@ -11,10 +11,10 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { parseFragment_fragment_products_request_demo_marquee, parseFragment_products_related_content_cards } from '../../rules/bacom.js';
-import { parseBreadcrumb } from '../../rules/breadcrumb.js';
-import { parseCardMetadata, parseMetadata } from '../../rules/metadata.js';
-import { getNSiblingsElements } from '../../rules/utils.js';
+import { parseFragment_fragment_products_request_demo_marquee, parseFragment_products_related_content_cards } from '../../parsers/bacom.js';
+import { parseBreadcrumb } from '../../parsers/breadcrumb.js';
+import { parseCardMetadata, parseMetadata } from '../../parsers/metadata.js';
+import { getNSiblingsElements } from '../../parsers/utils.js';
 import { isRelative, setGlobals } from '../../utils.js';
 
 export default {

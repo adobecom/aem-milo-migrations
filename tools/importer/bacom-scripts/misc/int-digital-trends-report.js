@@ -11,7 +11,7 @@
  */
 /* eslint-disable no-console, class-methods-use-this */
 
-import { handleFaasForm, waitForFaasForm } from '../../rules/handleFaasForm.js';
+import { handleFaasForm, waitForFaasForm } from '../../parsers/handleFaasForm.js';
 
 import { cleanupHeadings, setGlobals, findPaths, getMetadataValue, getRecommendedArticles } from '../../utils.js';
 

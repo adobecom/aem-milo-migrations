@@ -1,4 +1,4 @@
-import handleCaasCollection from './rules/handleCaasCollection.js';
+import handleCaasCollection from './parsers/handleCaasCollection.js';
 
 export const localMap = {
   ae_ar: 'ae/ar',
