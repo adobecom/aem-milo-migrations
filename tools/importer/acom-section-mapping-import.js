@@ -70,7 +70,7 @@ function nUpElementTypeVariantParserLayoutSectionMetadata(elementType = 'text', 
  * mapping between the section type and the parsing function
  */
 
-const sectionsRulesMap = {
+const sectionsParsersMap = {
   'aside': parseAside,
   'aside-inline': parseAsideInline,
   'aside-notification-center': parseAsideNotificationCenter,
@@ -117,7 +117,7 @@ const sectionsRulesMap = {
 
 Object.keys(customParsers).forEach((key) => {
   Object.keys(customParsers[key].parsers).forEach((parserKey) => {
-    sectionsRulesMap[parserKey] = customParsers[key].parsers[parserKey];
+    sectionsParsersMap[parserKey] = customParsers[key].parsers[parserKey];
   });
 });
 
@@ -240,7 +240,7 @@ export default {
           IMPORT_REPORT[section.block.type + '-blocks']++;
         }
 
-        if (sectionsRulesMap[section.block.type]) {
+        if (sectionsParsersMap[section.block.type]) {
           console.log('parsing section of type', section.block.type);
           // z-pattern special case (multiple elements)
           if (section.block.type === 'z-pattern') {
@@ -253,7 +253,7 @@ export default {
               }
               zpatternElements.push(getElementByXpath(document, '/' + sectionsData[i].xpath));
             }
-            const { block, extraDocs } = await sectionsRulesMap[section.block.type](el, document, zpatternElements);
+            const { block, extraDocs } = await sectionsParsersMap[section.block.type](el, document, zpatternElements);
             elsToPush.push(block);
             extraElements.push(...extraDocs || []);
             elsToRemove.push(el);
@@ -261,14 +261,14 @@ export default {
           }
           else if (section.block.type === 'z-pattern-single') {
             const zpatternElements = [ el ];
-            const { block, extraDocs } = await sectionsRulesMap[section.block.type](el, document, zpatternElements);
+            const { block, extraDocs } = await sectionsParsersMap[section.block.type](el, document, zpatternElements);
             elsToPush.push(block);
             extraElements.push(...extraDocs || []);
             elsToRemove.push(el);
             continue;
           }
 
-          const { block, extraDocs } = await sectionsRulesMap[section.block.type](el, document, section);
+          const { block, extraDocs } = await sectionsParsersMap[section.block.type](el, document, section);
           elsToPush.push(block);
           extraElements.push(...extraDocs || []);
           elsToRemove.push(el);
