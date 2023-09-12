@@ -14,7 +14,7 @@ import { utf8ToB64 } from './utils.js';
 
 const waitForFaasForm = async (document) => { 
   if (document.querySelector('.faas_form')) {
-try {
+    try {
       // The form is hidden behind a "register form" button that must be clicked.
       // Once clicked, the underlying JS will create the corresponding faas-form-settings which we need to extract the form.
       // However, if we just simulate the click, it would induce the Franklin importer into thinking that there are
