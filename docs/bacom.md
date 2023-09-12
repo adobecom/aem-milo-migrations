@@ -40,7 +40,7 @@ BACOM - Franklin Imports
 
 ## BACOM Page Types we have to Import
 
-### Gated Offer
+### Gated Offer (also applies to Webinar)
 
 #### Example
 
@@ -65,7 +65,7 @@ https://github.com/adobecom/aem-milo-migrations/blob/main/tools/importer/bacom-s
 
 
 
-### Thank You
+### Thank You (also applies to webinar thank you)
 
 #### Example
 
@@ -84,11 +84,6 @@ https://github.com/adobecom/aem-milo-migrations/blob/main/tools/importer/bacom-s
 #### Script
 
 * [/tools/importer/bacom-scripts/gated-offer-thank-you.js](https://github.com/adobecom/aem-milo-migrations/blob/main/tools/importer/bacom-scripts/gated-offer.js)
-
-#### Demo
-
-Only shows happy path on a single page, in reality, many variances had to be implemented
-(show the current script used for imports)
 
 
 
