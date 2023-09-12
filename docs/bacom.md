@@ -18,6 +18,7 @@ BACOM - Franklin Imports
   * CORS extension: https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=WP4&title=Import+Tool%3A+How-to
   * custom referer for FaaS forms (https://apps.enterprise.adobe.com => https://business.adobe.com)
   * parsing metadata requires access to this [AEM Author instance](https://www-author.corp.adobe.com/sites.html/content), check that you can access it from your machine
+  > Tip: put these extensions and settings in a profile in Chrome to avoid having to disable/enable them
 
 ### Franklin Importer
 
