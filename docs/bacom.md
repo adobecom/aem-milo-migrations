@@ -28,6 +28,8 @@ BACOM - Franklin Imports
 * In `tranform` / `transformDOM` importer functions you get a **JSDOM** version of the original document 
   (not an issue but some CSS value are not computed + objects are not explorable in the web console)!
 
+* Only use existing Milo blocks (no code added to https://github.com/adobecom/bacom)
+
 ### Milo
 
 * Blocks Samples
