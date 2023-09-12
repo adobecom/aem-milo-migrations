@@ -96,7 +96,6 @@ Only shows happy path on a single page, in reality, many variances had to be imp
 
 #### Examples
 
-* Distribution of pages per templates: https://adobe-my.sharepoint.com/:x:/p/hmathews/EeC5-N3N3fFLoI6s_navmmQB7uRxYHauseklzy4ts2IH4A?e=QtdEHE
 * original: https://business.adobe.com/products/product-analytics/adobe-product-analytics.html
 
 #### Pros / Cons for using Franklin Importer
@@ -139,5 +138,5 @@ Show complete flow:
   Data used then to determine block theme (light / dark)
 * Custom parsers
 * `unknown` block type: **last resort if you do not to what migrate a section** (ex. content too complex) you can classify a section in `unknown` block folder, in the Word document this will result into a block with the original raw content + a screenshot of how the content looks like on the original page. That could help the author decide what to do with the original content
-* Custom Reporting (see [guidelines](https://github.com/adobe/helix-importer-ui/blob/main/importer-guidelines.md#reporting-back))
-* Multiple importer outputs (ex. extract portion of a page into a fragment) (see [guidelines](https://github.com/adobe/helix-importer-ui/blob/main/importer-guidelines.md#one-input--multiple-outputs))
+* Custom Reporting (see [guidelines](https://github.com/adobe/helix-importer-ui/blob/main/importer-guidelines.md#reporting-back)) implemented by default in the generic import [script](https://github.com/adobecom/aem-milo-migrations/blob/main/tools/importer/acom-section-mapping-import.js#L428)
+* Multiple importer outputs (ex. extract portion of a page into a fragment) supported by default in the [parsers](https://github.com/adobecom/aem-milo-migrations/blob/main/tools/importer/parsers/customs/mwpw-134290.mjs#L110-L116) and in the generic import [script](https://github.com/adobecom/aem-milo-migrations/blob/main/tools/importer/acom-section-mapping-import.js#L430) (see [guidelines](https://github.com/adobe/helix-importer-ui/blob/main/importer-guidelines.md#one-input--multiple-outputs))
