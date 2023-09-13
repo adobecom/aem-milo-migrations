@@ -15,6 +15,7 @@ BACOM - Franklin Imports
   https://adobe.sharepoint.com/:f:/r/sites/adobecom/Shared%20Documents/bacom?csf=1&web=1&e=tmG9Kv
 
 * Specific setup required to make bacom pages work in the importer:
+  * Connected to Adobe Corp. network
   * CORS extension: https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=WP4&title=Import+Tool%3A+How-to
   * custom referer for FaaS forms (https://apps.enterprise.adobe.com => https://business.adobe.com)
   * parsing metadata requires access to this [AEM Author instance](https://www-author.corp.adobe.com/sites.html/content), check that you can access it from your machine
@@ -29,6 +30,10 @@ BACOM - Franklin Imports
   (not an issue but some CSS value are not computed + objects are not explorable in the web console)!
 
 * Only use existing Milo blocks (no code added to https://github.com/adobecom/bacom)
+
+* When starting a new import task, check that the pages you need to import render as expected in the importer UI, 
+  in the `Page preview` iframe.
+  (Depending on the width, the page might render in mobile mode, removing some elements you want to import)
 
 ### Milo
 

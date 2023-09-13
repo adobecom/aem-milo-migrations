@@ -5,7 +5,7 @@ adobe.com Sections Mapping Import
 
 * Node.js >= 18.15.0 (check via `node -v`)
 * [franklin-bulk](https://github.com/catalan-adobe/franklin-bulk-cli) CLI
-* [acom-franklin-import-sections-mapping](https://github.com/catalan-adobe/franklin-importer-service/tree/main/apps/acom-sections-mapping) CLI
+* [acom-franklin-import-sections-mapping](https://github.com/catalan-adobe/acom-franklin-import-sections-mapping) CLI
 
 
 
