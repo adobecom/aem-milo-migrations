@@ -16,24 +16,63 @@ style_path = 'custom_style/styles.xml'
 
 # Root directory to start the search
 docx_dir = 'docx_dir'
-
+dntText="""</w:style><w:style w:type="paragraph" w:styleId="DNT" w:customStyle="1">
+<w:name w:val="DNT"/>
+<w:basedOn w:val="Normal"/>
+<w:link w:val="DNTChar"/>
+<w:qFormat/>
+<w:rsid w:val="006253D9"/>
+<w:rPr>
+<w:color w:val="FF0000"/>
+</w:rPr>
+</w:style>
+<w:style w:type="character" w:styleId="Strong">
+<w:name w:val="Strong"/>
+<w:basedOn w:val="DefaultParagraphFont"/>
+<w:uiPriority w:val="22"/>
+<w:qFormat/>
+<w:rsid w:val="003D5EC9"/>
+<w:rPr>
+<w:b/>
+<w:bCs/>
+</w:rPr>
+</w:style>
+<w:style w:type="paragraph" w:styleId="NoSpacing">
+<w:name w:val="No Spacing"/>
+<w:uiPriority w:val="1"/>
+<w:qFormat/>
+<w:rsid w:val="00D5389F"/>
+</w:style>
+<w:style w:type="character" w:styleId="DNTChar" w:customStyle="1">
+<w:name w:val="DNT Char"/>
+<w:basedOn w:val="DefaultParagraphFont"/>
+<w:link w:val="DNT"/>
+<w:rsid w:val="00FD52AF"/>
+<w:rPr>
+<w:color w:val="FF0000"/>
+</w:rPr>
+</w:style>"""
 # Recursively search for .docx files in the directory and its subdirectories
 for dirpath, dirnames, filenames in os.walk(docx_dir):
     for file in filenames:
         if file.endswith(".docx"):
             # Create a temporary ZipFile object to modify the archive
             docx_dir = os.path.join(dirpath, file)
-
             with ZipFile(docx_dir, "r") as original:
                 # Create a temporary ZipFile object to modify the archive
                 with tempfile.NamedTemporaryFile(delete=False) as temp_file:
                     temp_file.close()
-                    with ZipFile(temp_file.name, "w") as temp:
+                    stylesXml=""
+                    with ZipFile(temp_file.name, "a") as temp:
                         # Copy all files from the original archive except the styles.xml file
                         for item in original.infolist():
                             if item.filename != "word/styles.xml":
                                 temp.writestr(item, original.read(item.filename))
+                            else:
+                                stylesXml=original.read(item.filename)
                         # Add the new styles.xml file
-                        temp.write(style_path, "word/styles.xml")
+                        xmlfile=stylesXml.decode()
+                        modifiedXML=xmlfile.replace("</w:style>",dntText,1)
+                        temp.writestr("word/styles.xml",modifiedXML)
             # Replace the original archive with the modified one
             os.replace(temp_file.name, docx_dir)
